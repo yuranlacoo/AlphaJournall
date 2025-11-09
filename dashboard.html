@@ -4,17 +4,33 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AlphaJournal - Dashboard</title>
 <link rel="stylesheet" href="assets/css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 <div class="container">
-  <div class="header"><div class="brand"><div class="logo">A▲</div><h1>AlphaJournal</h1></div>
-  <div style="display:flex;gap:8px"><a href="new-trade.html" class="btn">+ Novo Trade</a><button id="btnSync" class="btn">Sincronizar</button><button id="btnLogout" class="btn" style="background:#ff005c">Sair</button></div>
+  <div class="header"><div class="brand"><div class="logo">A▲</div><h1 data-i18n="dashboard">Dashboard</h1></div>
+  <div style="display:flex;gap:8px;align-items:center"><a href="new-trade.html" class="btn" data-i18n="new_trade">+ Novo Trade</a><button id="btnSync" class="btn">Sincronizar</button><button id="btnLogout" class="btn" style="background:#ff005c">Sair</button></div>
   </div>
   <main style="margin-top:18px">
     <div class="card-row">
-      <div class="card" style="flex:1"><div class="small">Winrate</div><div id="winrate">--%</div></div>
-      <div class="card" style="flex:1"><div class="small">Resultado Total</div><div id="total">R$ 0,00</div></div>
-      <div class="card" style="flex:1"><div class="small">Total Trades</div><div id="count">0</div></div>
+      <div class="card" style="flex:1"><div class="small">Winrate</div><div id="winrate" class="value">--%</div></div>
+      <div class="card" style="flex:1"><div class="small">Resultado Total</div><div id="total" class="value">R$ 0,00</div></div>
+      <div class="card" style="flex:1"><div class="small">Total Trades</div><div id="count" class="value">0</div></div>
+    </div>
+    <div style="height:18px"></div>
+    <div style="display:flex;gap:12px">
+      <div style="flex:2;background:var(--panel);padding:12px;border-radius:10px">
+        <canvas id="chart" height="140"></canvas>
+      </div>
+      <div style="flex:1;background:var(--panel);padding:12px;border-radius:10px">
+        <h3 class="small">Filtros</h3>
+        <label class="small">Ativo</label><input id="filterAtivo" class="input" placeholder="PETR4">
+        <label class="small">Data inicial</label><input id="filterFrom" type="date" class="input">
+        <label class="small">Data final</label><input id="filterTo" type="date" class="input">
+        <div style="height:8px"></div>
+        <button id="btnApply" class="btn">Aplicar Filtro</button>
+        <button id="btnClear" class="btn" style="background:transparent;border:1px solid rgba(255,255,255,0.06);margin-top:6px">Limpar</button>
+      </div>
     </div>
     <div style="height:12px"></div>
     <table class="table" aria-label="Tabela de trades">
@@ -26,35 +42,13 @@
 </div>
 <div id="modal" class="modal" onclick="document.getElementById('modal').style.display='none'"><img id="modalImg" alt="Print"></div>
 <script type="module">
-import { logout, onAuth } from './assets/js/auth.js';
-import { syncAll } from './assets/js/app-sync.js';
+import { initDashboard } from './assets/js/dashboard.js';
+import { applyText, setLang } from './assets/js/lang.js';
 
-function loadLocal(){ const list = JSON.parse(localStorage.getItem('aj_trades')||'[]'); return list; }
+const langSel = document.getElementById('lang');
+if(langSel){ langSel.value = localStorage.getItem('aj_lang')||'pt'; langSel.addEventListener('change', ()=> setLang(langSel.value)); }
 
-function render(){
-  const list = loadLocal();
-  const tbody = document.getElementById('tbody'); tbody.innerHTML='';
-  let total=0, wins=0;
-  list.forEach(t=>{
-    const tr = document.createElement('tr');
-    const res = (parseFloat(t.saida||0) - parseFloat(t.entrada||0)) || 0;
-    total += res; if(res>0) wins++;
-    tr.innerHTML = `\n      <td>${t.ativo||'-'}</td>\n      <td>${t.data||'-'}</td>\n      <td>${res.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</td>\n      <td>${t.imagem?'<span class="icon" data-src="'+t.imagem+'">🖼️</span>':'-'}</td>\n      <td>${t.synced? '✅':'❌'}</td>\n    `;
-    tbody.appendChild(tr);
-  });
-  document.getElementById('total').textContent = total.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-  document.getElementById('count').textContent = list.length;
-  document.getElementById('winrate').textContent = list.length? Math.round((wins/list.length)*100)+'%':'--%';
-  document.querySelectorAll('.icon').forEach(el=>el.addEventListener('click', ()=>{ const src = el.getAttribute('data-src'); document.getElementById('modalImg').src = src; document.getElementById('modal').style.display='flex'; }));
-}
-
-render();
-
-document.getElementById('btnSync').addEventListener('click', async ()=>{ onAuth(async (u)=>{ if(u){ await syncAll(u.uid); render(); alert('Sincronização concluída (ou em tentativa).'); } else { alert('Entre para sincronizar.'); } }); });
-
-document.getElementById('btnLogout').addEventListener('click', async ()=>{ await logout(); window.location.href='index.html'; });
-
-onAuth(async (u)=>{ if(u){ await syncAll(u.uid); render(); } });
+initDashboard();
 </script>
 </body>
 </html>

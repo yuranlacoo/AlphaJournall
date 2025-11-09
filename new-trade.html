@@ -5,7 +5,7 @@
 <div class="container">
   <div class="header"><div class="brand"><div class="logo">A▲</div><h1>AlphaJournal</h1></div></div>
   <main style="margin-top:18px">
-    <div style="max-width:820px;margin:0 auto;background:var(--panel);padding:18px;border-radius:12px">
+    <div style="max-width:920px;margin:0 auto;background:var(--panel);padding:18px;border-radius:12px">
       <a href="dashboard.html" class="btn small">← Voltar</a>
       <h2 class="small">Registrar Trade</h2>
       <div class="form-grid">
@@ -46,37 +46,15 @@
 import { queueTrade, syncAll } from './assets/js/app-sync.js';
 import { onAuth } from './assets/js/auth.js';
 
-function readImageAsDataURL(file){
-  return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
-}
-
+function readImageAsDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
 async function collectAndQueue(){
-  const trade = {
-    id: 't_'+Date.now(),
-    ativo: document.getElementById('ativo').value,
-    data: document.getElementById('data').value || new Date().toISOString().slice(0,10),
-    mercado: document.getElementById('mercado').value,
-    tipo: document.getElementById('tipo').value,
-    entrada: document.getElementById('entrada').value,
-    saida: document.getElementById('saida').value,
-    quantidade: document.getElementById('quantidade').value,
-    precoEntrada: document.getElementById('precoEntrada').value,
-    setup: document.getElementById('setup').value,
-    obs: document.getElementById('obs').value,
-    imagem: null,
-    synced:false
-  };
-  const f = document.getElementById('print').files[0];
-  if(f){ trade.imagem = await readImageAsDataURL(f); }
+  const trade = { id:'t_'+Date.now(), ativo: document.getElementById('ativo').value, data: document.getElementById('data').value || new Date().toISOString().slice(0,10), mercado: document.getElementById('mercado').value, tipo: document.getElementById('tipo').value, entrada: document.getElementById('entrada').value, saida: document.getElementById('saida').value, quantidade: document.getElementById('quantidade').value, precoEntrada: document.getElementById('precoEntrada').value, setup: document.getElementById('setup').value, obs: document.getElementById('obs').value, imagem: null, synced:false };
+  const f = document.getElementById('print').files[0]; if(f){ trade.imagem = await readImageAsDataURL(f); }
   queueTrade(trade);
   document.getElementById('msg').textContent = 'Trade salvo localmente. ⏱ Será sincronizado quando houver conexão e login.';
 }
-
-document.getElementById('btnSave').addEventListener('click', async ()=>{
-  await collectAndQueue();
-  onAuth(async (u)=>{ if(u){ await syncAll(u.uid); window.location.href='dashboard.html'; } else { window.location.href='dashboard.html'; } });
-});
-
+document.getElementById('btnSave').addEventListener('click', async ()=>{ await collectAndQueue(); onAuth(async (u)=>{ if(u){ await syncAll(u.uid); window.location.href='dashboard.html'; } else { window.location.href='dashboard.html'; } }); });
 document.getElementById('btnSaveLocal').addEventListener('click', async ()=>{ await collectAndQueue(); });
 </script>
-</body></html>
+</body>
+</html>

@@ -1,8 +1,17 @@
-# AlphaJournal - MVP (Dark Neon)
+# AlphaJournal - Final (Bilingual PT/EN) - Dark Cyberpunk
 
-Deploy steps:
-1. Upload these files to your GitHub repository root (AlphaJournal).
-2. Ensure assets/js/firebase-config.js contains your Firebase config (it was pre-filled).
-3. Enable GitHub Pages on branch main → / (root).
+Upload these files to your repository root and enable GitHub Pages (main branch, root).
+Make sure Firebase Auth (Email+Google), Firestore and Storage are enabled and that the domain
+'yuranlacoo.github.io' is added to Authorized Domains in Firebase Auth.
 
-This project is offline-first and will sync to Firebase when the user is authenticated.
+Files included:
+- index.html
+- dashboard.html
+- new-trade.html
+- assets/js/*
+- assets/css/style.css
+
+After upload, test:
+- Register / Login
+- Create trade with print
+- Sync and view in Firestore
