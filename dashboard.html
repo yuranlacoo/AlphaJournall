@@ -1,1 +1,60 @@
-<html><body><h2>Dashboard Placeholder</h2></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AlphaJournal - Dashboard</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="container">
+  <div class="header"><div class="brand"><div class="logo">A▲</div><h1>AlphaJournal</h1></div>
+  <div style="display:flex;gap:8px"><a href="new-trade.html" class="btn">+ Novo Trade</a><button id="btnSync" class="btn">Sincronizar</button><button id="btnLogout" class="btn" style="background:#ff005c">Sair</button></div>
+  </div>
+  <main style="margin-top:18px">
+    <div class="card-row">
+      <div class="card" style="flex:1"><div class="small">Winrate</div><div id="winrate">--%</div></div>
+      <div class="card" style="flex:1"><div class="small">Resultado Total</div><div id="total">R$ 0,00</div></div>
+      <div class="card" style="flex:1"><div class="small">Total Trades</div><div id="count">0</div></div>
+    </div>
+    <div style="height:12px"></div>
+    <table class="table" aria-label="Tabela de trades">
+      <thead><tr><th>Ativo</th><th>Data</th><th>Resultado</th><th>Print</th><th>Sincronizado</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </main>
+  <div class="footer">AlphaJournal • MVP</div>
+</div>
+<div id="modal" class="modal" onclick="document.getElementById('modal').style.display='none'"><img id="modalImg" alt="Print"></div>
+<script type="module">
+import { logout, onAuth } from './assets/js/auth.js';
+import { syncAll } from './assets/js/app-sync.js';
+
+function loadLocal(){ const list = JSON.parse(localStorage.getItem('aj_trades')||'[]'); return list; }
+
+function render(){
+  const list = loadLocal();
+  const tbody = document.getElementById('tbody'); tbody.innerHTML='';
+  let total=0, wins=0;
+  list.forEach(t=>{
+    const tr = document.createElement('tr');
+    const res = (parseFloat(t.saida||0) - parseFloat(t.entrada||0)) || 0;
+    total += res; if(res>0) wins++;
+    tr.innerHTML = `\n      <td>${t.ativo||'-'}</td>\n      <td>${t.data||'-'}</td>\n      <td>${res.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</td>\n      <td>${t.imagem?'<span class="icon" data-src="'+t.imagem+'">🖼️</span>':'-'}</td>\n      <td>${t.synced? '✅':'❌'}</td>\n    `;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('total').textContent = total.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  document.getElementById('count').textContent = list.length;
+  document.getElementById('winrate').textContent = list.length? Math.round((wins/list.length)*100)+'%':'--%';
+  document.querySelectorAll('.icon').forEach(el=>el.addEventListener('click', ()=>{ const src = el.getAttribute('data-src'); document.getElementById('modalImg').src = src; document.getElementById('modal').style.display='flex'; }));
+}
+
+render();
+
+document.getElementById('btnSync').addEventListener('click', async ()=>{ onAuth(async (u)=>{ if(u){ await syncAll(u.uid); render(); alert('Sincronização concluída (ou em tentativa).'); } else { alert('Entre para sincronizar.'); } }); });
+
+document.getElementById('btnLogout').addEventListener('click', async ()=>{ await logout(); window.location.href='index.html'; });
+
+onAuth(async (u)=>{ if(u){ await syncAll(u.uid); render(); } });
+</script>
+</body>
+</html>
