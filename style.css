@@ -1,62 +1,98 @@
+/* === ESTILO DO SISTEMA ALPHA JOURNAL === */
+
 body {
     background-color: #000;
-    color: #00eaff;
     font-family: Arial, sans-serif;
+    color: #e0e0e0;
+    margin: 0;
 }
-.container {
-    max-width: 400px;
-    margin: auto;
-    padding-top: 40px;
+
+/* Container das telas de login/cadastro */
+.auth-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
-.big-title {
-    text-align: center;
-    font-size: 32px;
-    margin-bottom: 25px;
-}
-.login-box {
+
+/* Caixa de autenticação */
+.auth-card {
     background-color: #101820;
-    padding: 20px;
-    border-radius: 10px;
+    padding: 30px;
+    width: 330px;
+    border-radius: 12px;
+    box-shadow: 0 0 12px #00eaff;
+    text-align: center;
 }
-input {
+
+.auth-card h2 {
+    color: #00eaff;
+    margin-bottom: 20px;
+}
+
+/* Inputs */
+.auth-card input {
     width: 100%;
-    padding: 10px;
-    margin-top:10px;
-    background:#1c2733;
-    border:1px solid #00eaff;
-    border-radius:6px;
-    color:white;
+    padding: 12px;
+    margin-top: 12px;
+    background-color: #141e26;
+    border: 1px solid #00eaff;
+    border-radius: 6px;
+    color: #ffffff;
 }
-.btn {
-    margin-top: 15px;
+
+/* Botões */
+.auth-card button {
+    margin-top: 20px;
     width: 100%;
     background-color: #00eaff;
     color: #000;
+    padding: 14px;
     font-weight: bold;
-    padding: 12px;
-    border:none;
-    cursor:pointer;
-    border-radius:6px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: .3s;
 }
-.btn:hover {
-    opacity:.8;
+
+.auth-card button:hover {
+    background-color: #0099aa;
+    color: white;
 }
-.stats {
-    display:flex;
-    gap:12px;
-    margin:25px 0;
+
+/* Link */
+.auth-link {
+    margin-top: 15px;
 }
-.stat-card {
-    flex:1;
-    padding:15px;
-    background:#101820;
-    border-radius:8px;
-    text-align:center;
+
+.auth-link a {
+    color: #00eaff;
+    text-decoration: none;
+    font-weight: bold;
 }
-.stat-card.green strong{
-    color:#00ff55;
+
+/* DASHBOARD */
+.dashboard-container {
+    padding: 25px;
 }
-.red {
-    background:#ff0055 !important;
-    color:white !important;
+
+h1 {
+    color: #00eaff;
+    text-align: center;
+}
+
+.btn-primary {
+    background-color: #00eaff;
+    display: inline-block;
+    color: #000;
+    padding: 10px;
+    margin-top: 15px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+}
+.btn-primary:hover {
+    background-color: #0099aa;
+    color: white;
 }
