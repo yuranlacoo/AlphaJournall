@@ -1,49 +1,101 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard - AlphaJournal</title>
-<link rel="stylesheet" href="assets/css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AlphaJournal</title>
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
+    <div class="dashboard-container">
+        <h2>AlphaJournal - Dashboard</h2>
 
-<div class="container">
-    <h1 class="big-title">Dashboard</h1>
+        <div class="dashboard-buttons">
+            <a href="register-trade.html" class="btn">Registrar Trade</a>
+            <button id="logoutBtn" class="btn">Sair</button>
+        </div>
 
-    <div class="stats">
-        <div class="stat-card">
-            <span>Total Trades</span>
-            <strong id="totalTrades">0</strong>
+        <h3>Minhas Estatísticas</h3>
+        <div class="stats">
+            <p>Total P/L: <span id="totalPL">0</span></p>
+            <p>Trades: <span id="totalTrades">0</span></p>
+            <p>Win Rate: <span id="winRate">0%</span></p>
         </div>
-        <div class="stat-card green">
-            <span>Lucro Total</span>
-            <strong id="profitTotal">R$ 0,00</strong>
-        </div>
+
+        <h3>Trades Registrados</h3>
+        <div id="tradeList"></div>
     </div>
 
-    <button class="btn" onclick="window.location.href='register.html'">
-        Registrar Novo Trade
-    </button>
-    <button class="btn red" id="logoutBtn">
-        Sair
-    </button>
-</div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-<script type="module">
-import { logout, onAuth } from "./assets/js/auth.js";
+        const firebaseConfig = {
+          apiKey: "AIzaSyBGeQ1-IKrCyC8hA2BETaJLidLpuYrCRmk",
+          authDomain: "alphajournal-dc6bb.firebaseapp.com",
+          projectId: "alphajournal-dc6bb",
+          storageBucket: "alphajournal-dc6bb.appspot.com",
+          messagingSenderId: "835722822229",
+          appId: "1:835722822229:web:974ee6dc7b6696f1edcadc"
+        };
 
-// Bloqueia acesso sem login
-onAuth((user)=>{
-    if(!user) window.location.href="index.html";
-});
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
 
-// Logout
-document.getElementById("logoutBtn").onclick = () => {
-    logout();
-    window.location.href="index.html";
-};
-</script>
+        let userLogged;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = "index.html";
+                return;
+            }
+
+            userLogged = user;
+            carregarTrades();
+        });
+
+        async function carregarTrades() {
+            const q = query(collection(db, "trades"), where("userId", "==", userLogged.uid), orderBy("createdAt", "desc"));
+            const querySnapshot = await getDocs(q);
+
+            let totalPL = 0;
+            let wins = 0;
+            let totalTrades = querySnapshot.size;
+
+            const tradeList = document.getElementById("tradeList");
+            tradeList.innerHTML = "";
+
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+
+                totalPL += data.resultado;
+                if (data.resultado > 0) wins++;
+
+                const item = document.createElement("div");
+                item.className = "trade-item";
+                item.innerHTML = `
+                    <p><strong>${data.ativo}</strong> — R$ ${data.resultado}</p>
+                    <p>Setup: ${data.setup}</p>
+                    ${data.imageURL ? `<img src="${data.imageURL}" class="trade-img"/>` : ""}
+                    <hr>
+                `;
+                tradeList.appendChild(item);
+            });
+
+            document.getElementById("totalPL").innerText = totalPL.toFixed(2);
+            document.getElementById("totalTrades").innerText = totalTrades;
+            document.getElementById("winRate").innerText =
+                totalTrades > 0 ? ((wins / totalTrades) * 100).toFixed(1) + "%" : "0%";
+        }
+
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+            signOut(auth).then(() => window.location.href = "index.html");
+        });
+
+    </script>
 
 </body>
 </html>
