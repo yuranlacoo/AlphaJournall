@@ -35,7 +35,8 @@
 
       <div class="panel">
         <section class="panel-left">
-          
+          <canvas id="equityChart" height="130"></canvas>
+
         <script>
 if (!firebase.auth().currentUser) {
     firebase.auth().onAuthStateChanged(loadEquity);
