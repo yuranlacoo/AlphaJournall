@@ -3,28 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alpha Journal - Criar Conta</title>
+    <title>Criar Conta - AlphaJournal</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
-<body class="auth-container">
 
-    <div class="auth-card">
-        <h2>Crie sua Conta</h2>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h2>AlphaJournal</h2>
 
-        <form id="registerForm">
-            <input type="email" id="email" placeholder="Email" required>
-            <input type="password" id="password" placeholder="Senha" required>
-            <button type="submit">Cadastrar</button>
-        </form>
+            <input type="email" id="email" placeholder="Digite seu Email">
+            <input type="password" id="password" placeholder="Crie uma Senha">
 
-        <p class="auth-link">
-            Já tem conta? <a href="index.html">Entrar</a>
-        </p>
+            <button id="registerBtn">Criar Conta</button>
+
+            <p class="auth-link">
+                <a href="index.html">Já tenho conta</a>
+            </p>
+
+            <p id="error" style="color: red; margin-top: 10px;"></p>
+        </div>
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyBGeQ1-IKrCyC8hA2BETaJLidLpuYrCRmk",
@@ -38,19 +41,18 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        document.getElementById("registerForm").addEventListener("submit", function(e) {
-            e.preventDefault();
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
+        document.getElementById("registerBtn").addEventListener("click", () => {
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value.trim();
 
             createUserWithEmailAndPassword(auth, email, password)
                 .then(() => {
-                    alert("Conta criada com sucesso!");
                     window.location.href = "dashboard.html";
                 })
-                .catch(error => alert(error.message));
+                .catch(error => {
+                    document.getElementById("error").textContent = "Erro: " + error.message;
+                });
         });
     </script>
-
 </body>
 </html>
