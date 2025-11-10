@@ -1,86 +1,95 @@
 <!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AlphaJournal — Entrar</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Firebase compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div class="brand">AlphaJournal</div>
+          <div class="muted small">Seu trade journal profissional</div>
+        </div>
+      </div>
 
+      <div class="tabs">
+        <button id="tabLogin" class="tab active">Entrar</button>
+        <button id="tabRegister" class="tab">Criar Conta</button>
+      </div>
 
-<form id="loginForm" class="form">
-<input name="email" type="email" placeholder="Email" required>
-<input name="password" type="password" placeholder="Senha" required>
-<button type="submit" class="btn primary">Entrar</button>
-<div id="loginMsg" class="msg"></div>
-</form>
+      <form id="loginForm" class="form">
+        <input name="email" type="email" placeholder="E-mail" required>
+        <input name="password" type="password" placeholder="Senha" required>
+        <button type="submit" class="btn primary">Entrar</button>
+        <div id="loginMsg" class="msg"></div>
+      </form>
 
+      <form id="registerForm" class="form hidden">
+        <input id="regEmail" type="email" placeholder="E-mail" required>
+        <input id="regPassword" type="password" placeholder="Senha (min 6)" required>
+        <button id="btnRegister" type="button" class="btn primary">Criar Conta</button>
+        <div id="regMsg" class="msg"></div>
+      </form>
+    </div>
+  </div>
 
-<form id="registerForm" class="form hidden">
-<input id="regEmail" type="email" placeholder="Email" required>
-<input id="regPassword" type="password" placeholder="Senha (min 6)" required>
-<button id="btnRegister" type="button" class="btn primary">Criar Conta</button>
-<div id="regMsg" class="msg"></div>
-</form>
+  <!-- init firebase -->
+  <script src="firebase.js"></script>
 
+  <script>
+    const tabLogin = document.getElementById('tabLogin');
+    const tabRegister = document.getElementById('tabRegister');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const loginMsg = document.getElementById('loginMsg');
+    const regMsg = document.getElementById('regMsg');
+    const btnRegister = document.getElementById('btnRegister');
 
-</div>
-</div>
+    tabLogin.addEventListener('click', ()=>{ tabLogin.classList.add('active'); tabRegister.classList.remove('active'); loginForm.classList.remove('hidden'); registerForm.classList.add('hidden'); loginMsg.textContent=''; });
+    tabRegister.addEventListener('click', ()=>{ tabRegister.classList.add('active'); tabLogin.classList.remove('active'); registerForm.classList.remove('hidden'); loginForm.classList.add('hidden'); regMsg.textContent=''; });
 
+    // redirect if logged in
+    auth.onAuthStateChanged(u=>{
+      if(u) window.location.href='dashboard.html';
+    });
 
-<!-- Firebase (compat) + init -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    loginForm.addEventListener('submit', async (e)=>{
+      e.preventDefault(); loginMsg.textContent='';
+      const email = loginForm.email.value.trim();
+      const pwd = loginForm.password.value.trim();
+      try{
+        await auth.signInWithEmailAndPassword(email,pwd);
+        window.location.href='dashboard.html';
+      }catch(err){
+        loginMsg.textContent = err.message;
+      }
+    });
 
-
-<script>
-// Cole aqui o firebaseConfig do teu projeto (já predefinido abaixo)
-const firebaseConfig = {
-apiKey: "AIzaSyBGeQ1-IKrCyC8hA2BETaJLidLpuYrCRmk",
-authDomain: "alphajournal-dc6bb.firebaseapp.com",
-projectId: "alphajournal-dc6bb",
-storageBucket: "alphajournal-dc6bb.appspot.com",
-messagingSenderId: "835722822229",
-appId: "1:835722822229:web:974ee6dc7b6696f1edcadc"
-};
-firebase.initializeApp(firebaseConfig);
-window.auth = firebase.auth();
-window.db = firebase.firestore();
-window.storage = firebase.storage();
-</script>
-
-
-<script>
-// UI logic
-const tabLogin = document.getElementById('tabLogin');
-const tabRegister = document.getElementById('tabRegister');
-const loginForm = document.getElementById('loginForm');
-const registerForm = document.getElementById('registerForm');
-const loginMsg = document.getElementById('loginMsg');
-const regMsg = document.getElementById('regMsg');
-const btnRegister = document.getElementById('btnRegister');
-
-
-tabLogin.addEventListener('click', ()=>{ tabLogin.classList.add('active'); tabRegister.classList.remove('active'); loginForm.classList.remove('hidden'); registerForm.classList.add('hidden'); loginMsg.textContent=''; });
-tabRegister.addEventListener('click', ()=>{ tabRegister.classList.add('active'); tabLogin.classList.remove('active'); registerForm.classList.remove('hidden'); loginForm.classList.add('hidden'); regMsg.textContent=''; });
-
-
-// redirect if logged in
-auth.onAuthStateChanged(u=>{ if(u) window.location.href='dashboard.html'; });
-
-
-loginForm.addEventListener('submit', async (e)=>{
-e.preventDefault(); loginMsg.textContent='';
-const email = loginForm.email.value.trim();
-const pwd = loginForm.password.value.trim();
-try{ await auth.signInWithEmailAndPassword(email,pwd); window.location.href='dashboard.html'; }
-catch(err){ loginMsg.textContent = err.message; }
-});
-
-
-btnRegister.addEventListener('click', async ()=>{
-regMsg.textContent='';
-const email = document.getElementById('regEmail').value.trim();
-const pwd = document.getElementById('regPassword').value.trim();
-if(!email||!pwd){ regMsg.textContent='Preencha email e senha.'; return; }
-try{ await auth.createUserWithEmailAndPassword(email,pwd); alert('Conta criada — faça login.'); tabLogin.click(); }
-catch(err){ regMsg.textContent = err.message; }
-});
-</script>
+    btnRegister.addEventListener('click', async ()=>{
+      regMsg.textContent='';
+      const email = document.getElementById('regEmail').value.trim();
+      const pwd = document.getElementById('regPassword').value.trim();
+      if(!email||!pwd){ regMsg.textContent='Preencha email e senha.'; return; }
+      try{
+        await auth.createUserWithEmailAndPassword(email,pwd);
+        // create user doc scaffold so rules/structure exist
+        const uid = auth.currentUser.uid;
+        await db.collection('users').doc(uid).set({ createdAt: firebase.firestore.FieldValue.serverTimestamp(), email: email });
+        alert('Conta criada — faça login.');
+        tabLogin.click();
+      }catch(err){
+        regMsg.textContent = err.message;
+      }
+    });
+  </script>
 </body>
 </html>
