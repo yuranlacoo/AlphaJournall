@@ -1,14 +1,6 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Registrar Trade — AlphaJournal</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
-</head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Registrar Trade</title><link rel="stylesheet" href="style.css"></head>
 <body>
   <div class="auth-wrap">
     <div class="auth-card" style="max-width:900px;">
@@ -38,7 +30,13 @@
     </div>
   </div>
 
+  <!-- firebase init -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
   <script src="firebase.js"></script>
+
   <script>
     const auth = window.auth;
     const db = window.db;
@@ -78,17 +76,8 @@
         }
 
         await tradeRef.set({
-          id: tradeId,
-          userId,
-          ativo,
-          data,
-          tipo,
-          resultado,
-          financeiro,
-          quantidade,
-          setup: setup || null,
-          obs: obs || null,
-          imageURL: imageURL || null,
+          id: tradeId, userId, ativo, data, tipo, resultado, financeiro, quantidade,
+          setup: setup || null, obs: obs || null, imageURL: imageURL || null,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
