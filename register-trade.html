@@ -1,248 +1,61 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Registrar Trade — AlphaJournal</title>
-  <link rel="stylesheet" href="style.css">
-  <style>
-    /* Pequeno ajuste local para o form */
-    .form-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; align-items:start; }
-    .form-grid .full { grid-column: 1 / -1; }
-    label{font-size:13px;color:var(--muted);margin-bottom:6px;display:block}
-    #msg{margin-top:10px}
-  </style>
-</head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Registrar Trade</title><link rel="stylesheet" href="style.css"></head>
 <body>
-  <div class="auth-wrap">
-    <div class="auth-card" style="max-width:900px;">
-      <h2>Registrar Trade</h2>
+<div class="auth-wrap">
+<div class="auth-card" style="max-width:900px;">
+<h2>Registrar Trade</h2>
 
-      <form id="tradeForm">
-        <div class="form-grid">
-          <div>
-            <label>Ativo</label>
-            <input id="ativo" required placeholder="Ex: PETR4">
-          </div>
 
-          <div>
-            <label>Data</label>
-            <input id="data" type="date" required>
-          </div>
+<form id="tradeForm">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div><label>Ativo</label><input id="ativo" required></div>
+<div><label>Data</label><input id="data" type="date" required></div>
+<div><label>Operação</label><select id="tipo"><option value="Compra">Compra</option><option value="Venda">Venda</option></select></div>
+<div><label>Resultado</label><select id="resultado"><option value="win">Win</option><option value="loss">Loss</option><option value="be">Breakeven</option></select></div>
+<div><label>Resultado Financeiro (R$)</label><input id="financeiro" type="number" step="0.01" required></div>
+<div><label>Quantidade</label><input id="quantidade" type="number"></div>
+<div style="grid-column:1 / -1"><label>Setup</label><input id="setup"></div>
+<div style="grid-column:1 / -1"><label>Observações</label><textarea id="obs" rows="4"></textarea></div>
+<div style="grid-column:1 / -1"><label>Print da Operação</label><input id="print" type="file" accept="image/*"></div>
+</div>
 
-          <div>
-            <label>Operação</label>
-            <select id="tipo">
-              <option value="Compra">Compra</option>
-              <option value="Venda">Venda</option>
-            </select>
-          </div>
 
-          <div>
-            <label>Resultado (Win / Loss / Break-Even)</label>
-            <select id="resultado">
-              <option value="win">Win</option>
-              <option value="loss">Loss</option>
-              <option value="be">Breakeven</option>
-            </select>
-          </div>
+<div style="display:flex;gap:10px;margin-top:12px">
+<button id="btnSave" class="btn primary" type="submit">Salvar e Sincronizar</button>
+<button id="btnSaveLocal" type="button" class="btn ghost">Salvar Local (apenas)</button>
+<a href="dashboard.html" class="btn ghost">Voltar</a>
+</div>
+</form>
 
-          <div>
-            <label>Resultado Financeiro ($)</label>
-            <input id="financeiro" type="number" step="0.01" placeholder="Ex: 125.50" required>
-          </div>
 
-          <div>
-            <label>Quantidade / Lotes</label>
-            <input id="quantidade" type="number" placeholder="Ex: 5">
-          </div>
+<div id="msg" class="msg"></div>
+</div>
+</div>
 
-          <div class="full">
-            <label>Setup / Comentário</label>
-            <input id="setup" placeholder="Ex: Pullback, ROMA, VWAP">
-          </div>
 
-          <div class="full">
-            <label>Observações</label>
-            <textarea id="obs" rows="4" placeholder="Comentários da operação (opcional)"></textarea>
-          </div>
+<script>
+// usa global firebase compat (iniciado no index.html) — garantir que index.js já inicializou
+const auth = window.auth;
+const db = window.db;
+const storage = window.storage;
 
-          <div style="grid-column:1 / -1">
-            <label>Print da Operação (imagem)</label>
-            <input id="print" type="file" accept="image/*">
-          </div>
-        </div>
-
-        <div style="display:flex; gap:10px; margin-top:14px;">
-          <button id="btnSave" type="submit" class="btn primary">Salvar e Sincronizar</button>
-          <button id="btnSaveLocal" type="button" class="btn ghost">Salvar Local (apenas)</button>
-          <a href="dashboard.html" class="btn ghost">Voltar</a>
-        </div>
-      </form>
-
-      <div id="msg" class="msg"></div>
-    </div>
-  </div>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBGeQ1-IKrCyC8hA2BETaJLidLpuYrCRmk",
-  authDomain: "alphajournal-dc6bb.firebaseapp.com",
-  projectId: "alphajournal-dc6bb",
-  storageBucket: "alphajournal-dc6bb.appspot.com",
-  messagingSenderId: "835722822229",
-  appId: "1:835722822229:web:974ee6dc7b6696f1edcadc"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
 
 const tradeForm = document.getElementById('tradeForm');
 const btnSave = document.getElementById('btnSave');
-const btnSaveLocal = document.getElementById('btnSaveLocal');
-const msgEl = document.getElementById('msg');
-
-let currentUser = null;
-onAuthStateChanged(auth, (u) => {
-  if (!u) {
-    window.location.href = 'index.html';
-  } else {
-    currentUser = u;
-  }
-});
-
-// helper
-function showMsg(text, ok = true){
-  msgEl.textContent = text;
-  msgEl.style.color = ok ? '#66ff99' : '#ff8888';
-}
-
-// upload image (returns URL or null)
-async function uploadImageFile(file, tradeId){
-  if(!file) return null;
-  const path = `prints/${currentUser.uid}/${tradeId}_${file.name}`;
-  const storageRef = ref(storage, path);
-  await uploadBytes(storageRef, file);
-  const url = await getDownloadURL(storageRef);
-  return url;
-}
-
-// create new trade document (top-level collection 'trades' with userId)
-import { getFirestore, collection, addDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-// ...
-
-async function saveTradeToFirestore(tradeData) {
-    const user = auth.currentUser;
-    if (!user) {
-        alert("Você precisa estar logado!");
-        return;
-    }
-
-    const db = getFirestore();
-    const userTradesRef = collection(db, "users", user.uid, "trades");
-
-    try {
-        // ✅ Salva dentro do usuario corretamente
-        await addDoc(userTradesRef, tradeData);
-        alert("Trade salva com sucesso ✅");
-
-    } catch (error) {
-        console.error("Erro ao salvar trade:", error);
-        alert("Erro ao salvar trade: " + error.message);
-    }
-}
+const msg = document.getElementById('msg');
 
 
-  try {
-    // prepare data fields
-    const ativo = document.getElementById('ativo').value.trim();
-    const data = document.getElementById('data').value; // YYYY-MM-DD
-    const tipo = document.getElementById('tipo').value;
-    const resultado = document.getElementById('resultado').value; // win|loss|be
-    const financeiro = parseFloat(document.getElementById('financeiro').value || 0);
-    const quantidade = document.getElementById('quantidade').value || null;
-    const setup = document.getElementById('setup').value.trim();
-    const obs = document.getElementById('obs').value.trim();
-    const file = document.getElementById('print').files[0];
+function showMsg(txt, ok=true){ msg.textContent = txt; msg.style.color = ok ? '#66ff99' : '#ff8888'; }
 
-    if(!ativo || !data){
-      showMsg('Preencha Ativo e Data.', false);
-      btnSave.disabled = false;
-      return;
-    }
 
-    // create a new doc ref to get the id
-    const newDocRef = doc(collection(db, 'trades'));
-    const tradeId = newDocRef.id;
+tradeForm.addEventListener('submit', async (e)=>{
+e.preventDefault();
+if(!auth.currentUser){ showMsg('Por favor faça login.', false); return; }
+btnSave.disabled = true; showMsg('Salvando...');
 
-    // upload image (if any)
-    let imageURL = null;
-    if(file){
-      try {
-        imageURL = await uploadImageFile(file, tradeId);
-      } catch(upErr){
-        console.error('Upload error', upErr);
-        showMsg('Erro ao enviar imagem: ' + (upErr.message || upErr), false);
-        btnSave.disabled = false;
-        return;
-      }
-    }
 
-    // prepare payload
-    const payload = {
-      id: tradeId,
-      userId: currentUser.uid,
-      ativo,
-      data,            // YYYY-MM-DD
-      tipo,            // Compra/Venda
-      resultado,       // win | loss | be
-      financeiro,      // number
-      quantidade: quantidade ? Number(quantidade) : null,
-      setup: setup || null,
-      obs: obs || null,
-      imageURL: imageURL || null,
-      createdAt: serverTimestamp()
-    };
-
-    // save to firestore
-    await setDoc(newDocRef, payload);
-
-    showMsg('✅ Trade salva e sincronizada!');
-    tradeForm.reset();
-
-    // small delay to let Firestore sync before redirect
-    setTimeout(()=> window.location.href = 'dashboard.html', 800);
-
-  } catch(err) {
-    console.error(err);
-    showMsg('Erro ao salvar trade: ' + (err.message || err), false);
-    btnSave.disabled = false;
-  }
-});
-
-// save locally (optional)
-btnSaveLocal.addEventListener('click', ()=>{
-  const ativo = document.getElementById('ativo').value.trim();
-  const setup = document.getElementById('setup').value.trim();
-  if(!ativo || !setup){ showMsg('Preencha ao menos Ativo e Setup.', false); return; }
-  const id = 'local_' + Date.now();
-  const trade = {
-    id, userId: 'local', ativo, data: document.getElementById('data').value || new Date().toISOString().slice(0,10),
-    tipo: document.getElementById('tipo').value, resultado: document.getElementById('resultado').value,
-    financeiro: parseFloat(document.getElementById('financeiro').value || 0), quantidade: document.getElementById('quantidade').value,
-    setup, obs: document.getElementById('obs').value, imageURL: null, synced: false, createdAt: new Date().toISOString()
-  };
-  const list = JSON.parse(localStorage.getItem('aj_trades')||'[]'); list.push(trade); localStorage.setItem('aj_trades', JSON.stringify(list));
-  showMsg('Trade salva localmente.');
-});
-</script>
-</body>
-</html>
+const ativo = document.getElementById('ativo').value.trim();
+const data = document.getElementById('data').value; // YYYY-MM-DD
+const tipo = document.getElementById('tipo').value;
+const resultado = document.get
