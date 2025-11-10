@@ -7,16 +7,16 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
-
 <body>
     <div class="auth-container">
         <div class="auth-card">
             <h2>AlphaJournal</h2>
 
-            <input type="email" id="email" placeholder="Email">
-            <input type="password" id="password" placeholder="Senha">
-
-            <button id="loginBtn">Entrar</button>
+            <form id="login-form">
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="password" name="password" placeholder="Senha" required>
+                <button type="submit">Entrar</button>
+            </form>
 
             <p class="auth-link">
                 <a href="register.html">Criar Conta</a>
@@ -26,35 +26,6 @@
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-        const firebaseConfig = {
-          apiKey: "AIzaSyBGeQ1-IKrCyC8hA2BETaJLidLpuYrCRmk",
-          authDomain: "alphajournal-dc6bb.firebaseapp.com",
-          projectId: "alphajournal-dc6bb",
-          storageBucket: "alphajournal-dc6bb.firebasestorage.app",
-          messagingSenderId: "835722822229",
-          appId: "1:835722822229:web:974ee6dc7b6696f1edcadc"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-
-        document.getElementById("loginBtn").addEventListener("click", () => {
-            const email = document.getElementById("email").value.trim();
-            const password = document.getElementById("password").value.trim();
-
-            signInWithEmailAndPassword(auth, email, password)
-                .then(() => {
-                    window.location.href = "dashboard.html";
-                })
-                .catch(error => {
-                    document.getElementById("error").textContent = "Erro: " + error.message;
-                });
-        });
     <script type="module" src="login.js"></script>
 </body>
 </html>
-
