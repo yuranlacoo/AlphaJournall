@@ -1,98 +1,98 @@
-/* === ESTILO DO SISTEMA ALPHA JOURNAL === */
+/* RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
 
 body {
-    background-color: #000;
-    font-family: Arial, sans-serif;
-    color: #e0e0e0;
-    margin: 0;
+    background: #0d0f16;
+    color: #ffffff;
+    padding: 20px;
 }
 
-/* Container das telas de login/cadastro */
-.auth-container {
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* Caixa de autenticação */
-.auth-card {
-    background-color: #101820;
-    padding: 30px;
-    width: 330px;
+/* CONTAINERS */
+.dashboard-container, .auth-container {
+    background: #1a1e27;
+    padding: 25px;
     border-radius: 12px;
-    box-shadow: 0 0 12px #00eaff;
+    max-width: 600px;
+    margin: auto;
+    box-shadow: 0 0 25px rgba(0,0,0,0.4);
+}
+
+/* TITLES */
+h2, h3 {
+    text-align: center;
+    color: #00d0ff;
+    margin-bottom: 15px;
+}
+
+/* BUTTONS */
+.btn {
+    background: #0066ff;
+    border: none;
+    padding: 12px;
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+    margin-bottom: 10px;
+    transition: 0.2s;
+}
+.btn:hover {
+    background: #004dcc;
+}
+
+/* STATS */
+.stats {
+    background: #11141c;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
     text-align: center;
 }
-
-.auth-card h2 {
-    color: #00eaff;
-    margin-bottom: 20px;
+.stats p {
+    margin-bottom: 10px;
+    font-size: 18px;
 }
 
-/* Inputs */
-.auth-card input {
+/* FORMS */
+input, select {
     width: 100%;
     padding: 12px;
-    margin-top: 12px;
-    background-color: #141e26;
-    border: 1px solid #00eaff;
-    border-radius: 6px;
-    color: #ffffff;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #0f1118;
+    color: #fff;
 }
 
-/* Botões */
-.auth-card button {
-    margin-top: 20px;
+/* TRADE ITEM */
+.trade-item {
+    background: #11141c;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    border-left: 5px solid #00d0ff;
+}
+
+.trade-item p {
+    margin-bottom: 6px;
+}
+
+/* IMAGE */
+.trade-img {
     width: 100%;
-    background-color: #00eaff;
-    color: #000;
-    padding: 14px;
-    font-weight: bold;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: .3s;
+    border-radius: 8px;
+    margin-top: 10px;
+    box-shadow: 0 0 10px rgba(0,255,255,0.4);
 }
 
-.auth-card button:hover {
-    background-color: #0099aa;
-    color: white;
-}
-
-/* Link */
-.auth-link {
-    margin-top: 15px;
-}
-
-.auth-link a {
-    color: #00eaff;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-/* DASHBOARD */
-.dashboard-container {
-    padding: 25px;
-}
-
-h1 {
-    color: #00eaff;
-    text-align: center;
-}
-
-.btn-primary {
-    background-color: #00eaff;
-    display: inline-block;
-    color: #000;
-    padding: 10px;
-    margin-top: 15px;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
+/* LINKS */
+a {
     text-decoration: none;
 }
-.btn-primary:hover {
-    background-color: #0099aa;
-    color: white;
-}
+
