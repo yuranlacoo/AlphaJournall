@@ -1,10 +1,11 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  ...
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AlphaJournal — Entrar</title>
   <link rel="stylesheet" href="style.css">
 
-  <!-- Firebase compat SDKs (estes sempre antes de firebase.js) -->
+  <!-- Firebase compat SDKs (necessários) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -41,7 +42,7 @@
     </div>
   </div>
 
-  <!-- init firebase -->
+  <!-- inicializa Firebase (arquivo local) -->
   <script src="firebase.js"></script>
 
   <script>
@@ -57,9 +58,7 @@
     tabRegister.addEventListener('click', ()=>{ tabRegister.classList.add('active'); tabLogin.classList.remove('active'); registerForm.classList.remove('hidden'); loginForm.classList.add('hidden'); regMsg.textContent=''; });
 
     // redirect if logged in
-    auth.onAuthStateChanged(u=>{
-      if(u) window.location.href='dashboard.html';
-    });
+    auth.onAuthStateChanged(u=>{ if(u) window.location.href='dashboard.html'; });
 
     loginForm.addEventListener('submit', async (e)=>{
       e.preventDefault(); loginMsg.textContent='';
@@ -80,7 +79,7 @@
       if(!email||!pwd){ regMsg.textContent='Preencha email e senha.'; return; }
       try{
         await auth.createUserWithEmailAndPassword(email,pwd);
-        // create user doc scaffold so rules/structure exist
+        // cria scaffold do user para evitar writes faltando caminho
         const uid = auth.currentUser.uid;
         await db.collection('users').doc(uid).set({ createdAt: firebase.firestore.FieldValue.serverTimestamp(), email: email });
         alert('Conta criada — faça login.');
