@@ -1,252 +1,57 @@
-/* RESET */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', sans-serif;
+:root{
+  --bg:#07101a; --panel:#0f1720; --accent:#00eaff; --accent2:#6b53ff; --muted:#9aa6b2;
+  --card-grad: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
 }
 
-body {
-    background: #0d0f16;
-    color: #ffffff;
-    padding: 20px;
-}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#030409 0%,var(--bg) 100%);color:#eafcff;font-family:Inter,Segoe UI,Arial,Helvetica,sans-serif}
+a{color:inherit}
+.muted{color:var(--muted)}
+.bold{font-weight:700}
+.small{font-size:13px}
 
-/* CONTAINERS */
-.dashboard-container, .auth-container {
-    background: #1a1e27;
-    padding: 25px;
-    border-radius: 12px;
-    max-width: 600px;
-    margin: auto;
-    box-shadow: 0 0 25px rgba(0,0,0,0.4);
-}
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:260px 1fr;gap:18px;min-height:100vh;padding:18px}
+.sidebar{background:var(--panel);border-radius:12px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,0.6)}
+.logo{display:flex;gap:12px;align-items:center;margin-bottom:16px}.badge{width:48px;height:48px;border-radius:10px;background:linear-gradient(180deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;color:#02121a}.brand-title{font-weight:800;color:#fff}
+.menu{display:flex;flex-direction:column;gap:8px}.menu a{padding:10px;border-radius:8px;color:var(--muted);text-decoration:none}.menu a.active,.menu a:hover{background:rgba(0,232,255,0.06);color:var(--accent)}
 
-/* TITLES */
-h2, h3 {
-    text-align: center;
-    color: #00d0ff;
-    margin-bottom: 15px;
-}
+/* MAIN */
+.main{display:flex;flex-direction:column;gap:12px}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 0}
+.searchInput{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);padding:10px;border-radius:8px;color:#eafcff}
+.cards{display:flex;gap:12px}
+.card{flex:1;background:var(--card-grad);padding:16px;border-radius:12px;border:1px solid rgba(107,83,255,0.04)}
+.card .label{color:var(--muted);font-size:13px}.card .value{font-size:22px;font-weight:800;color:#fff}
 
-/* BUTTONS */
-.btn {
-    background: #0066ff;
-    border: none;
-    padding: 12px;
-    color: #fff;
-    border-radius: 8px;
-    cursor: pointer;
-    width: 100%;
-    font-size: 16px;
-    margin-bottom: 10px;
-    transition: 0.2s;
-}
-.btn:hover {
-    background: #004dcc;
-}
+/* PANEL */
+.panel{display:flex;gap:12px}.panel-left{flex:2;background:var(--panel);padding:16px;border-radius:12px}.panel-right{flex:1;background:var(--panel);padding:16px;border-radius:12px}
+.filters{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.filters input,.filters select{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px;color:#eafcff}
 
-/* STATS */
-.stats {
-    background: #11141c;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    text-align: center;
-}
-.stats p {
-    margin-bottom: 10px;
-    font-size: 18px;
-}
+/* trades list */
+.list{margin-top:12px}.trade-item{display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.006));border:1px solid rgba(255,255,255,0.02);margin-bottom:10px}
+.thumb{width:120px;height:70px;object-fit:cover;border-radius:6px}
 
-/* FORMS */
-input, select {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 12px;
-    border-radius: 8px;
-    border: 1px solid #333;
-    background: #0f1118;
-    color: #fff;
-}
+/* modal */
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);z-index:9999}.modal-box{background:var(--panel);padding:18px;border-radius:10px;max-width:920px;width:92%}
 
-/* TRADE ITEM */
-.trade-item {
-    background: #11141c;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 18px;
-    border-left: 5px solid #00d0ff;
-}
+/* AUTH */
+.auth-wrap{display:flex;align-items:center;justify-content:center;height:100vh}
+.auth-card{background:var(--panel);padding:28px;border-radius:12px;max-width:420px;width:96%;box-shadow:0 10px 30px rgba(0,0,0,0.6)}
+.brand{font-size:26px;font-weight:800;color:var(--accent)}
+.tabs{display:flex;gap:8px;margin-bottom:14px}.tab{padding:8px 12px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.02);cursor:pointer;color:var(--muted)}.tab.active{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#02121a}
+.form{display:flex;flex-direction:column;gap:8px}.form.hidden{display:none}
+input,textarea,select{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:8px;color:#eafcff}
+textarea{resize:vertical}
 
-.trade-item p {
-    margin-bottom: 6px;
-}
+/* buttons */
+.btn{padding:10px 12px;border-radius:8px;border:none;cursor:pointer}
+.primary{background:var(--accent);color:#02121a;font-weight:700}
+.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+.small{font-size:13px}
+.block{display:block;width:100%}
 
-/* IMAGE */
-.trade-img {
-    width: 100%;
-    border-radius: 8px;
-    margin-top: 10px;
-    box-shadow: 0 0 10px rgba(0,255,255,0.4);
-}
+/* responsive */
+@media (max-width:900px){ .layout{grid-template-columns:1fr;padding:12px} .sidebar{order:2} .panel{flex-direction:column} .thumb{display:none} }
 
-/* LINKS */
-a {
-    text-decoration: none;
-}
-
-.navbar {
-    background: #0a0f14;
-    color: #00eaff;
-    padding: 12px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: bold;
-}
-
-.btn-logout {
-    background: transparent;
-    border: 1px solid #00eaff;
-    color: #00eaff;
-    padding: 8px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: .3s;
-}
-.btn-logout:hover {
-    background: #00eaff;
-    color: #000;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-}
-
-.card {
-    background: #101820;
-    padding: 14px;
-    text-align: center;
-    border-radius: 10px;
-    border: 1px solid #00eaff22;
-    color: #e0e0e0;
-}
-
-.trade-table {
-    width: 100%;
-    margin-top: 12px;
-    border-collapse: collapse;
-    font-size: 14px;
-}
-.trade-table th {
-    background: #0a0f14;
-    color: #00eaff;
-    padding: 8px;
-}
-.trade-table td {
-    border-bottom: 1px solid #1a2b38;
-    padding: 8px;
-    text-align: center;
-}
-
-.btn-float {
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
-    background: #00eaff;
-    color: #000;
-    border: none;
-    width: 55px;
-    height: 55px;
-    border-radius: 50%;
-    font-size: 26px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 0 10px #00eaffaa;
-    transition: .3s;
-}
-
-.btn-float:hover {
-    background: #0099aa;
-    color: #fff;
-}
-.navbar {
-    background: #0a0f14;
-    color: #00eaff;
-    padding: 12px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: bold;
-}
-
-.btn-logout {
-    background: transparent;
-    border: 1px solid #00eaff;
-    color: #00eaff;
-    padding: 8px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: .3s;
-}
-.btn-logout:hover {
-    background: #00eaff;
-    color: #000;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-}
-
-.card {
-    background: #101820;
-    padding: 14px;
-    text-align: center;
-    border-radius: 10px;
-    border: 1px solid #00eaff22;
-    color: #e0e0e0;
-}
-
-.trade-table {
-    width: 100%;
-    margin-top: 12px;
-    border-collapse: collapse;
-    font-size: 14px;
-}
-.trade-table th {
-    background: #0a0f14;
-    color: #00eaff;
-    padding: 8px;
-}
-.trade-table td {
-    border-bottom: 1px solid #1a2b38;
-    padding: 8px;
-    text-align: center;
-}
-
-.btn-float {
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
-    background: #00eaff;
-    color: #000;
-    border: none;
-    width: 55px;
-    height: 55px;
-    border-radius: 50%;
-    font-size: 26px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 0 10px #00eaffaa;
-    transition: .3s;
-}
-
-.btn-float:hover {
-    background: #0099aa;
-    color: #fff;
-}
