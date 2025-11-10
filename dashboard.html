@@ -238,6 +238,9 @@ firebase.auth().onAuthStateChanged(async (user) => {
     prevMonthBtn.addEventListener('click', ()=>{ calOffset--; renderCalendarForOffset(calOffset); });
     nextMonthBtn.addEventListener('click', ()=>{ calOffset++; renderCalendarForOffset(calOffset); });
 
+    <script>
+    const auth = window.auth; const db = window.db;
+    ...
     auth.onAuthStateChanged(user => {
       if(!user) return window.location.href = 'index.html';
       currentUser = user; userName.textContent = user.email.split('@')[0];
@@ -245,6 +248,23 @@ firebase.auth().onAuthStateChanged(async (user) => {
       tradesRef.onSnapshot(snap=>{
         tradesCache = snap.docs.map(d => ({ id:d.id, ...d.data() }));
         renderTrades(tradesCache); updateCards(tradesCache); updateChart(tradesCache); renderCalendarForOffset(calOffset);
+      }, err=>{ console.error(err); tradesContainer.innerHTML = '<div class="muted">Erro ao carregar trades</div>'; });
+    });
+</script>
+
+    auth.onAuthStateChanged(user => {
+      if(!user) return window.location.href = 'index.html';
+      currentUser = user; userName.textContent = user.email.split('@')[0];
+      const tradesRef = db.collection('users').doc(user.uid).collection('trades').orderBy('createdAt','desc');
+      tradesRef.onSnapshot(snap=>{
+        tradesCache = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+       let distChart;
+let currency = "BRL";
+
+const currencySelect = document.getElementById("currencySelect");
+currencySelect.addEventListener("change", () => {
+  currency = currencySelect.value;
+        renderAll();
       }, err=>{ console.error(err); tradesContainer.innerHTML = '<div class="muted">Erro ao carregar trades</div>'; });
     });
   </script>
