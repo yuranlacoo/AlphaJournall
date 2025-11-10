@@ -1,50 +1,63 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AlphaJournal - Login</title>
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
+
 <div class="container">
-  <div class="header"><div class="brand"><div class="logo">A▲</div><h1>AlphaJournal</h1></div>
-    <div>
-      <select id="lang" class="lang-toggle"><option value="pt">PT</option><option value="en">EN</option></select>
+    <h1 class="big-title">AlphaJournal</h1>
+
+    <div class="login-box">
+        <h2>Entrar</h2>
+        <input id="email" type="email" placeholder="E-mail">
+        <input id="password" type="password" placeholder="Senha">
+        <button id="btnLogin" class="btn">Entrar</button>
+
+        <p style="text-align:center; margin:15px 0;">— ou —</p>
+
+        <button id="btnGoogle" class="btn" style="background:#fff;color:#000;">Entrar com Google</button>
+
+        <p style="margin-top:15px;">Não tem conta?</p>
+        <input id="registerEmail" type="email" placeholder="Novo e-mail">
+        <input id="registerPassword" type="password" placeholder="Nova senha">
+        <button id="btnRegister" class="btn">Criar conta</button>
     </div>
-  </div>
-  <main style="margin-top:18px">
-    <div style="max-width:480px;margin:0 auto;background:var(--panel);padding:18px;border-radius:12px">
-      <h2 class="small" data-i18n="enter">Entrar</h2>
-      <input id="email" class="input" placeholder="E-mail" type="email" style="margin-top:8px">
-      <input id="password" class="input" placeholder="Senha" type="password" style="margin-top:8px">
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <button id="btnLogin" class="btn" data-i18n="enter">Entrar</button>
-        <button id="btnGoogle" class="btn" style="background:#ffffff;color:#02121a">Google</button>
-      </div>
-      <div style="margin-top:10px" class="small">(Login simples para MVP)</div>
-      <div style="height:12px"></div>
-      <div style="display:flex;gap:8px"><input id="registerEmail" class="input" placeholder="Criar conta - E-mail" type="email"><input id="registerPassword" class="input" placeholder="Senha" type="password"><button id="btnRegister" class="btn" data-i18n="create">Criar</button></div>
-    </div>
-  </main>
 </div>
+
 <script type="module">
 import { loginWithEmail, loginWithGoogle, registerWithEmail, onAuth } from './assets/js/auth.js';
-import { applyText, setLang } from './assets/js/lang.js';
 
-const langSel = document.getElementById('lang');
-langSel.value = localStorage.getItem('aj_lang')||'pt';
-langSel.addEventListener('change', ()=> setLang(langSel.value));
+// Login com e-mail
+btnLogin.onclick = async () => {
+    try {
+        await loginWithEmail(email.value, password.value);
+        window.location.href = "dashboard.html";
+    } catch (e) { alert(e.message); }
+};
 
-document.getElementById('btnLogin').addEventListener('click', async ()=>{
-  const email = document.getElementById('email').value; const pw = document.getElementById('password').value;
-  try{ await loginWithEmail(email,pw); window.location.href='dashboard.html'; }catch(e){ alert('Erro ao entrar: '+e.message) }
-});
+// Login com Google
+btnGoogle.onclick = async () => {
+    try {
+        await loginWithGoogle();
+        window.location.href = "dashboard.html";
+    } catch (e) { alert(e.message); }
+};
 
-document.getElementById('btnGoogle').addEventListener('click', async ()=>{ try{ await loginWithGoogle(); window.location.href='dashboard.html'; }catch(e){ alert('Erro Google: '+e.message) } });
+// Registro simples
+btnRegister.onclick = async () => {
+    try {
+        await registerWithEmail(registerEmail.value, registerPassword.value);
+        alert("Conta criada! Faça login.");
+    } catch (e) { alert(e.message); }
+};
 
-document.getElementById('btnRegister').addEventListener('click', async ()=>{ const e=document.getElementById('registerEmail').value, p=document.getElementById('registerPassword').value; try{ await registerWithEmail(e,p); alert('Conta criada. Faça login.'); }catch(err){ alert('Erro criar conta: '+err.message) } });
-
-onAuth((u)=>{ if(u) window.location.href='dashboard.html'; });
+// Se já está logado -> dashboard
+onAuth(user => { if (user) window.location.href = "dashboard.html"; });
 </script>
+
 </body>
 </html>
