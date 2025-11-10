@@ -1,13 +1,42 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>AlphaJournal — Dashboard</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AlphaJournal — Dashboard (com Calendário)</title>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css">
 
+  <style>
+    /* calendar specific */
+    .calendar {
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.006));
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .cal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+    .cal-grid { display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; }
+    .cal-day {
+      min-height:60px;
+      padding:8px;
+      border-radius:8px;
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.02);
+      color:var(--muted);
+      font-size:13px;
+      position:relative;
+    }
+    .cal-day .date-num { font-weight:700; color:#eafcff; }
+    .cal-day.tp { background: linear-gradient(180deg, rgba(0,232,255,0.08), rgba(0,232,255,0.03)); border-color: rgba(0,232,255,0.16); }
+    .cal-day.sl { background: linear-gradient(180deg, rgba(255,100,100,0.08), rgba(255,100,100,0.03)); border-color: rgba(255,100,100,0.16); }
+    .cal-day.mix { background: linear-gradient(180deg, rgba(255,170,80,0.08), rgba(255,170,80,0.03)); border-color: rgba(255,170,80,0.16); }
+    .cal-day .dot { position:absolute; bottom:6px; left:8px; font-size:11px; color:var(--muted); }
+    .cal-nav button { background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--muted); padding:6px 8px; border-radius:8px; cursor:pointer; }
+    .cal-weekdays { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:6px; font-size:12px; color:var(--muted); }
+  </style>
 </head>
 <body>
   <div class="layout">
@@ -71,12 +100,37 @@
         </section>
 
         <aside class="panel-right">
-          <h4>Resumo</h4>
-          <div class="summary">
-            <div><div class="muted">Maior Lucro</div><div id="maxProfit">--</div></div>
-            <div><div class="muted">Maior Prejuízo</div><div id="maxLoss">--</div></div>
-            <div><div class="muted">Média P/L</div><div id="avgPL">--</div></div>
+          <!-- Calendar -->
+          <div class="calendar" id="calendarWrap">
+            <div class="cal-header">
+              <div>
+                <div style="font-weight:800; color:#fff">Calendário</div>
+                <div class="muted small">Dias com trades em verde (TP) ou vermelho (SL)</div>
+              </div>
+              <div class="cal-nav">
+                <button id="prevMonth">&larr;</button>
+                <span id="calMonth" style="margin:0 8px; font-weight:700; color:#eafcff"></span>
+                <button id="nextMonth">&rarr;</button>
+              </div>
+            </div>
+
+            <div class="cal-weekdays">
+              <div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div><div>Dom</div>
+            </div>
+
+            <div class="cal-grid" id="calGrid"></div>
           </div>
+
+          <!-- Summary -->
+          <div style="margin-top:12px" class="card">
+            <h4 style="margin:0;color:#fff">Resumo</h4>
+            <div style="margin-top:8px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:8px"><div class="muted">Maior Lucro</div><div id="maxProfit">R$ 0.00</div></div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:8px"><div class="muted">Maior Prejuízo</div><div id="maxLoss">R$ 0.00</div></div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:8px"><div class="muted">Média P/L</div><div id="avgPL">R$ 0.00</div></div>
+            </div>
+          </div>
+
           <div style="margin-top:12px">
             <a href="register-trade.html" class="btn primary block">Novo Trade</a>
           </div>
@@ -129,9 +183,15 @@ const modalDate = document.getElementById('modalDate');
 const modalObs = document.getElementById('modalObs');
 const closeModal = document.getElementById('closeModal');
 
+const calGrid = document.getElementById('calGrid');
+const calMonthLabel = document.getElementById('calMonth');
+const prevMonthBtn = document.getElementById('prevMonth');
+const nextMonthBtn = document.getElementById('nextMonth');
+
 let equityChart;
 let tradesCache = [];
 let currentUser = null;
+let calOffset = 0; // months offset from current
 
 function fmtBRL(v){ return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
 
@@ -144,19 +204,19 @@ function openModal(t){
   modal.setAttribute('aria-hidden','false');
 }
 closeModal.addEventListener('click', ()=>{ modal.style.display='none'; modal.setAttribute('aria-hidden','true'); });
-
 btnLogout.addEventListener('click', ()=> signOut(auth));
 
+// Renders trades list
 function renderTrades(list){
   tradesContainer.innerHTML = '';
-  if(!list.length) { tradesContainer.innerHTML = '<div class="muted">Nenhum trade</div>'; return; }
+  if(!list.length){ tradesContainer.innerHTML = '<div class="muted">Nenhum trade</div>'; return; }
   list.forEach(t=>{
     const div = document.createElement('div');
     div.className = 'trade-item';
     div.innerHTML = `
       <div style="flex:1">
         <div class="bold">${t.ativo}</div>
-        <div class="muted" style="margin-top:6px">${t.data} • ${t.setup||'--'}</div>
+        <div class="muted small" style="margin-top:6px">${t.data} • ${t.setup||'--'}</div>
       </div>
       <div style="text-align:right">
         <div style="font-weight:800;color:${t.resultado>=0? '#00eaff':'#ff6b6b'}">${fmtBRL(t.resultado)}</div>
@@ -174,14 +234,19 @@ function renderTrades(list){
   });
 }
 
+// update cards
 function updateCards(list){
-  let total=0, wins=0, maxP=-Infinity, maxL=Infinity;
-  list.forEach(t=>{ const r=Number(t.resultado||0); total+=r; if(r>0) wins++; if(r>maxP) maxP=r; if(r<maxL) maxL=r; });
+  let total=0, wins=0, maxP=-Infinity, maxL=Infinity, sum=0;
+  list.forEach(t=>{ const r=Number(t.resultado||0); total+=r; sum+=r; if(r>0) wins++; if(r>maxP) maxP=r; if(r<maxL) maxL=r; });
   cardProfit.textContent = fmtBRL(total);
   cardCount.textContent = list.length;
   cardWinrate.textContent = list.length? Math.round((wins/list.length)*100)+'%':'--%';
+  document.getElementById('maxProfit').textContent = isFinite(maxP)? fmtBRL(maxP) : '--';
+  document.getElementById('maxLoss').textContent = isFinite(maxL)? fmtBRL(maxL) : '--';
+  document.getElementById('avgPL').textContent = list.length? fmtBRL(sum/list.length) : '--';
 }
 
+// update chart
 function updateChart(list){
   const rows = [...list].reverse(); // oldest first
   const labels = [], data=[];
@@ -189,26 +254,94 @@ function updateChart(list){
   rows.forEach(r=>{ acc+=Number(r.resultado||0); labels.push(r.data||''); data.push(acc); });
   if(!equityChart){
     const ctx = document.getElementById('equityChart').getContext('2d');
-    equityChart = new Chart(ctx, { type:'line', data:{ labels, datasets:[{ label:'Equity', data, borderColor:'#00eaff', backgroundColor:'rgba(0,232,255,0.06)', tension:0.2 }]}, options:{ responsive:true, maintainAspectRatio:false } });
+    equityChart = new Chart(ctx, { type:'line', data:{ labels, datasets:[{ label:'Equity', data, borderColor:'#00eaff', backgroundColor:'rgba(0,232,255,0.06)', tension:0.2 }]}, options:{ responsive:true, maintainAspectRatio:false, scales:{ y:{ ticks:{ color:'#9fbdd0' }, grid:{ color:'rgba(255,255,255,0.02)' }}, x:{ ticks:{ color:'#9fbdd0' }, grid:{ color:'rgba(255,255,255,0.02)' } } } } });
   } else {
     equityChart.data.labels = labels; equityChart.data.datasets[0].data = data; equityChart.update();
   }
 }
 
+// Calendar render based on tradesCache
+function renderCalendarForOffset(offsetMonths){
+  // build month/year
+  const now = new Date();
+  const first = new Date(now.getFullYear(), now.getMonth() + offsetMonths, 1);
+  const month = first.getMonth();
+  const year = first.getFullYear();
+  calMonthLabel.textContent = first.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+
+  // start day: Monday-first (adjust)
+  const startDay = (new Date(year, month, 1).getDay() + 6) % 7; // convert Sun(0) -> 6, Mon(1)->0 .. so Monday start
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+
+  calGrid.innerHTML = '';
+  // fill blanks
+  for(let i=0;i<startDay;i++){ const b=document.createElement('div'); b.className='cal-day'; b.innerHTML=''; calGrid.appendChild(b); }
+
+  // create days
+  for(let d=1; d<=daysInMonth; d++){
+    const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; // YYYY-MM-DD
+    const dayEl = document.createElement('div');
+    dayEl.className = 'cal-day';
+    const num = document.createElement('div'); num.className='date-num'; num.textContent = d;
+    dayEl.appendChild(num);
+
+    // find trades on this date
+    const trades = tradesCache.filter(t => (t.data||'').slice(0,10) === iso);
+    if(trades.length){
+      // determine color: TP (any >0) => tp, SL (all <0) => sl, mix => mix
+      const anyPos = trades.some(t => Number(t.resultado||0) > 0);
+      const anyNeg = trades.some(t => Number(t.resultado||0) < 0);
+      if(anyPos && anyNeg) dayEl.classList.add('mix');
+      else if(anyPos) dayEl.classList.add('tp');
+      else if(anyNeg) dayEl.classList.add('sl');
+
+      // add dot with counts
+      const dot = document.createElement('div');
+      dot.className = 'dot';
+      dot.textContent = `${trades.length} trade${trades.length>1?'s':''}`;
+      dayEl.appendChild(dot);
+
+      // click to show list of trades that day in modal or quick view
+      dayEl.style.cursor = 'pointer';
+      dayEl.addEventListener('click', ()=> {
+        // if multiple trades, show the first in modal and mention count
+        const first = trades[0];
+        modalAtivo.textContent = `${first.ativo} (${trades.length} trade${trades.length>1?'s':''})`;
+        modalDate.textContent = iso;
+        modalImg.src = first.imageURL || '';
+        modalObs.textContent = trades.map(t=>`${t.ativo} — ${fmtBRL(t.resultado)} — ${t.setup || '-'}`).join('\\n');
+        modal.style.display = 'flex'; modal.setAttribute('aria-hidden','false');
+      });
+    }
+
+    calGrid.appendChild(dayEl);
+  }
+}
+
+// apply filters = filter tradesCache then render
 function applyFilters(){
   const ativoQ = filterAtivo.value.trim().toLowerCase();
-  const from = filterFrom.value; const to = filterTo.value; const search = quickSearch.value.trim().toLowerCase();
+  const from = filterFrom.value;
+  const to = filterTo.value;
+  const search = quickSearch.value.trim().toLowerCase();
+
   let list = tradesCache.slice();
   if(ativoQ) list = list.filter(t=> (t.ativo||'').toLowerCase().includes(ativoQ));
   if(from) list = list.filter(t=> (t.data||'').slice(0,10) >= from);
   if(to) list = list.filter(t=> (t.data||'').slice(0,10) <= to);
   if(search) list = list.filter(t=> (t.ativo||'').toLowerCase().includes(search) || (t.setup||'').toLowerCase().includes(search) || (t.obs||'').toLowerCase().includes(search));
+
   renderTrades(list); updateCards(list); updateChart(list);
+  // also update calendar for current offset using full cached trades (not just filtered) so calendar shows all dates
+  renderCalendarForOffset(calOffset);
 }
 
+// hooks
 applyFilter.addEventListener('click', applyFilters);
 clearFilter.addEventListener('click', ()=>{ filterAtivo.value=''; filterFrom.value=''; filterTo.value=''; quickSearch.value=''; applyFilters(); });
 quickSearch.addEventListener('input', ()=> applyFilters());
+prevMonthBtn.addEventListener('click', ()=> { calOffset--; renderCalendarForOffset(calOffset); });
+nextMonthBtn.addEventListener('click', ()=> { calOffset++; renderCalendarForOffset(calOffset); });
 
 // listen auth + trades
 onAuthStateChanged(auth, (user) => {
@@ -216,14 +349,18 @@ onAuthStateChanged(auth, (user) => {
   currentUser = user;
   userName.textContent = user.email.split('@')[0];
 
+  // query trades for this user (ensure your trade docs use field 'userId')
   const q = query(collection(db,'trades'), where('userId','==', user.uid), orderBy('createdAt','desc'));
   onSnapshot(q, (snap)=>{
     tradesCache = snap.docs.map(d => ({ id:d.id, ...d.data() }));
-    // populate setups
+    // populate setups select
     const setups = Array.from(new Set(tradesCache.map(t=>t.setup).filter(Boolean)));
-    filterSetup.innerHTML = '<option value="">Todos Setups</option>'+setups.map(s=>`<option value="${s}">${s}</option>`).join('');
+    filterSetup.innerHTML = '<option value="">Todos Setups</option>' + setups.map(s=> `<option value="${s}">${s}</option>`).join('');
     applyFilters();
-  }, (err)=>{ console.error(err); tradesContainer.innerHTML='<div class="muted">Erro ao carregar</div>'; });
+  }, (err)=> { console.error(err); tradesContainer.innerHTML = '<div class="muted">Erro ao carregar trades</div>'; });
+
+  // initial calendar render
+  renderCalendarForOffset(calOffset);
 });
 </script>
 </body>
