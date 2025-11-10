@@ -36,7 +36,90 @@
       <div class="panel">
         <section class="panel-left">
           <div style="display:flex;justify-content:space-between;align-items:center"><h3>Equity Curve</h3><div class="muted">Últimos trades</div></div>
-          <canvas id="equityChart" style="height:260px"></canvas>
+        <script>
+if (!firebase.auth().currentUser) {
+    firebase.auth().onAuthStateChanged(loadEquity);
+} else {
+    loadEquity();
+}
+
+async function loadEquity() {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    const tradesSnap = await db.collection("users")
+        .doc(user.uid)
+        .collection("trades")
+        .orderBy("date", "asc")
+        .get();
+
+    const labels = [];
+    const equity = [];
+    let balance = 0;
+
+    tradesSnap.forEach(doc => {
+        const data = doc.data();
+        const result = parseFloat(data.result || 0);
+
+        balance += result;
+        labels.push(new Date(data.date).toLocaleDateString("pt-BR"));
+        equity.push(balance);
+    });
+
+    renderEquity(labels, equity);
+}
+
+let chartInstance;
+
+function renderEquity(labels, equity) {
+    const ctx = document.getElementById("equityChart").getContext("2d");
+
+    if (chartInstance) chartInstance.destroy(); // Evita gráfico duplicado
+
+    chartInstance = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels,
+            datasets: [{
+                label: "Equity",
+                data: equity,
+                fill: true,
+                borderWidth: 3,
+                tension: 0.4,
+                pointRadius: 0,
+                borderColor: "#00E8FF",
+                backgroundColor: "rgba(0, 232, 255, 0.10)"
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: context => `R$ ${context.raw.toFixed(2)}`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: "#FFF" },
+                    grid: { display: false }
+                },
+                y: {
+                    ticks: {
+                        color: "#FFF",
+                        callback: value => `R$ ${value}`
+                    },
+                    grid: {
+                        color: "rgba(255,255,255,0.05)"
+                    }
+                }
+            }
+        }
+    });
+}
+</script>
 
           <div style="margin-top:12px"><h3>Histórico</h3><div id="tradesContainer" class="list"></div></div>
         </section>
