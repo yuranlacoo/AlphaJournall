@@ -5,152 +5,103 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>AlphaJournal — Entrar / Criar Conta</title>
   <link rel="stylesheet" href="style.css">
-  <style>
-    /* Pequenos ajustes locais para os forms (não substituem seu style.css) */
-    .tabs { display:flex; gap:8px; justify-content:center; margin-bottom:16px; }
-    .tab { padding:8px 14px; border-radius:8px; cursor:pointer; border:1px solid rgba(255,255,255,0.04); background:transparent; color:var(--accent,#00eaff); }
-    .tab.active { background:linear-gradient(90deg,#00e8ff22,#6b53ff22); box-shadow:0 6px 18px rgba(0,0,0,0.4); }
-    .form-wrap { max-width:420px; margin:auto; }
-    .muted { color: #99a0b2; font-size:13px; text-align:center; margin-top:8px;}
-    .error { color:#ff6666; margin-top:8px; text-align:center; }
-    .success { color:#66ff99; margin-top:8px; text-align:center; }
-    .small-link { font-size:13px; color:var(--accent,#00eaff); cursor:pointer; text-decoration:underline; }
-  </style>
 </head>
 <body>
-  <div style="padding:28px;">
-    <div class="dashboard-container" style="max-width:680px;">
-      <h2 style="text-align:center">AlphaJournal</h2>
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h1 class="brand">AlphaJournal</h1>
 
-      <div class="tabs" role="tablist">
-        <div class="tab active" id="tab-login">Entrar</div>
-        <div class="tab" id="tab-register">Criar Conta</div>
+      <div class="tabs">
+        <button id="tabLogin" class="tab active">Entrar</button>
+        <button id="tabRegister" class="tab">Criar Conta</button>
       </div>
 
-      <div class="form-wrap">
-        <!-- LOGIN -->
-        <form id="login-form" style="display:block">
-          <input name="email" type="email" placeholder="Email" required>
-          <input name="password" type="password" placeholder="Senha" required>
-          <button type="submit" class="btn">Entrar</button>
-          <div id="login-msg" class="error" role="alert"></div>
-          <div class="muted">ou entre com Google</div>
-          <div style="display:flex; gap:8px; margin-top:12px">
-            <button id="btn-google" type="button" class="btn" style="background:#fff;color:#000; flex:1">Google</button>
-            <button id="btn-visit-dashboard" type="button" class="btn" style="background:transparent;border:1px solid rgba(255,255,255,0.06); color:var(--accent,#00eaff)">Testar sem login</button>
-          </div>
-        </form>
+      <form id="loginForm" class="form">
+        <input name="email" type="email" placeholder="Email" required>
+        <input name="password" type="password" placeholder="Senha" required>
+        <button type="submit" class="btn primary">Entrar</button>
+        <div id="loginMsg" class="msg"></div>
+      </form>
 
-        <!-- REGISTER -->
-        <form id="register-form" style="display:none">
-          <input id="reg-email" type="email" placeholder="Email" required>
-          <input id="reg-password" type="password" placeholder="Senha (min 6 caracteres)" required>
-          <button id="btn-register" type="button" class="btn">Criar Conta</button>
-          <div id="register-msg" class="error" role="alert"></div>
-          <div class="muted">Ao criar conta, você será redirecionado para o login.</div>
-        </form>
-      </div>
+      <form id="registerForm" class="form hidden">
+        <input id="regEmail" type="email" placeholder="Email" required>
+        <input id="regPassword" type="password" placeholder="Senha (min 6)" required>
+        <button id="btnRegister" type="button" class="btn primary">Criar Conta</button>
+        <div id="regMsg" class="msg"></div>
+      </form>
 
-      <p style="text-align:center; margin-top:14px;" class="muted">Se aparecer erro de domínio, confirme que <strong>yuranlacoo.github.io</strong> está nos Domínios Autorizados do Firebase.</p>
+      <div style="text-align:center; margin-top:10px;" class="muted">Versão • Alpha MVP</div>
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import {
-      getAuth,
-      signInWithEmailAndPassword,
-      createUserWithEmailAndPassword,
-      GoogleAuthProvider,
-      signInWithPopup,
-      onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-    // --------- CONFIGURE AQUI (já com storageBucket correto) ----------
-    const firebaseConfig = {
-      apiKey: "AIzaSyBGeQ1-IKrCyC8hA2BETaJLidLpuYrCRmk",
-      authDomain: "alphajournal-dc6bb.firebaseapp.com",
-      projectId: "alphajournal-dc6bb",
-      storageBucket: "alphajournal-dc6bb.appspot.com",
-      messagingSenderId: "835722822229",
-      appId: "1:835722822229:web:974ee6dc7b6696f1edcadc"
-    };
-    // -----------------------------------------------------------------
+// ---------- FIREBASE CONFIG (use seu config corrigido) ----------
+const firebaseConfig = {
+  apiKey: "AIzaSyBGeQ1-IKrCyC8hA2BETaJLidLpuYrCRmk",
+  authDomain: "alphajournal-dc6bb.firebaseapp.com",
+  projectId: "alphajournal-dc6bb",
+  storageBucket: "alphajournal-dc6bb.appspot.com",
+  messagingSenderId: "835722822229",
+  appId: "1:835722822229:web:974ee6dc7b6696f1edcadc"
+};
+// -----------------------------------------------------------------
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const googleProvider = new GoogleAuthProvider();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
 
-    // UI refs
-    const tabLogin = document.getElementById('tab-login');
-    const tabRegister = document.getElementById('tab-register');
-    const loginForm = document.getElementById('login-form');
-    const registerForm = document.getElementById('register-form');
-    const loginMsg = document.getElementById('login-msg');
-    const registerMsg = document.getElementById('register-msg');
+// UI
+const tabLogin = document.getElementById('tabLogin');
+const tabRegister = document.getElementById('tabRegister');
+const loginForm = document.getElementById('loginForm');
+const registerForm = document.getElementById('registerForm');
+const loginMsg = document.getElementById('loginMsg');
+const regMsg = document.getElementById('regMsg');
+const btnRegister = document.getElementById('btnRegister');
 
-    // Toggle tabs
-    tabLogin.addEventListener('click', ()=>{ tabLogin.classList.add('active'); tabRegister.classList.remove('active'); loginForm.style.display='block'; registerForm.style.display='none'; loginMsg.textContent=''; });
-    tabRegister.addEventListener('click', ()=>{ tabRegister.classList.add('active'); tabLogin.classList.remove('active'); registerForm.style.display='block'; loginForm.style.display='none'; registerMsg.textContent=''; });
+tabLogin.addEventListener('click', ()=>{ tabLogin.classList.add('active'); tabRegister.classList.remove('active'); loginForm.classList.remove('hidden'); registerForm.classList.add('hidden'); loginMsg.textContent=''; });
+tabRegister.addEventListener('click', ()=>{ tabRegister.classList.add('active'); tabLogin.classList.remove('active'); registerForm.classList.remove('hidden'); loginForm.classList.add('hidden'); regMsg.textContent=''; });
 
-    // If already logged, redirect to dashboard
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // already logged in -> go to dashboard
-        window.location.href = 'dashboard.html';
-      }
-    });
+// redirect if already logged
+onAuthStateChanged(auth, (u) => { if(u) window.location.href = 'dashboard.html'; });
 
-    // LOGIN submit
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      loginMsg.textContent = '';
-      const email = loginForm.email.value.trim();
-      const password = loginForm.password.value.trim();
-      if (!email || !password) { loginMsg.textContent = 'Preencha email e senha.'; return; }
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-        // success -> redirect (onAuthStateChanged will also redirect)
-        window.location.href = 'dashboard.html';
-      } catch (err) {
-        console.error(err);
-        loginMsg.textContent = 'Erro: ' + (err.message || err.code);
-      }
-    });
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  loginMsg.textContent = '';
+  const email = loginForm.email.value.trim();
+  const password = loginForm.password.value.trim();
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    window.location.href = 'dashboard.html';
+  } catch (err) {
+    loginMsg.textContent = err.message || err.code;
+  }
+});
 
-    // REGISTER click
-    document.getElementById('btn-register').addEventListener('click', async () => {
-      registerMsg.textContent = '';
-      const email = document.getElementById('reg-email').value.trim();
-      const password = document.getElementById('reg-password').value.trim();
-      if (!email || !password) { registerMsg.textContent = 'Preencha email e senha.'; return; }
-      if (password.length < 6) { registerMsg.textContent = 'Senha precisa ter pelo menos 6 caracteres.'; return; }
-      try {
-        await createUserWithEmailAndPassword(auth, email, password);
-        alert('Conta criada! Faça login agora.');
-        // switch to login tab
-        tabLogin.click();
-      } catch (err) {
-        console.error(err);
-        registerMsg.textContent = 'Erro: ' + (err.message || err.code);
-      }
-    });
-
-    // Google login
-    document.getElementById('btn-google').addEventListener('click', async () => {
-      try {
-        await signInWithPopup(auth, googleProvider);
-        window.location.href = 'dashboard.html';
-      } catch (err) {
-        console.error(err);
-        loginMsg.textContent = 'Erro Google: ' + (err.message || err.code);
-      }
-    });
-
-    // Optional convenience button (during tests) to go to dashboard
-    document.getElementById('btn-visit-dashboard').addEventListener('click', ()=> {
-      window.location.href = 'dashboard.html';
-    });
-  </script>
+btnRegister.addEventListener('click', async () => {
+  regMsg.textContent = '';
+  const email = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value.trim();
+  if (!email || !password) { regMsg.textContent = 'Preencha email e senha.'; return; }
+  if (password.length < 6) { regMsg.textContent = 'Senha mínima 6 caracteres.'; return; }
+  try {
+    await createUserWithEmailAndPassword(auth, email, password);
+    alert('Conta criada! Faça login.');
+    tabLogin.click();
+  } catch (err) {
+    regMsg.textContent = err.message || err.code;
+  }
+});
+</script>
 </body>
 </html>
