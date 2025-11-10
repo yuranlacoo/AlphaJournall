@@ -1,122 +1,433 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard - AlphaJournal</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AlphaJournal — Dashboard</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- main site css (you already have style.css) -->
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    /* --- Dashboard-specific styles (override/additions) --- */
+    :root {
+      --bg: #0b0f16;
+      --panel: #0f1720;
+      --accent: #00eaff;
+      --accent-2: #6b53ff;
+      --muted: #9aa6b2;
+      --card: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    }
+
+    html,body{height:100%;background:linear-gradient(180deg,#05060a 0%, #0b0f16 100%);margin:0;font-family:Inter,Inter var,ui-sans-serif,system-ui, -apple-system,Segoe UI, Roboto, "Helvetica Neue", Arial;}
+
+    .layout { display: grid; grid-template-columns: 260px 1fr; gap: 18px; min-height:100vh; padding: 18px; }
+
+    /* Sidebar */
+    .sidebar {
+      background: var(--panel);
+      border-radius: 12px;
+      padding: 18px;
+      color: #e6f7ff;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+    }
+    .logo {
+      display:flex; align-items:center; gap:12px; margin-bottom:18px;
+    }
+    .logo .badge { width:48px;height:48px;border-radius:10px;background:linear-gradient(180deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:800;color:#02121a}
+    .menu { margin-top:12px; display:flex;flex-direction:column; gap:6px; }
+    .menu a { color:var(--muted); text-decoration:none; padding:10px; border-radius:8px; display:flex; align-items:center; gap:8px; }
+    .menu a.active, .menu a:hover { background: rgba(0,232,255,0.06); color:var(--accent); }
+
+    /* Topbar and main */
+    .main {
+      display:flex; flex-direction:column; gap:12px;
+    }
+    .topbar {
+      display:flex; justify-content:space-between; align-items:center; gap:12px;
+    }
+    .search {
+      display:flex; gap:8px; align-items:center;
+      background:var(--panel); padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.02);
+    }
+    .search input { background:transparent; border:none; outline:none; color:#eafcff; width:260px; }
+
+    .cards { display:flex; gap:12px; margin-top:6px; }
+    .card {
+      flex:1; background:var(--card); padding:16px; border-radius:12px; border:1px solid rgba(107,83,255,0.04);
+    }
+    .card .label { color:var(--muted); font-size:13px; }
+    .card .value { font-size:22px; font-weight:800; margin-top:8px; color:#fff; }
+
+    .panel {
+      display:flex; gap:12px; margin-top:12px;
+    }
+    .panel-left { flex:2; background:var(--panel); padding:14px;border-radius:12px; min-height:360px; }
+    .panel-right { flex:1; background:var(--panel); padding:14px;border-radius:12px; min-height:360px; }
+
+    /* trade list */
+    .trade-item { display:flex; gap:12px; align-items:center; padding:10px; border-radius:10px; background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.006)); border:1px solid rgba(255,255,255,0.02); margin-bottom:10px; }
+    .trade-item .meta { flex:1; }
+    .trade-item .tag { font-size:12px; color:var(--muted); padding:6px 8px; border-radius:6px; background:rgba(255,255,255,0.02); display:inline-block; }
+
+    .trade-img { width:130px; height:78px; object-fit:cover; border-radius:8px; box-shadow: 0 8px 30px rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.03); }
+
+    .filters { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+    .filters select, .filters input { background:transparent; border:1px solid rgba(255,255,255,0.04); padding:8px; border-radius:8px; color:#eafcff; }
+
+    /* modal */
+    .modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.75); z-index:9999; }
+    .modal .box { background:var(--panel); padding:18px; border-radius:10px; width:90%; max-width:900px; }
+    .modal img { width:100%; height:auto; border-radius:8px; }
+
+    /* small */
+    .muted { color:var(--muted); font-size:13px; }
+
+    /* responsive */
+    @media (max-width:900px) {
+      .layout { grid-template-columns:1fr; padding:12px; }
+      .sidebar { order:2; }
+      .panel { flex-direction:column; }
+      .trade-img { display:none; }
+    }
+  </style>
 </head>
-
 <body>
+  <div class="layout">
 
-<header class="navbar">
-    <h2>AlphaJournal</h2>
-    <button id="logoutBtn" class="btn-logout">Sair</button>
-</header>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="badge">AJ</div>
+        <div>
+          <div style="font-weight:800; color:#fff">AlphaJournal</div>
+          <div class="muted" style="font-size:12px">Trade Journal</div>
+        </div>
+      </div>
 
-<main class="container">
-    <h3 id="usernameDisplay">Olá, Trader 👋</h3>
+      <nav class="menu" aria-label="Main menu">
+        <a href="#" class="active">Dashboard</a>
+        <a href="register-trade.html">Registrar Trade</a>
+        <a href="#">Performance</a>
+        <a href="#">Setups</a>
+        <a href="#">Configurações</a>
+      </nav>
 
-    <div class="stats-grid">
-        <div class="card">
-            <h4>Trades</h4>
-            <p id="totalTrades">0</p>
+      <div style="margin-top:18px">
+        <div class="muted">Versão</div>
+        <div style="font-weight:700; margin-top:6px">Alpha • MVP</div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <div class="topbar">
+        <div style="display:flex; flex-direction:column;">
+          <div style="font-size:13px; color:var(--muted)">Bem-vindo de volta</div>
+          <div id="welcomeUser" style="font-weight:800; color:#fff">—</div>
         </div>
-        <div class="card">
-            <h4>Lucro Total (R$)</h4>
-            <p id="totalProfit">0.00</p>
+
+        <div style="display:flex; gap:12px; align-items:center;">
+          <div class="search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.35-4.35" stroke="#00eaff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="11" cy="11" r="6" stroke="#00eaff" stroke-width="1.6"/></svg>
+            <input id="quickSearch" placeholder="Pesquisar ativo, setup, nota..." />
+          </div>
+          <button id="btnLogout" style="background:transparent;border:1px solid rgba(255,255,255,0.04); color:var(--accent); padding:8px 12px; border-radius:8px; cursor:pointer">Sair</button>
         </div>
+      </div>
+
+      <!-- top cards -->
+      <div class="cards">
         <div class="card">
-            <h4>Winrate (%)</h4>
-            <p id="winrate">0%</p>
+          <div class="label">Lucro Total (R$)</div>
+          <div id="cardProfit" class="value">R$ 0,00</div>
         </div>
+
+        <div class="card">
+          <div class="label">Winrate</div>
+          <div id="cardWinrate" class="value">-- %</div>
+        </div>
+
+        <div class="card">
+          <div class="label">Total Trades</div>
+          <div id="cardCount" class="value">0</div>
+        </div>
+      </div>
+
+      <!-- panels -->
+      <div class="panel">
+        <section class="panel-left">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h3 style="margin:0; color:#fff">Equity Curve</h3>
+            <div class="muted">Últimos 100 trades</div>
+          </div>
+
+          <canvas id="equityChart" style="width:100%; height:260px;"></canvas>
+
+          <div style="margin-top:12px">
+            <div class="filters">
+              <input id="filterAtivo" placeholder="Ativo (ex: PETR4)" />
+              <input type="date" id="filterFrom" />
+              <input type="date" id="filterTo" />
+              <select id="filterSetup"><option value="">Todos Setups</option></select>
+              <button id="applyFilter" style="background:var(--accent); border:none; padding:8px 10px; border-radius:8px; color:#000; cursor:pointer">Aplicar</button>
+              <button id="clearFilter" style="background:transparent; border:1px solid rgba(255,255,255,0.04); padding:8px 10px; border-radius:8px; color:var(--muted); cursor:pointer">Limpar</button>
+            </div>
+          </div>
+
+          <h3 style="margin-top:12px; color:#fff">Histórico de Trades</h3>
+          <div id="tradesContainer" style="margin-top:8px">
+            <!-- trade items injected here -->
+            <div class="muted">Carregando...</div>
+          </div>
+
+        </section>
+
+        <aside class="panel-right">
+          <h4 style="margin-top:0;color:#fff">Resumo Rápido</h4>
+          <div style="margin-top:8px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px"><div class="muted">Maior Lucro</div><div id="maxProfit">R$ 0.00</div></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px"><div class="muted">Maior Prejuízo</div><div id="maxLoss">R$ 0.00</div></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px"><div class="muted">Média P/L</div><div id="avgPL">R$ 0.00</div></div>
+          </div>
+
+          <hr style="border-color:rgba(255,255,255,0.02); margin:12px 0">
+
+          <h4 style="color:#fff">Atalhos</h4>
+          <div style="display:flex;flex-direction:column; gap:8px; margin-top:8px;">
+            <a href="register-trade.html" class="muted" style="padding:8px; border-radius:8px; background:transparent; border:1px solid rgba(255,255,255,0.02); text-decoration:none; color:var(--muted)">Novo Trade</a>
+            <a href="#" class="muted" style="padding:8px; border-radius:8px; background:transparent; border:1px solid rgba(255,255,255,0.02); text-decoration:none; color:var(--muted)">Exportar CSV</a>
+          </div>
+        </aside>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- modal -->
+  <div id="modal" class="modal" role="dialog" aria-hidden="true">
+    <div class="box">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <div>
+          <div id="modalAtivo" style="font-weight:800; font-size:18px"></div>
+          <div class="muted" id="modalDate"></div>
+        </div>
+        <button id="closeModal" style="background:transparent;border:1px solid rgba(255,255,255,0.04); color:var(--muted); padding:6px 8px; border-radius:6px; cursor:pointer">Fechar</button>
+      </div>
+      <img id="modalImg" src="" alt="Print da operação" />
+      <div style="margin-top:8px" id="modalObs"></div>
     </div>
+  </div>
 
-    <h3 style="margin-top: 20px;">Histórico de Trades</h3>
+  <!-- Firebase + App logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    <table class="trade-table">
-        <thead>
-            <tr>
-                <th>Ativo</th>
-                <th>Data</th>
-                <th>Resultado</th>
-            </tr>
-        </thead>
-        <tbody id="tradeList">
-            <tr><td colspan="3" style="text-align:center">Carregando...</td></tr>
-        </tbody>
-    </table>
+    // ---------- CONFIG (use your corrected storageBucket) ----------
+    const firebaseConfig = {
+      apiKey: "AIzaSyBGeQ1-IKrCyC8hA2BETaJLidLpuYrCRmk",
+      authDomain: "alphajournal-dc6bb.firebaseapp.com",
+      projectId: "alphajournal-dc6bb",
+      storageBucket: "alphajournal-dc6bb.appspot.com",
+      messagingSenderId: "835722822229",
+      appId: "1:835722822229:web:974ee6dc7b6696f1edcadc"
+    };
+    // ---------------------------------------------------------------
 
-    <button id="addTradeBtn" class="btn-float">+</button>
-</main>
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
+    // UI refs
+    const welcomeUser = document.getElementById('welcomeUser');
+    const btnLogout = document.getElementById('btnLogout');
+    const tradesContainer = document.getElementById('tradesContainer');
+    const modal = document.getElementById('modal');
+    const modalImg = document.getElementById('modalImg');
+    const modalAtivo = document.getElementById('modalAtivo');
+    const modalDate = document.getElementById('modalDate');
+    const modalObs = document.getElementById('modalObs');
+    const closeModal = document.getElementById('closeModal');
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    const cardProfit = document.getElementById('cardProfit');
+    const cardWinrate = document.getElementById('cardWinrate');
+    const cardCount = document.getElementById('cardCount');
+    const maxProfitEl = document.getElementById('maxProfit');
+    const maxLossEl = document.getElementById('maxLoss');
+    const avgPLEl = document.getElementById('avgPL');
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBGeQ1-IKrCyC8hA2BETaJLidLpuYrCRmk",
-  authDomain: "alphajournal-dc6bb.firebaseapp.com",
-  projectId: "alphajournal-dc6bb",
-  storageBucket: "alphajournal-dc6bb.firebasestorage.app",
-  messagingSenderId: "835722822229",
-  appId: "1:835722822229:web:974ee6dc7b6696f1edcadc"
-};
+    // filters
+    const filterAtivo = document.getElementById('filterAtivo');
+    const filterFrom = document.getElementById('filterFrom');
+    const filterTo = document.getElementById('filterTo');
+    const filterSetup = document.getElementById('filterSetup');
+    const applyFilter = document.getElementById('applyFilter');
+    const clearFilter = document.getElementById('clearFilter');
+    const quickSearch = document.getElementById('quickSearch');
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+    let equityChart;
+    let currentUser = null;
+    let tradesSnapshot = []; // local cache
 
-const logoutBtn = document.getElementById("logoutBtn");
-const addTradeBtn = document.getElementById("addTradeBtn");
-const tradeList = document.getElementById("tradeList");
+    // Helper: format BRL
+    function fmtBRL(v){ return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
 
-logoutBtn.addEventListener("click", () => {
-    signOut(auth);
-});
+    // Open modal
+    function openModal(trade){
+      modalImg.src = trade.imageURL || '';
+      modalAtivo.textContent = trade.ativo || '-';
+      modalDate.textContent = trade.data || '';
+      modalObs.textContent = trade.obs || '';
+      modal.style.display = 'flex';
+      modal.setAttribute('aria-hidden','false');
+    }
 
-addTradeBtn.addEventListener("click", () => {
-    window.location.href = "register-trade.html";
-});
+    closeModal.addEventListener('click', ()=>{ modal.style.display='none'; modal.setAttribute('aria-hidden','true'); });
 
-onAuthStateChanged(auth, (user) => {
-    if (!user) return window.location.href = "index.html";
+    // logout
+    btnLogout.addEventListener('click', ()=> signOut(auth));
 
-    document.getElementById("usernameDisplay").innerText = 
-        `Olá, ${user.email.split("@")[0]} 👋`;
+    // apply filters to local cache and render
+    function applyFiltersAndRender(){
+      const ativoQ = filterAtivo.value.trim().toLowerCase();
+      const setupQ = filterSetup.value.trim().toLowerCase();
+      const from = filterFrom.value;
+      const to = filterTo.value;
+      const search = quickSearch.value.trim().toLowerCase();
 
-    const q = query(collection(db, "trades"), where("uid", "==", user.uid));
-    onSnapshot(q, (snapshot) => {
-        tradeList.innerHTML = "";
-        let totalProfit = 0;
-        let wins = 0;
+      let list = tradesSnapshot.slice(); // copy
 
-        snapshot.forEach((doc) => {
-            const trade = doc.data();
-            totalProfit += Number(trade.resultado);
+      if(ativoQ) list = list.filter(t=> (t.ativo||'').toLowerCase().includes(ativoQ) );
+      if(setupQ) list = list.filter(t=> (t.setup||'').toLowerCase().includes(setupQ) );
+      if(from) list = list.filter(t=> (t.data||'').slice(0,10) >= from );
+      if(to) list = list.filter(t=> (t.data||'').slice(0,10) <= to );
+      if(search) list = list.filter(t=> (t.ativo||'').toLowerCase().includes(search) || (t.setup||'').toLowerCase().includes(search) || (t.obs||'').toLowerCase().includes(search) );
 
-            if (trade.resultado > 0) wins++;
+      renderTrades(list);
+      updateCards(list);
+      updateChart(list);
+    }
 
-            tradeList.innerHTML += `
-                <tr>
-                    <td>${trade.ativo}</td>
-                    <td>${trade.data}</td>
-                    <td style="color:${trade.resultado >= 0 ? "#00eaff" : "red"}">
-                        R$ ${trade.resultado.toFixed(2)}
-                    </td>
-                </tr>
-            `;
+    // render trades
+    function renderTrades(list){
+      tradesContainer.innerHTML = '';
+      if(list.length===0){ tradesContainer.innerHTML = '<div class="muted">Nenhum trade encontrado</div>'; return; }
+
+      list.forEach(t=>{
+        const item = document.createElement('div');
+        item.className = 'trade-item';
+        item.innerHTML = `
+          <div class="meta">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-weight:800; color:#fff">${t.ativo || '-'}</div>
+                <div class="muted" style="margin-top:6px; font-size:13px">${t.data || ''} • ${t.setup || '-'}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-weight:800; color:${t.resultado>=0? 'var(--accent)' : '#ff6b6b'}">${fmtBRL(Number(t.resultado||0))}</div>
+                <div class="muted" style="font-size:12px; margin-top:6px">${t.synced? 'Sincronizado' : 'Local'}</div>
+              </div>
+            </div>
+            <div style="margin-top:8px;"><span class="tag">${t.setup || '-'}</span> <span class="muted" style="margin-left:8px">${t.quantidade? t.quantidade + ' lotes':''}</span></div>
+          </div>
+          ${t.imageURL? `<img src="${t.imageURL}" class="trade-img" loading="lazy">` : `<div style="width:130px;height:78px;border-radius:8px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;color:var(--muted)">Sem Print</div>`}
+        `;
+        // click image to open modal
+        const img = item.querySelector('img');
+        if(img) img.addEventListener('click', ()=> openModal(t));
+        tradesContainer.appendChild(item);
+      });
+    }
+
+    // update cards
+    function updateCards(list){
+      let total = 0, wins=0, maxProfit = -Infinity, maxLoss = Infinity, sum = 0;
+      list.forEach(t=> {
+        const r = Number(t.resultado||0);
+        total += r;
+        sum += r;
+        if(r>0) wins++;
+        if(r>maxProfit) maxProfit=r;
+        if(r<maxLoss) maxLoss=r;
+      });
+      const count = list.length;
+      cardProfit.textContent = fmtBRL(total);
+      cardCount.textContent = count;
+      cardWinrate.textContent = count ? Math.round((wins/count)*100) + '%' : '--';
+      maxProfitEl.textContent = isFinite(maxProfit)? fmtBRL(maxProfit) : '--';
+      maxLossEl.textContent = isFinite(maxLoss)? fmtBRL(maxLoss) : '--';
+      avgPLEl.textContent = count ? fmtBRL(sum/count) : '--';
+    }
+
+    // equity chart
+    function updateChart(list){
+      // sort by createdAt (if exists) or data
+      const rows = list.slice().sort((a,b)=>{
+        const ta = a.createdAt? a.createdAt.seconds || 0 : 0;
+        const tb = b.createdAt? b.createdAt.seconds || 0 : 0;
+        return ta - tb;
+      });
+      let labels = [];
+      let points = [];
+      let acc = 0;
+      rows.forEach((r, i)=> {
+        acc += Number(r.resultado||0);
+        labels.push(r.data || ('#'+(i+1)));
+        points.push(acc);
+      });
+
+      if(!equityChart){
+        const ctx = document.getElementById('equityChart').getContext('2d');
+        equityChart = new Chart(ctx, {
+          type: 'line',
+          data: { labels, datasets:[{ label:'Equity', data:points, tension:0.2, borderColor:'#00eaff', backgroundColor:'rgba(0,232,255,0.06)', pointRadius:2 }]},
+          options: { responsive:true, maintainAspectRatio:false, scales:{ y:{ ticks:{ color:'#9fbdd0' }, grid:{ color:'rgba(255,255,255,0.02)' }}, x:{ ticks:{ color:'#9fbdd0' }, grid:{ color:'rgba(255,255,255,0.02)' } } } }
         });
+      } else {
+        equityChart.data.labels = labels;
+        equityChart.data.datasets[0].data = points;
+        equityChart.update();
+      }
+    }
 
-        document.getElementById("totalTrades").innerText = snapshot.size;
-        document.getElementById("totalProfit").innerText = totalProfit.toFixed(2);
-        const winrate = snapshot.size > 0 ? (wins / snapshot.size * 100).toFixed(1) : 0;
-        document.getElementById("winrate").innerText = winrate + "%";
+    // listen auth and trades
+    onAuthStateChanged(auth, (user) => {
+      if(!user) return window.location.href = 'index.html';
+      currentUser = user;
+      welcomeUser.textContent = user.email.split('@')[0];
+
+      // Query trades for this user
+      // NOTE: ensure your trades documents use field 'userId' (not 'uid'). If you use 'uid', change below to where("uid","==",user.uid)
+      const q = query(collection(db, 'trades'), where('userId','==', user.uid), orderBy('createdAt','desc'));
+      onSnapshot(q, (snapshot)=>{
+        tradesSnapshot = snapshot.docs.map(d => ({ id:d.id, ...d.data() }));
+        // populate setups select
+        const setups = Array.from(new Set(tradesSnapshot.map(t=>t.setup).filter(Boolean)));
+        filterSetup.innerHTML = '<option value="">Todos Setups</option>' + setups.map(s=> `<option value="${s}">${s}</option>`).join('');
+        applyFiltersAndRender();
+      }, (err)=>{
+        console.error('snapshot error', err);
+        tradesContainer.innerHTML = '<div class="muted">Erro ao carregar trades</div>';
+      });
     });
-});
-</script>
 
+    // filters events
+    applyFilter.addEventListener('click', applyFiltersAndRender);
+    clearFilter.addEventListener('click', ()=>{ filterAtivo.value=''; filterFrom.value=''; filterTo.value=''; filterSetup.value=''; quickSearch.value=''; applyFiltersAndRender(); });
+    quickSearch.addEventListener('input', ()=> applyFiltersAndRender());
+
+    // keyboard: enter on quickSearch
+    quickSearch.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ applyFiltersAndRender(); } });
+
+    // close modal on background click
+    modal.addEventListener('click', (e)=>{ if(e.target === modal) { modal.style.display='none'; modal.setAttribute('aria-hidden','true'); } });
+
+  </script>
 </body>
 </html>
+
