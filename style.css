@@ -1,57 +1,30 @@
-:root{
-  --bg:#07101a; --panel:#0f1720; --accent:#00eaff; --accent2:#6b53ff; --muted:#9aa6b2;
-  --card-grad: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-}
-
-*{box-sizing:border-box}
-body{margin:0;background:linear-gradient(180deg,#030409 0%,var(--bg) 100%);color:#eafcff;font-family:Inter,Segoe UI,Arial,Helvetica,sans-serif}
-a{color:inherit}
-.muted{color:var(--muted)}
-.bold{font-weight:700}
-.small{font-size:13px}
-
-/* LAYOUT */
-.layout{display:grid;grid-template-columns:260px 1fr;gap:18px;min-height:100vh;padding:18px}
-.sidebar{background:var(--panel);border-radius:12px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,0.6)}
-.logo{display:flex;gap:12px;align-items:center;margin-bottom:16px}.badge{width:48px;height:48px;border-radius:10px;background:linear-gradient(180deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;color:#02121a}.brand-title{font-weight:800;color:#fff}
-.menu{display:flex;flex-direction:column;gap:8px}.menu a{padding:10px;border-radius:8px;color:var(--muted);text-decoration:none}.menu a.active,.menu a:hover{background:rgba(0,232,255,0.06);color:var(--accent)}
-
-/* MAIN */
-.main{display:flex;flex-direction:column;gap:12px}
-.topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 0}
-.searchInput{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);padding:10px;border-radius:8px;color:#eafcff}
-.cards{display:flex;gap:12px}
-.card{flex:1;background:var(--card-grad);padding:16px;border-radius:12px;border:1px solid rgba(107,83,255,0.04)}
-.card .label{color:var(--muted);font-size:13px}.card .value{font-size:22px;font-weight:800;color:#fff}
-
-/* PANEL */
-.panel{display:flex;gap:12px}.panel-left{flex:2;background:var(--panel);padding:16px;border-radius:12px}.panel-right{flex:1;background:var(--panel);padding:16px;border-radius:12px}
-.filters{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
-.filters input,.filters select{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px;color:#eafcff}
-
-/* trades list */
-.list{margin-top:12px}.trade-item{display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.006));border:1px solid rgba(255,255,255,0.02);margin-bottom:10px}
-.thumb{width:120px;height:70px;object-fit:cover;border-radius:6px}
-
-/* modal */
-.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);z-index:9999}.modal-box{background:var(--panel);padding:18px;border-radius:10px;max-width:920px;width:92%}
-
-/* AUTH */
+:root{ --bg:#07101a; --panel:#0f1720; --accent:#00eaff; --muted:#9aa6b2 }
+*{box-sizing:border-box} body{margin:0;background:linear-gradient(180deg,#030409 0%,var(--bg) 100%);color:#eafcff;font-family:Inter,Segoe UI,Arial}
 .auth-wrap{display:flex;align-items:center;justify-content:center;height:100vh}
 .auth-card{background:var(--panel);padding:28px;border-radius:12px;max-width:420px;width:96%;box-shadow:0 10px 30px rgba(0,0,0,0.6)}
 .brand{font-size:26px;font-weight:800;color:var(--accent)}
-.tabs{display:flex;gap:8px;margin-bottom:14px}.tab{padding:8px 12px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.02);cursor:pointer;color:var(--muted)}.tab.active{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#02121a}
+.tabs{display:flex;gap:8px;margin-bottom:14px}.tab{padding:8px 12px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.02);cursor:pointer;color:var(--muted)}.tab.active{background:linear-gradient(90deg,var(--accent),#6b53ff);color:#02121a}
 .form{display:flex;flex-direction:column;gap:8px}.form.hidden{display:none}
 input,textarea,select{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:8px;color:#eafcff}
-textarea{resize:vertical}
-
-/* buttons */
 .btn{padding:10px 12px;border-radius:8px;border:none;cursor:pointer}
 .primary{background:var(--accent);color:#02121a;font-weight:700}
 .ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
-.small{font-size:13px}
-.block{display:block;width:100%}
+.msg{margin-top:8px;color:#ff8b8b}
 
-/* responsive */
-@media (max-width:900px){ .layout{grid-template-columns:1fr;padding:12px} .sidebar{order:2} .panel{flex-direction:column} .thumb{display:none} }
 
+/* dashboard layout (used by dashboard.html) */
+.layout{display:grid;grid-template-columns:260px 1fr;gap:18px;min-height:100vh;padding:18px}
+.sidebar{background:var(--panel);border-radius:12px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,0.6)}
+.logo{display:flex;gap:12px;align-items:center;margin-bottom:16px}.badge{width:48px;height:48px;border-radius:10px;background:linear-gradient(180deg,var(--accent),#6b53ff);display:flex;align-items:center;justify-content:center;font-weight:800;color:#02121a}
+.menu{display:flex;flex-direction:column;gap:8px}.menu a{padding:10px;border-radius:8px;color:var(--muted);text-decoration:none}.menu a.active,.menu a:hover{background:rgba(0,232,255,0.06);color:var(--accent)}
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.02);}
+.list{margin-top:12px}
+.trade-item{display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.006));border:1px solid rgba(255,255,255,0.02);margin-bottom:10px}
+/* calendar quick styles */
+.calendar{background:var(--panel);padding:12px;border-radius:10px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.cal-day{min-height:74px;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.02);position:relative}
+.cal-day.tp{background:linear-gradient(180deg, rgba(0,232,255,0.06), rgba(0,232,255,0.02))}
+.cal-day.sl{background:linear-gradient(180deg, rgba(255,100,100,0.06), rgba(255,100,100,0.02))}
+.cal-day.be{background:linear-gradient(180deg, rgba(180,180,180,0.06), rgba(180,180,180,0.02));color:#cfcfcf}
+.thumb-small{position:absolute;top:8px;right:8px;width:46px;height:38px;object-fit:cover;border-radius:6px}
