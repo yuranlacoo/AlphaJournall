@@ -35,18 +35,20 @@
 
       <div class="panel">
         <section class="panel-left">
+          
           <canvas id="equityChart" height="130"></canvas>
 
         <script>
-if (!firebase.auth().currentUser) {
-    firebase.auth().onAuthStateChanged(loadEquity);
-} else {
-    loadEquity();
-}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-async function loadEquity() {
-    const user = firebase.auth().currentUser;
-    if (!user) return;
+<script>
+firebase.auth().onAuthStateChanged(async (user) => {
+    if (!user) {
+        console.log("Usuário não logado");
+        return;
+    }
+
+    console.log("Usuário logado:", user.uid);
 
     const tradesSnap = await db.collection("users")
         .doc(user.uid)
@@ -54,35 +56,32 @@ async function loadEquity() {
         .orderBy("date", "asc")
         .get();
 
+    if (tradesSnap.empty) {
+        console.log("Nenhuma trade encontrada");
+        return;
+    }
+
     const labels = [];
     const equity = [];
     let balance = 0;
 
     tradesSnap.forEach(doc => {
-        const data = doc.data();
-        const result = parseFloat(data.result || 0);
+        const t = doc.data();
+        const result = parseFloat(t.result || 0);
+        const date = new Date(t.date);
 
         balance += result;
-        labels.push(new Date(data.date).toLocaleDateString("pt-BR"));
+        labels.push(date.toLocaleDateString("pt-BR"));
         equity.push(balance);
     });
 
-    renderEquity(labels, equity);
-}
-
-let chartInstance;
-
-function renderEquity(labels, equity) {
     const ctx = document.getElementById("equityChart").getContext("2d");
-
-    if (chartInstance) chartInstance.destroy(); // Evita gráfico duplicado
-
-    chartInstance = new Chart(ctx, {
+    
+    new Chart(ctx, {
         type: "line",
         data: {
             labels,
             datasets: [{
-                label: "Equity",
                 data: equity,
                 fill: true,
                 borderWidth: 3,
@@ -98,28 +97,26 @@ function renderEquity(labels, equity) {
                 legend: { display: false },
                 tooltip: {
                     callbacks: {
-                        label: context => `R$ ${context.raw.toFixed(2)}`
+                        label: ctx => `R$ ${ctx.raw.toFixed(2)}`
                     }
                 }
             },
             scales: {
                 x: {
-                    ticks: { color: "#FFF" },
+                    ticks: { color: "#ffffff" },
                     grid: { display: false }
                 },
                 y: {
                     ticks: {
-                        color: "#FFF",
-                        callback: value => `R$ ${value}`
+                        color: "#ffffff",
+                        callback: v => `R$ ${v}`
                     },
-                    grid: {
-                        color: "rgba(255,255,255,0.05)"
-                    }
+                    grid: { color: "rgba(255,255,255,0.05)" }
                 }
             }
         }
     });
-}
+});
 </script>
 
           <div style="margin-top:12px"><h3>Histórico</h3><div id="tradesContainer" class="list"></div></div>
