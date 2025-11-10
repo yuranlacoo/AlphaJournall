@@ -3,56 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Criar Conta - AlphaJournal</title>
+    <title>Registrar Trade - AlphaJournal</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 
 <body>
-    <div class="auth-container">
-        <div class="auth-card">
-            <h2>AlphaJournal</h2>
+    <div class="container">
+        <h2>Registrar Trade</h2>
 
-            <input type="email" id="email" placeholder="Digite seu Email">
-            <input type="password" id="password" placeholder="Crie uma Senha">
+        <label>Ativo</label>
+        <input type="text" id="ativo">
 
-            <button id="registerBtn">Criar Conta</button>
+        <label>Resultado (R$)</label>
+        <input type="number" id="resultado" step="0.01">
 
-            <p class="auth-link">
-                <a href="index.html">Já tenho conta</a>
-            </p>
+        <label>Setup</label>
+        <input type="text" id="setup">
 
-            <p id="error" style="color: red; margin-top: 10px;"></p>
-        </div>
+        <label>Print da Operação</label>
+        <input type="file" id="print" accept="image/*">
+
+        <button id="saveTradeBtn">Salvar Trade</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyBGeQ1-IKrCyC8hA2BETaJLidLpuYrCRmk",
           authDomain: "alphajournal-dc6bb.firebaseapp.com",
           projectId: "alphajournal-dc6bb",
-          storageBucket: "alphajournal-dc6bb.firebasestorage.app",
+          storageBucket: "alphajournal-dc6bb.appspot.com",
           messagingSenderId: "835722822229",
           appId: "1:835722822229:web:974ee6dc7b6696f1edcadc"
         };
 
         const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
         const auth = getAuth(app);
+        const storage = getStorage(app);
 
-        document.getElementById("registerBtn").addEventListener("click", () => {
-            const email = document.getElementById("email").value.trim();
-            const password = document.getElementById("password").value.trim();
+        let userLogged = null;
 
-            createUserWithEmailAndPassword(auth, email, password)
-                .then(() => {
-                    window.location.href = "dashboard.html";
-                })
-                .catch(error => {
-                    document.getElementById("error").textContent = "Erro: " + error.message;
-                });
+        onAuthStateChanged(auth, (user) => {
+            if (!user) window.location.href = "index.html";
+            else userLogged = user;
+        });
+
+        document.getElementById("saveTradeBtn").addEventListener("click", async () => {
+
+            const ativo = document.getElementById("ativo").value.trim();
+            const resultado = document.getElementById("resultado").value;
+            const setup = document.getElementById("setup").value.trim();
+            const printFile = document.getElementById("print").files[0];
+
+            if (!ativo || !resultado || !setup) {
+                alert("Preencha todos os campos!");
+                return;
+            }
+
+            let imageURL = null;
+
+            if (printFile) {
+                const storageRef = ref(storage, `prints/${userLogged.uid}/${Date.now()}_${printFile.name}`);
+                await uploadBytes(storageRef, printFile);
+                imageURL = await getDownloadURL(storageRef);
+            }
+
+            await addDoc(collection(db, "trades"), {
+                userId: userLogged.uid,
+                ativo,
+                resultado: Number(resultado),
+                setup,
+                imageURL,
+                createdAt: new Date()
+            });
+
+            alert("Trade salvo com sucesso!");
+            window.location.href = "dashboard.html";
         });
     </script>
+
 </body>
 </html>
