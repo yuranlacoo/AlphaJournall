@@ -48,7 +48,7 @@
           </div>
 
           <div>
-            <label>Resultado Financeiro (R$)</label>
+            <label>Resultado Financeiro ($)</label>
             <input id="financeiro" type="number" step="0.01" placeholder="Ex: 125.50" required>
           </div>
 
@@ -135,12 +135,31 @@ async function uploadImageFile(file, tradeId){
 }
 
 // create new trade document (top-level collection 'trades' with userId)
-tradeForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  if(!currentUser){ showMsg('Usuário não autenticado.', false); return; }
+import { getFirestore, collection, addDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  btnSave.disabled = true;
-  showMsg('Salvando...');
+// ...
+
+async function saveTradeToFirestore(tradeData) {
+    const user = auth.currentUser;
+    if (!user) {
+        alert("Você precisa estar logado!");
+        return;
+    }
+
+    const db = getFirestore();
+    const userTradesRef = collection(db, "users", user.uid, "trades");
+
+    try {
+        // ✅ Salva dentro do usuario corretamente
+        await addDoc(userTradesRef, tradeData);
+        alert("Trade salva com sucesso ✅");
+
+    } catch (error) {
+        console.error("Erro ao salvar trade:", error);
+        alert("Erro ao salvar trade: " + error.message);
+    }
+}
+
 
   try {
     // prepare data fields
