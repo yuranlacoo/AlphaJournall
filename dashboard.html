@@ -1,54 +1,49 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AlphaJournal - Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - AlphaJournal</title>
 <link rel="stylesheet" href="assets/css/style.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+
 <div class="container">
-  <div class="header"><div class="brand"><div class="logo">A▲</div><h1 data-i18n="dashboard">Dashboard</h1></div>
-  <div style="display:flex;gap:8px;align-items:center"><a href="new-trade.html" class="btn" data-i18n="new_trade">+ Novo Trade</a><button id="btnSync" class="btn">Sincronizar</button><button id="btnLogout" class="btn" style="background:#ff005c">Sair</button></div>
-  </div>
-  <main style="margin-top:18px">
-    <div class="card-row">
-      <div class="card" style="flex:1"><div class="small">Winrate</div><div id="winrate" class="value">--%</div></div>
-      <div class="card" style="flex:1"><div class="small">Resultado Total</div><div id="total" class="value">R$ 0,00</div></div>
-      <div class="card" style="flex:1"><div class="small">Total Trades</div><div id="count" class="value">0</div></div>
+    <h1 class="big-title">Dashboard</h1>
+
+    <div class="stats">
+        <div class="stat-card">
+            <span>Total Trades</span>
+            <strong id="totalTrades">0</strong>
+        </div>
+        <div class="stat-card green">
+            <span>Lucro Total</span>
+            <strong id="profitTotal">R$ 0,00</strong>
+        </div>
     </div>
-    <div style="height:18px"></div>
-    <div style="display:flex;gap:12px">
-      <div style="flex:2;background:var(--panel);padding:12px;border-radius:10px">
-        <canvas id="chart" height="140"></canvas>
-      </div>
-      <div style="flex:1;background:var(--panel);padding:12px;border-radius:10px">
-        <h3 class="small">Filtros</h3>
-        <label class="small">Ativo</label><input id="filterAtivo" class="input" placeholder="PETR4">
-        <label class="small">Data inicial</label><input id="filterFrom" type="date" class="input">
-        <label class="small">Data final</label><input id="filterTo" type="date" class="input">
-        <div style="height:8px"></div>
-        <button id="btnApply" class="btn">Aplicar Filtro</button>
-        <button id="btnClear" class="btn" style="background:transparent;border:1px solid rgba(255,255,255,0.06);margin-top:6px">Limpar</button>
-      </div>
-    </div>
-    <div style="height:12px"></div>
-    <table class="table" aria-label="Tabela de trades">
-      <thead><tr><th>Ativo</th><th>Data</th><th>Resultado</th><th>Print</th><th>Sincronizado</th></tr></thead>
-      <tbody id="tbody"></tbody>
-    </table>
-  </main>
-  <div class="footer">AlphaJournal • MVP</div>
+
+    <button class="btn" onclick="window.location.href='register.html'">
+        Registrar Novo Trade
+    </button>
+    <button class="btn red" id="logoutBtn">
+        Sair
+    </button>
 </div>
-<div id="modal" class="modal" onclick="document.getElementById('modal').style.display='none'"><img id="modalImg" alt="Print"></div>
+
 <script type="module">
-import { initDashboard } from './assets/js/dashboard.js';
-import { applyText, setLang } from './assets/js/lang.js';
+import { logout, onAuth } from "./assets/js/auth.js";
 
-const langSel = document.getElementById('lang');
-if(langSel){ langSel.value = localStorage.getItem('aj_lang')||'pt'; langSel.addEventListener('change', ()=> setLang(langSel.value)); }
+// Bloqueia acesso sem login
+onAuth((user)=>{
+    if(!user) window.location.href="index.html";
+});
 
-initDashboard();
+// Logout
+document.getElementById("logoutBtn").onclick = () => {
+    logout();
+    window.location.href="index.html";
+};
 </script>
+
 </body>
 </html>
