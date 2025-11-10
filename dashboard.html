@@ -250,7 +250,6 @@ firebase.auth().onAuthStateChanged(async (user) => {
         renderTrades(tradesCache); updateCards(tradesCache); updateChart(tradesCache); renderCalendarForOffset(calOffset);
       }, err=>{ console.error(err); tradesContainer.innerHTML = '<div class="muted">Erro ao carregar trades</div>'; });
     });
-</script>
 
     auth.onAuthStateChanged(user => {
       if(!user) return window.location.href = 'index.html';
