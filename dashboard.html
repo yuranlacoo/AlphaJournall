@@ -144,8 +144,63 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBGeQ1-IKrCyC8hA2BETaJLidLpuYrCRmk",
+  authDomain: "alphajournal-dc6bb.firebaseapp.com",
+  projectId: "alphajournal-dc6bb",
+  storageBucket: "alphajournal-dc6bb.firebasestorage.app",
+  messagingSenderId: "835722822229",
+  appId: "1:835722822229:web:974ee6dc7b6696f1edcadc"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const form = document.getElementById("tradeForm");
+const saveBtn = document.getElementById("saveBtn");
+const statusMsg = document.getElementById("statusMsg");
+
+onAuthStateChanged(auth, (user) => {
+    if (!user) {
+        window.location.href = "index.html";
+    }
+});
+
+form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    saveBtn.disabled = true;
+    statusMsg.innerText = "Salvando trade...";
+
+    const trade = {
+        asset: document.getElementById("asset").value,
+        type: document.getElementById("type").value,
+        risk: Number(document.getElementById("risk").value),
+        reward: Number(document.getElementById("reward").value),
+        date: document.getElementById("date").value,
+        notes: document.getElementById("notes").value,
+        userId: auth.currentUser.uid,
+        createdAt: serverTimestamp()
+    };
+
+    try {
+        await addDoc(collection(db, "trades"), trade);
+
+        statusMsg.innerText = "✅ Trade salva!";
+        form.reset();
+        saveBtn.disabled = false;
+
+    } catch (err) {
+        statusMsg.innerText = "Erro ao salvar: " + err.message;
+        saveBtn.disabled = false;
+    }
+});
+</script>
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyBGeQ1-IKrCyC8hA2BETaJLidLpuYrCRmk",
