@@ -96,3 +96,157 @@ a {
     text-decoration: none;
 }
 
+.navbar {
+    background: #0a0f14;
+    color: #00eaff;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+}
+
+.btn-logout {
+    background: transparent;
+    border: 1px solid #00eaff;
+    color: #00eaff;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: .3s;
+}
+.btn-logout:hover {
+    background: #00eaff;
+    color: #000;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.card {
+    background: #101820;
+    padding: 14px;
+    text-align: center;
+    border-radius: 10px;
+    border: 1px solid #00eaff22;
+    color: #e0e0e0;
+}
+
+.trade-table {
+    width: 100%;
+    margin-top: 12px;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+.trade-table th {
+    background: #0a0f14;
+    color: #00eaff;
+    padding: 8px;
+}
+.trade-table td {
+    border-bottom: 1px solid #1a2b38;
+    padding: 8px;
+    text-align: center;
+}
+
+.btn-float {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background: #00eaff;
+    color: #000;
+    border: none;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    font-size: 26px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 10px #00eaffaa;
+    transition: .3s;
+}
+
+.btn-float:hover {
+    background: #0099aa;
+    color: #fff;
+}
+.navbar {
+    background: #0a0f14;
+    color: #00eaff;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+}
+
+.btn-logout {
+    background: transparent;
+    border: 1px solid #00eaff;
+    color: #00eaff;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: .3s;
+}
+.btn-logout:hover {
+    background: #00eaff;
+    color: #000;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.card {
+    background: #101820;
+    padding: 14px;
+    text-align: center;
+    border-radius: 10px;
+    border: 1px solid #00eaff22;
+    color: #e0e0e0;
+}
+
+.trade-table {
+    width: 100%;
+    margin-top: 12px;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+.trade-table th {
+    background: #0a0f14;
+    color: #00eaff;
+    padding: 8px;
+}
+.trade-table td {
+    border-bottom: 1px solid #1a2b38;
+    padding: 8px;
+    text-align: center;
+}
+
+.btn-float {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background: #00eaff;
+    color: #000;
+    border: none;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    font-size: 26px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 10px #00eaffaa;
+    transition: .3s;
+}
+
+.btn-float:hover {
+    background: #0099aa;
+    color: #fff;
+}
