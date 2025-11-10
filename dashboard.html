@@ -203,7 +203,81 @@ firebase.auth().onAuthStateChanged(async (user) => {
       cardProfit.textContent = fmtBRL(total); cardCount.textContent = list.length; cardWinrate.textContent = list.length? Math.round((wins/list.length)*100)+'%':'--%';
     }
 
-    function updateChart(list){
+   function updateChart(list) {
+    if (!list.length) return;
+
+    const labels = [];
+    const equity = [];
+    let balance = 0;
+
+    // ✅Ordena pelas datas reais
+    const ordered = [...list].sort((a, b) => new Date(a.data) - new Date(b.data));
+
+    ordered.forEach(t => {
+        const result = parseFloat((t.financeiro || "0").replace(/[^\d-.,]/g, "").replace(",", "."));
+        const date = new Date(t.data);
+        balance += result;
+
+        labels.push(date.toLocaleDateString("pt-BR"));
+        equity.push(balance);
+    });
+
+    const ctx = document.getElementById("equityChart").getContext("2d");
+
+    if (equityChart) {
+        equityChart.data.labels = labels;
+        equityChart.data.datasets[0].data = equity;
+        equityChart.update();
+        return;
+    }
+
+    equityChart = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels,
+            datasets: [{
+                label: "Equity",
+                data: equity,
+                borderWidth: 3,
+                tension: 0.35,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                fill: true,
+                borderColor: "#00E8FF",
+                backgroundColor: "rgba(0, 232, 255, 0.15)",
+                pointBackgroundColor: ctx => {
+                    const v = equity[ctx.dataIndex];
+                    return v >= 0 ? "#00E8FF" : "#FF4E4E";
+                }
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `R$ ${ctx.raw.toFixed(2)}`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { color: "#ffffff" }
+                },
+                y: {
+                    ticks: {
+                        color: "#ffffff",
+                        callback: v => `R$ ${v}`
+                    },
+                    grid: { color: "rgba(255,255,255,0.07)" }
+                }
+            }
+        }
+    });
+}
+
       const rows=[...list].reverse(); const labels=[], data=[]; let acc=0;
       rows.forEach(r=>{ acc+=Number(r.financeiro||0); labels.push(r.data||''); data.push(acc); });
       if(!equityChart){ const ctx = document.getElementById('equityChart').getContext('2d'); equityChart = new Chart(ctx,{ type:'line', data:{ labels, datasets:[{ label:'Equity', data, borderColor:'#00eaff', backgroundColor:'rgba(0,232,255,0.06)', tension:0.2 }]}, options:{ responsive:true, maintainAspectRatio:false } }); } else { equityChart.data.labels = labels; equityChart.data.datasets[0].data = data; equityChart.update(); }
