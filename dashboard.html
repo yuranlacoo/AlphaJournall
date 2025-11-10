@@ -18,7 +18,7 @@
 <body>
 
 <header class="dashboard-header">
-    <h2>📈 Dashboard</h2>
+    <h2> Dashboard</h2>
     <button id="logoutBtn" class="logout-btn">Sair</button>
 </header>
 
@@ -44,7 +44,149 @@
 
 <section style="text-align:center; margin-top: 20px;">
     <a href="register-trade.html" class="add-btn">Registrar Trade</a>
-</section>
+</section> <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AlphaJournal - Calendário de Performance</title>
+<link rel="stylesheet" href="style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>
+
+<style>
+.calendar-container {
+    width: 95%;
+    margin: 20px auto;
+}
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+}
+.calendar-day {
+    border: 1px solid #222;
+    height: 90px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 6px;
+    color: #fff;
+    background: #1c1c1c;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+}
+.calendar-day.win { background: #006400; } /* Verde escuro */
+.calendar-day.loss { background: #8B0000; } /* Vermelho escuro */
+.calendar-day.be { background: #444; } /* Cinza */
+.calendar-header {
+    font-weight: bold;
+    padding: 10px;
+    text-align: center;
+}
+.month-title {
+    text-align: center;
+    margin: 10px 0;
+    font-size: 22px;
+    color: #00E8FF;
+}
+.back-btn {
+    background: #214c5a;
+    padding: 10px 16px;
+    border-radius: 6px;
+    color: white;
+    text-decoration: none;
+    display: inline-block;
+    margin: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<a href="dashboard.html" class="back-btn">⬅ Voltar</a>
+<h2 class="month-title" id="monthTitle">Carregando...</h2>
+<div class="calendar-container">
+    <div class="calendar-grid" id="calendarGrid"></div>
+</div>
+
+<script>
+// ✅ Configuração Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyBGeQ1-IKrCyC8hA2BETaJLidLpuYrCRmk",
+  authDomain: "alphajournal-dc6bb.firebaseapp.com",
+  projectId: "alphajournal-dc6bb",
+  storageBucket: "alphajournal-dc6bb.firebasestorage.app",
+  messagingSenderId: "835722822229",
+  appId: "1:835722822229:web:974ee6dc7b6696f1edcadc"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+auth.onAuthStateChanged(async (user) => {
+    if (!user) return location.href = "index.html";
+
+    const monthNames = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+
+    document.getElementById("monthTitle").textContent = `${monthNames[month]} ${year}`;
+
+    const start = new Date(year, month, 1);
+    const end = new Date(year, month + 1, 0);
+    const days = end.getDate();
+
+    const grid = document.getElementById("calendarGrid");
+    grid.innerHTML = "";
+
+    // ✅ Buscar TRADES
+    const tradesSnap = await db.collection("users")
+        .doc(user.uid)
+        .collection("trades")
+        .get();
+
+    const tradesByDay = {};
+
+    tradesSnap.forEach(doc => {
+        const t = doc.data();
+        const d = new Date(t.date);
+        const day = d.getDate();
+
+        if (!tradesByDay[day]) tradesByDay[day] = [];
+        tradesByDay[day].push(t);
+    });
+
+    // ✅ Montar calendário
+    for (let d = 1; d <= days; d++) {
+        const el = document.createElement("div");
+        el.classList.add("calendar-day");
+        el.innerHTML = `<strong>${d}</strong>`;
+
+        if (tradesByDay[d]) {
+            let profitSum = tradesByDay[d].reduce((acc, t) => acc + Number(t.result), 0);
+
+            if (profitSum > 0) el.classList.add("win");
+            else if (profitSum < 0) el.classList.add("loss");
+            else el.classList.add("be");
+
+            el.title = `Trades: ${tradesByDay[d].length} | Resultado: $${profitSum.toFixed(2)}`;
+        }
+
+        grid.appendChild(el);
+    }
+});
+</script>
+
+</body>
+</html>
+
 
 <script>
 // ✅ Firebase Config
