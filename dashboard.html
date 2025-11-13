@@ -121,7 +121,9 @@ const STORAGE_KEY='alpha_journal_v2';
 let trades=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
 let editIndex=-1,calMonth=(new Date()).getMonth(),calYear=(new Date()).getFullYear(),eqChart=null;
 const $=id=>document.getElementById(id);
-function save(){let trades = JSON.parse(localStorage.getItem("trades") || "[]");}
+function save(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(trades));
+}
 function fmt(v){return 'US$ '+Number(v||0).toFixed(2);}
 function to64(f){return new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(f);});}
 
