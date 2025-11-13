@@ -1,169 +1,111 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AlphaJournal — Calendário</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Firebase compat SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlphaJournall | Calendário</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+  <style>
+    body {
+      background-color: #0f0f10;
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    header {
+      width: 100%;
+      text-align: center;
+      padding: 20px;
+      border-bottom: 1px solid #333;
+    }
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      width: 80%;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+    .stat-box {
+      background: #1a1a1d;
+      padding: 15px 25px;
+      border-radius: 10px;
+      text-align: center;
+      margin: 10px;
+      min-width: 180px;
+    }
+    .calendar {
+      width: 80%;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      margin-top: 20px;
+    }
+    .day {
+      height: 80px;
+      background: #1a1a1d;
+      border-radius: 10px;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .day:hover {
+      background: #27272b;
+    }
+    .green { background: #0b6e4f; }
+    .red { background: #a11d33; }
+    .gray { background: #444; }
+    .month-nav {
+      margin: 10px;
+    }
+    button {
+      background-color: #00bcd4;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      padding: 8px 16px;
+      margin: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0097a7;
+    }
+  </style>
 </head>
 <body>
-  <div class="layout">
-    <aside class="sidebar">
-      <div class="logo"><div class="badge">AJ</div><div><div class="brand-title">AlphaJournal</div><div class="muted small">Trade Journal</div></div></div>
-      <nav class="menu">
-        <a href="dashboard.html">Dashboard</a>
-        <a href="register-trade.html">Registrar Trade</a>
-        <a class="active">Calendário</a>
-        <a href="#">Performance</a>
-      </nav>
-    </aside>
+  <header>
+    <h1>Calendário de Trades</h1>
+    <button onclick="window.location.href='dashboard.html'">⬅ Voltar</button>
+  </header>
 
-    <main class="main">
-      <div class="topbar">
-        <div><div class="muted">Calendário</div><div id="userName" class="bold">—</div></div>
-        <div style="display:flex;gap:10px;align-items:center"><button id="btnPrev" class="btn ghost">&larr;</button><div id="monthLabel" style="font-weight:800"></div><button id="btnNext" class="btn ghost">&rarr;</button></div>
-      </div>
-
-      <div style="display:flex;gap:18px;align-items:flex-start;">
-        <!-- Left: big calendar -->
-        <section style="flex:2">
-          <div class="card" style="padding:18px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-              <div>
-                <div style="font-weight:700;font-size:18px">Resumo do Mês</div>
-                <div class="muted small">Total de trades, P/L, Winrate, Melhor / Pior dia</div>
-              </div>
-              <div style="display:flex;gap:12px">
-                <div class="card" style="padding:12px"><div class="label">Total Trades</div><div id="statTrades" class="value">0</div></div>
-                <div class="card" style="padding:12px"><div class="label">P/L</div><div id="statPL" class="value">R$ 0,00</div></div>
-                <div class="card" style="padding:12px"><div class="label">Winrate</div><div id="statWin" class="value">-- %</div></div>
-              </div>
-            </div>
-
-            <div id="bigCalendar" style="width:100%;">
-              <div class="cal-weekdays" style="margin-bottom:8px"><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div></div>
-              <div class="cal-grid" id="bigCalGrid" style="grid-template-columns:repeat(7,1fr);gap:12px"></div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Right: details for selected day -->
-        <aside style="flex:1">
-          <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-weight:700">Detalhes do Dia</div><div id="selectedDate" class="muted">—</div></div>
-            <div id="dayStats" style="margin-bottom:10px">
-              <div class="label">Total do Dia</div>
-              <div id="dayTotal" class="value">R$ 0,00</div>
-              <div class="label" style="margin-top:6px">Trades</div>
-              <div id="dayCount" class="value">0</div>
-            </div>
-
-            <div><h4>Trades no dia</h4><div id="dayTradesList" style="max-height:520px;overflow:auto"></div></div>
-          </div>
-        </aside>
-      </div>
-
-    </main>
+  <div class="stats">
+    <div class="stat-box"><strong>Total Trades</strong><br>24</div>
+    <div class="stat-box"><strong>P&L</strong><br>$521,29</div>
+    <div class="stat-box"><strong>Best Day</strong><br>$453,55</div>
+    <div class="stat-box"><strong>Worst Day</strong><br>-$133,11</div>
+    <div class="stat-box"><strong>Win Rate</strong><br>50%</div>
   </div>
 
-  <!-- modal simples -->
-  <div id="modal" class="modal" aria-hidden="true"><div class="modal-box"><button id="closeModal" class="btn ghost small">Fechar</button><h4 id="modalAtivo"></h4><div id="modalDate" class="muted"></div><img id="modalImg" alt="Print" style="width:100%;margin-top:10px"/><div id="modalObs" style="white-space:pre-wrap;margin-top:10px"></div></div></div>
+  <div class="month-nav">
+    <button onclick="alert('← Mês anterior')">⬅</button>
+    <strong>Outubro 2025</strong>
+    <button onclick="alert('→ Próximo mês')">➡</button>
+  </div>
 
-  <script src="firebase.js"></script>
-  <script>
-    // calendar.js injetado (modular mínimo)
-    const auth = window.auth; const db = window.db;
-    const bigCalGrid = document.getElementById('bigCalGrid');
-    const monthLabel = document.getElementById('monthLabel');
-    const btnPrev = document.getElementById('btnPrev');
-    const btnNext = document.getElementById('btnNext');
-    const statTrades = document.getElementById('statTrades');
-    const statPL = document.getElementById('statPL');
-    const statWin = document.getElementById('statWin');
-    const selectedDate = document.getElementById('selectedDate');
-    const dayTotal = document.getElementById('dayTotal');
-    const dayCount = document.getElementById('dayCount');
-    const dayTradesList = document.getElementById('dayTradesList');
-
-    const modal = document.getElementById('modal'); const closeModal = document.getElementById('closeModal');
-    closeModal.addEventListener('click', ()=> { modal.style.display='none'; modal.setAttribute('aria-hidden','true'); });
-
-    let calOffset = 0; let tradesCache = [];
-
-    function fmtBRL(v){ return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
-
-    function renderMonth(offset){
-      const now = new Date(); const first = new Date(now.getFullYear(), now.getMonth()+offset,1); const month = first.getMonth(); const year = first.getFullYear();
-      monthLabel.textContent = first.toLocaleString('pt-BR',{month:'long', year:'numeric'});
-
-      // build grid
-      bigCalGrid.innerHTML = '';
-      const startDay = (new Date(year,month,1).getDay()+6)%7; const daysInMonth = new Date(year,month+1,0).getDate();
-      for(let i=0;i<startDay;i++){ const e=document.createElement('div'); e.className='cal-day'; bigCalGrid.appendChild(e); }
-
-      for(let d=1; d<=daysInMonth; d++){
-        const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-        const dayEl = document.createElement('div'); dayEl.className='cal-day'; dayEl.style.minHeight='96px'; dayEl.style.padding='10px';
-        const num = document.createElement('div'); num.className='date-num'; num.textContent = d; dayEl.appendChild(num);
-
-        const trades = tradesCache.filter(t => (t.data||'').slice(0,10) === iso);
-        if(trades.length){
-          const totalVal = trades.reduce((s,tt)=> s + Number(tt.financeiro||0),0);
-          const anyPos = trades.some(t=> Number(t.financeiro||0) > 0);
-          const anyNeg = trades.some(t=> Number(t.financeiro||0) < 0);
-          const anyBE = trades.some(t=> (t.resultado||'').toLowerCase()==='be') || Math.abs(totalVal) < 0.0001;
-
-          if(anyPos && anyNeg) dayEl.classList.add('mix'); else if(anyPos) dayEl.classList.add('tp'); else if(anyNeg) dayEl.classList.add('sl');
-          if(anyBE && !anyPos && !anyNeg) { dayEl.classList.remove('tp','sl','mix'); dayEl.classList.add('be'); }
-
-          // show summary visible (style A: show value inside)
-          const summary = document.createElement('div'); summary.style.marginTop='10px'; summary.style.fontWeight='800'; summary.style.color = totalVal>=0? '#00eaff' : '#ff6b6b'; summary.textContent = fmtBRL(totalVal);
-          dayEl.appendChild(summary);
-
-          const cnt = document.createElement('div'); cnt.style.marginTop='6px'; cnt.style.fontSize='12px'; cnt.textContent = trades.length + ' trade' + (trades.length>1?'s':''); dayEl.appendChild(cnt);
-
-          dayEl.style.cursor='pointer';
-          dayEl.addEventListener('click', ()=> selectDay(iso, trades));
-        }
-        bigCalGrid.appendChild(dayEl);
-      }
-
-      // update month stats
-      const monthTrades = tradesCache.filter(t => t.data && t.data.slice(0,7) === `${year}-${String(month+1).padStart(2,'0')}`);
-      const total = monthTrades.reduce((s,t)=> s + Number(t.financeiro||0),0);
-      const wins = monthTrades.filter(t=> Number(t.financeiro||0) > 0).length;
-      statTrades.textContent = monthTrades.length;
-      statPL.textContent = fmtBRL(total);
-      statWin.textContent = monthTrades.length? Math.round((wins/monthTrades.length)*100)+'%':'--%';
-    }
-
-    function selectDay(dateIso, trades){
-      selectedDate.textContent = dateIso; dayTotal.textContent = fmtBRL(trades.reduce((s,t)=> s + Number(t.financeiro||0),0)); dayCount.textContent = trades.length; dayTradesList.innerHTML = '';
-      trades.forEach(t=>{ const div = document.createElement('div'); div.style.padding='8px'; div.style.borderBottom='1px solid rgba(255,255,255,0.02)'; div.innerHTML = `<div style="font-weight:800">${t.ativo} — ${fmtBRL(t.financeiro)}</div><div class="muted small">${t.tipo} • ${t.resultado} • ${t.setup||'-'}</div><div style="margin-top:6px">${t.obs||''}</div>`; if(t.imageURL){ const im = document.createElement('img'); im.src = t.imageURL; im.style.width='100%'; im.style.marginTop='8px'; im.style.borderRadius='8px'; im.addEventListener('click', ()=>{ openModal(t); }); div.appendChild(im); } dayTradesList.appendChild(div); });
-    }
-
-    function openModal(t){ document.getElementById('modalAtivo').textContent = t.ativo; document.getElementById('modalDate').textContent = t.data; document.getElementById('modalImg').src = t.imageURL || ''; document.getElementById('modalObs').textContent = t.obs || ''; modal.style.display='flex'; modal.setAttribute('aria-hidden','false'); }
-
-    btnPrev.addEventListener('click', ()=>{ calOffset--; renderMonth(calOffset); });
-    btnNext.addEventListener('click', ()=>{ calOffset++; renderMonth(calOffset); });
-
-    // fetch trades for user
-    auth.onAuthStateChanged(user=>{
-      if(!user) return window.location.href='index.html';
-      document.getElementById('userName').textContent = user.email.split('@')[0];
-      const ref = db.collection('users').doc(user.uid).collection('trades').orderBy('createdAt','desc');
-      ref.onSnapshot(snap=>{
-        tradesCache = snap.docs.map(d=> ({ id:d.id, ...d.data() }));
-        renderMonth(calOffset);
-      }, err=>{ console.error(err); alert('Erro ao carregar trades: ' + err.message); });
-    });
-  </script>
+  <div class="calendar">
+    <div class="day red">20</div>
+    <div class="day red">21</div>
+    <div class="day red">22</div>
+    <div class="day green">23</div>
+    <div class="day green">19</div>
+    <div class="day red">26</div>
+  </div>
 </body>
 </html>
-
