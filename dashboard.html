@@ -3,147 +3,412 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>AlphaJournal</title>
+<title>AlphaJournal — Dashboard</title>
+
+<!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Styles -->
 <style>
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#0d0f11;color:#eee}
-header{display:flex;justify-content:space-between;align-items:center;padding:15px 25px;background:#101214;border-bottom:1px solid #222}
-h1{color:#00e0ff;font-size:20px;margin:0}
-button{cursor:pointer;border:none;border-radius:6px;padding:8px 12px;font-weight:bold}
-button.primary{background:#00e0ff;color:#000}
-button.secondary{background:#1b1d20;color:#ccc}
-main{display:flex;gap:20px;padding:20px}
-.left{flex:2;background:#151719;padding:15px;border-radius:10px}
-.right{width:350px;background:#151719;padding:15px;border-radius:10px}
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{padding:8px;border-bottom:1px solid #222;text-align:left}
-.win{color:#00ff8f} .loss{color:#ff5e5e} .be{color:#888}
-.thumb{width:40px;height:32px;object-fit:cover;border-radius:5px;margin-right:5px;cursor:pointer}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);justify-content:center;align-items:center;z-index:10}
-.modal-content{background:#111;padding:20px;border-radius:8px;max-width:500px;width:90%}
-.modal-content input,textarea,select{width:100%;margin:6px 0;padding:8px;border-radius:6px;border:1px solid #333;background:#0d0f11;color:#eee}
-.close{background:#00e0ff;color:#000;margin-top:10px}
-.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:10px}
-.day{height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#222;color:#bbb}
-.day.win{background:#007f5f;color:#fff}
-.day.loss{background:#b22222;color:#fff}
-.day.be{background:#666;color:#fff}
-.chart{margin-top:15px}
+  :root{
+    --bg:#0d0f11; --panel:#151719; --muted:#9aa0a6; --accent:#00e0ff;
+    --win:#007f5f; --loss:#b22222; --be:#6e6e6e;
+    --card-shadow: 0 6px 18px rgba(0,0,0,0.5);
+  }
+
+  /* Light theme variables (used when .light on body) */
+  body.light{ --bg:#f5f7f8; --panel:#ffffff; --muted:#556; --accent:#0077cc; color:#111 }
+  body.light { --win:#0b7a4b; --loss:#b22222; --be:#777; }
+
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color: #e9eef0;}
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-bottom:1px solid rgba(255,255,255,0.02);background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent)}
+  h1{margin:0;color:var(--accent);letter-spacing:0.6px}
+  .controls{display:flex;gap:10px;align-items:center}
+
+  button{cursor:pointer;border:none;border-radius:8px;padding:8px 12px;font-weight:700}
+  .btn-primary{background:var(--accent);color:#000}
+  .btn-ghost{background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.03)}
+  .btn-small{padding:6px 8px;font-size:13px;border-radius:6px}
+
+  main{display:flex;gap:18px;padding:18px}
+  .left{flex:2;background:var(--panel);padding:18px;border-radius:12px;box-shadow:var(--card-shadow)}
+  .right{width:360px;background:var(--panel);padding:18px;border-radius:12px;box-shadow:var(--card-shadow)}
+
+  /* Summary */
+  .summary{display:flex;gap:12px;margin-bottom:14px}
+  .stat{flex:1;background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;text-align:center}
+  .stat .label{font-size:12px;color:var(--muted);margin-bottom:6px}
+  .stat .value{font-size:18px;font-weight:800}
+
+  /* Table */
+  .table-wrap{overflow:auto;max-height:350px;border-radius:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);padding:8px}
+  table{width:100%;border-collapse:collapse}
+  thead th{font-size:13px;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.03)}
+  tbody td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,0.02);vertical-align:middle}
+  .win{color:var(--win);font-weight:800}
+  .loss{color:var(--loss);font-weight:800}
+  .be{color:var(--be);font-weight:800}
+  .actions{display:flex;gap:8px;align-items:center}
+
+  /* thumbnails */
+  .thumb{width:44px;height:34px;object-fit:cover;border-radius:6px;border:1px solid rgba(255,255,255,0.03);cursor:pointer;margin-right:6px}
+
+  /* calendar */
+  .cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .cal-title{font-weight:700}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+  .cal-day{height:44px;border-radius:8px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;color:#ddd}
+  .cal-day.win{background:var(--win);color:#fff}
+  .cal-day.loss{background:var(--loss);color:#fff}
+  .cal-day.be{background:var(--be);color:#fff}
+  .muted{color:var(--muted);font-size:13px;margin-bottom:6px}
+
+  /* Chart */
+  .chart-wrap{margin-top:14px;background:transparent;border-radius:8px;padding:6px}
+
+  /* modal */
+  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);z-index:9999}
+  .card{background:var(--panel);padding:14px;border-radius:10px;max-width:900px;width:95%;max-height:90%;overflow:auto}
+  .modal img{max-width:100%;max-height:80vh;border-radius:8px}
+  .modal .close{display:inline-block;margin-top:12px;padding:8px 12px;border-radius:8px;background:var(--accent);color:#000;font-weight:700;cursor:pointer}
+
+  /* form */
+  .form-row{display:flex;gap:8px;margin-bottom:8px}
+  input[type="text"],input[type="date"],textarea,select{width:100%;padding:9px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+  textarea{resize:vertical;min-height:80px}
+  .file-input{display:block}
+
+  /* tiny responsive */
+  @media(max-width:980px){
+    main{flex-direction:column;padding:12px}
+    .right{width:100%}
+  }
 </style>
 </head>
-<body>
+<body class="dark">
 
 <header>
   <h1>AlphaJournal</h1>
-  <div>
-    <button class="primary" id="addBtn">+ Adicionar Trade</button>
-    <button class="secondary" id="clearBtn">Limpar Tudo</button>
+  <div class="controls">
+    <button id="btnExport" class="btn-ghost btn-small" title="Exportar CSV">Exportar CSV</button>
+    <button id="btnTheme" class="btn-ghost btn-small" title="Alternar tema">Tema</button>
+    <button id="btnAdd" class="btn-primary">+ Adicionar Trade</button>
+    <button id="btnClear" class="btn-ghost btn-small">Limpar Tudo</button>
   </div>
 </header>
 
 <main>
-  <div class="left">
-    <h3>Resumo</h3>
-    <p id="summary">Lucro: US$ 0.00 | Winrate: 0% | Trades: 0</p>
-    <table>
-      <thead><tr><th>Par</th><th>Resultado</th><th>Data</th><th>Comentário</th><th>Imagens</th><th>Ações</th></tr></thead>
-      <tbody id="tbody"></tbody>
-    </table>
-    <div class="chart"><canvas id="equityChart"></canvas></div>
-  </div>
-
-  <div class="right">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <button class="secondary" id="prevMonth">←</button>
-      <h4 id="monthLabel">Mês</h4>
-      <button class="secondary" id="nextMonth">→</button>
+  <section class="left">
+    <div class="summary">
+      <div class="stat"><div class="label">Lucro Total</div><div id="totalProfit" class="value">US$ 0.00</div></div>
+      <div class="stat"><div class="label">Winrate</div><div id="winRate" class="value">0%</div></div>
+      <div class="stat"><div class="label">Trades</div><div id="tradeCount" class="value">0</div></div>
     </div>
- 
-    <div class="calendar" id="calendar"></div>
-  </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Par</th><th>Resultado</th><th>Data</th><th>RR</th><th>Comentário</th><th>Imagens</th><th>Direção</th><th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyTrades"></tbody>
+      </table>
+    </div>
+
+    <div class="chart-wrap">
+      <canvas id="equityChart"></canvas>
+    </div>
+  </section>
+
+  <aside class="right">
+    <div class="cal-header">
+      <button id="prevMonth" class="btn-ghost btn-small">←</button>
+      <div class="cal-title" id="calTitle">Mês</div>
+      <button id="nextMonth" class="btn-ghost btn-small">→</button>
+    </div>
+
+    <div class="muted">verde=win • vermelho=loss • cinza=breakeven</div>
+    <div style="height:8px"></div>
+    <div class="cal-grid" id="calGrid"></div>
+  </aside>
 </main>
 
-<!-- MODAL -->
-<div class="modal" id="tradeModal">
-  <div class="modal-content">
-    <h3 id="modalTitle">Nova Trade</h3>
-    <input id="pair" placeholder="Par (ex: XAUUSD)">
-    <input id="result" placeholder="Resultado (ex: 30 ou -20)">
-    <input id="date" type="date">
-    <textarea id="comment" placeholder="Comentário"></textarea>
-    <input id="img1" type="file" accept="image/*">
-    <input id="img2" type="file" accept="image/*">
-    <button class="close" id="saveBtn">Salvar</button>
+<!-- Modal: Image viewer -->
+<div class="modal" id="imgModal">
+  <div class="card" role="dialog" aria-modal="true">
+    <img id="imgViewer" src="" alt="Imagem"/>
+    <div style="text-align:right"><button class="close" id="closeImg">Fechar</button></div>
   </div>
 </div>
 
-<script>
-let trades = JSON.parse(localStorage.getItem("trades")||"[]");
-let editIndex=-1,month=new Date().getMonth(),year=new Date().getFullYear();
-let chart;
+<!-- Modal: Comment -->
+<div class="modal" id="commentModal">
+  <div class="card">
+    <div id="commentContent" style="white-space:pre-wrap"></div>
+    <div style="text-align:right"><button class="close" id="closeComment">Fechar</button></div>
+  </div>
+</div>
 
-function save(){localStorage.setItem("trades",JSON.stringify(trades));}
-function fmt(v){return "US$ "+Number(v).toFixed(2);}
-function render(){
-  const tbody=document.getElementById("tbody");
-  tbody.innerHTML="";
-  let total=0,wins=0;
-  trades.forEach((t,i)=>{
-    total+=t.result;if(t.result>0)wins++;
-    const tr=document.createElement("tr");
-    const cls=t.result>0?"win":t.result<0?"loss":"be";
-    const imgs=t.imgs?.map(s=>`<img src="${s}" class="thumb">`).join("")||"—";
-    tr.innerHTML=`<td>${t.pair}</td><td class="${cls}">${t.result>0?'+':''}${fmt(t.result)}</td><td>${t.date}</td><td>${t.comment||''}</td><td>${imgs}</td>
-    <td><button onclick="edit(${i})">✏️</button><button onclick="del(${i})">🗑️</button></td>`;
+<!-- Modal: Form add/edit -->
+<div class="modal" id="formModal">
+  <div class="card" style="max-width:640px">
+    <h3 id="formTitle">Adicionar Trade</h3>
+    <div style="margin-top:12px">
+      <div class="form-row">
+        <input id="fPair" type="text" placeholder="Par (ex: XAUUSD)">
+        <input id="fResult" type="text" placeholder="Resultado (ex: 30 ou -20)">
+      </div>
+      <div class="form-row">
+        <input id="fDate" type="date">
+        <input id="fRR" type="text" placeholder="RR (ex: 1:3)" style="width:180px">
+        <select id="fDir" style="width:120px">
+          <option>BUY</option><option>SELL</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <textarea id="fComment" placeholder="Comentário (visível com Ver comentário)"></textarea>
+      </div>
+      <div class="form-row">
+        <input id="fImg1" class="file-input" type="file" accept="image/*">
+        <input id="fImg2" class="file-input" type="file" accept="image/*">
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px">
+        <button id="btnCancel" class="btn-ghost btn-small">Cancelar</button>
+        <button id="btnSave" class="btn-primary btn-small">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Script -->
+<script>
+/* ================== Setup & State ================== */
+const STORAGE_KEY = 'alpha_journal_v2';
+let trades = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+let editIndex = -1;
+let calMonth = (new Date()).getMonth();
+let calYear = (new Date()).getFullYear();
+let eqChart = null;
+
+/* ======= Helpers ======= */
+const $ = id => document.getElementById(id);
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(trades)); }
+function fmtBR(v){ return 'US$ ' + Number(v||0).toFixed(2); }
+function toBase64(file){ return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); }); }
+
+/* ======= Render Table ======= */
+function renderTable(){
+  const tbody = $('tbodyTrades'); tbody.innerHTML = '';
+  let total=0, wins=0;
+  trades.forEach((t, i) => {
+    total += Number(t.result||0);
+    if(Number(t.result)>0) wins++;
+    const cls = Number(t.result)>0 ? 'win' : Number(t.result)<0 ? 'loss' : 'be';
+    const shortComment = (t.comment || '').length > 30 ? (t.comment||'').slice(0,30) + '...' : (t.comment||'');
+    const commentElm = `<div style="cursor:pointer;color:var(--accent)" onclick="openComment(${i})">${shortComment || '—'}</div>`;
+    const imgs = (t.imgs && t.imgs.length) ? t.imgs.map(src => `<img src="${src}" class="thumb" onclick="openImg('${src}')">`).join('') : '—';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${t.pair || '—'}</td>
+      <td class="${cls}">${Number(t.result)>=0?'+':''}${fmtBR(t.result)}</td>
+      <td>${t.date || ''}</td>
+      <td>${t.rr || ''}</td>
+      <td>${commentElm}</td>
+      <td>${imgs}</td>
+      <td>${t.dir || ''}</td>
+      <td class="actions">
+        <button class="btn-small" onclick="openForm(${i})">✏️</button>
+        <button class="btn-small" onclick="removeTrade(${i})">🗑️</button>
+      </td>
+    `;
     tbody.appendChild(tr);
   });
-  document.getElementById("summary").innerText=`Lucro: ${fmt(total)} | Winrate: ${trades.length?Math.round((wins/trades.length)*100):0}% | Trades: ${trades.length}`;
-  save();renderCalendar();renderChart();
+
+  $('totalProfit').textContent = fmtBR(total);
+  $('tradeCount').textContent = trades.length;
+  $('winRate').textContent = trades.length ? Math.round((wins/trades.length)*100) + '%' : '0%';
+  save();
+  renderChart();
+  renderCalendar();
 }
+
+/* ======= Chart ======= */
+function renderChart(){
+  const canvas = $('equityChart');
+  // order by date
+  const ordered = [...trades].sort((a,b)=> new Date(a.date) - new Date(b.date));
+  let running = 0;
+  const labels = ordered.map(t => t.date);
+  const data = ordered.map(t => (running += Number(t.result||0)));
+
+  if(eqChart) eqChart.destroy();
+  eqChart = new Chart(canvas.getContext('2d'), {
+    type:'line',
+    data:{ labels, datasets:[{ label:'Equity', data, borderColor: getComputedStyle(document.body).getPropertyValue('--accent') || '#00e0ff', backgroundColor: 'rgba(0,224,255,0.08)', tension:0.25, fill:true }]},
+    options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color: getComputedStyle(document.body).color || '#888' }},y:{ticks:{color: getComputedStyle(document.body).color || '#888'}}}
+  });
+}
+
+/* ======= Calendar ======= */
 function renderCalendar(){
-  const c=document.getElementById("calendar");c.innerHTML="";
-  const label=new Date(year,month,1).toLocaleString("pt-BR",{month:"long",year:"numeric"});
-  document.getElementById("monthLabel").innerText=label.charAt(0).toUpperCase()+label.slice(1);
-  const days=new Date(year,month+1,0).getDate();
-  for(let d=1;d<=days;d++){
-    const div=document.createElement("div");div.className="day";div.innerText=d;
-    const date=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const ts=trades.filter(t=>t.date===date);
-    if(ts.length){const sum=ts.reduce((a,b)=>a+b.result,0);div.classList.add(sum>0?"win":sum<0?"loss":"be");}
-    c.appendChild(div);
+  const grid = $('calGrid'); grid.innerHTML = '';
+  const firstDay = new Date(calYear, calMonth, 1).getDay(); // 0=Sun
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  // set title
+  const title = new Date(calYear, calMonth, 1).toLocaleString('pt-BR',{ month:'long', year:'numeric' });
+  $('calTitle').textContent = title.charAt(0).toUpperCase() + title.slice(1);
+
+  // blanks for firstDay (Sunday start)
+  for(let i=0;i<firstDay;i++){ const b = document.createElement('div'); grid.appendChild(b); }
+
+  for(let d=1; d<=daysInMonth; d++){
+    const el = document.createElement('div'); el.className='cal-day'; el.textContent = d;
+    const iso = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayTrades = trades.filter(t => t.date === iso);
+    if(dayTrades.length){
+      const profit = dayTrades.reduce((s,t)=> s + Number(t.result||0), 0);
+      if(profit > 0) el.classList.add('win');
+      else if(profit < 0) el.classList.add('loss');
+      else el.classList.add('be');
+      // click to show day's trades: open comment modal listing trades
+      el.style.cursor = 'pointer';
+      el.onclick = () => {
+        const list = dayTrades.map(dt => `${dt.date} • ${dt.pair} • ${Number(dt.result)>=0?'+':''}${fmtBR(dt.result)} • ${dt.dir}`).join('\\n');
+        openCommentText(list);
+      };
+    }
+    grid.appendChild(el);
   }
 }
-function renderChart(){
-  const ctx=document.getElementById("equityChart");
-  let eq=0,labels=[],data=[];
-  trades.sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(t=>{eq+=t.result;labels.push(t.date);data.push(eq);});
-  if(chart)chart.destroy();
-  chart=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'Equity',data,borderColor:'#00e0ff',fill:true,tension:.3}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#888'}},y:{ticks:{color:'#888'}}}}});
+
+/* ======= Modals & actions ======= */
+function openImg(src){ $('imgViewer').src = src; $('imgModal').style.display = 'flex'; }
+function closeImg(){ $('imgViewer').src=''; $('imgModal').style.display='none'; }
+$('closeImg').addEventListener('click', closeImg);
+
+function openComment(i){ const text = trades[i].comment || '(Sem comentário)'; openCommentText(text); }
+function openCommentText(text){ $('commentContent').textContent = text; $('commentModal').style.display = 'flex'; }
+$('closeComment').addEventListener('click', ()=> $('commentModal').style.display='none');
+
+function openForm(i = -1){
+  editIndex = i;
+  $('formTitle').textContent = i === -1 ? 'Adicionar Trade' : 'Editar Trade';
+  // populate
+  const t = i === -1 ? {} : trades[i];
+  $('fPair').value = t.pair || '';
+  $('fResult').value = t.result || '';
+  $('fDate').value = t.date || new Date().toISOString().slice(0,10);
+  $('fRR').value = t.rr || '';
+  $('fDir').value = t.dir || 'BUY';
+  $('fComment').value = t.comment || '';
+  $('fImg1').value = '';
+  $('fImg2').value = '';
+  $('formModal').style.display = 'flex';
 }
-function openModal(i=-1){editIndex=i;document.getElementById("tradeModal").style.display="flex";
-  const t=i==-1?{}:trades[i];document.getElementById("pair").value=t.pair||'';document.getElementById("result").value=t.result||'';document.getElementById("date").value=t.date||'';document.getElementById("comment").value=t.comment||'';
+function closeForm(){ $('formModal').style.display = 'none'; }
+
+async function saveForm(){
+  const pair = $('fPair').value.trim();
+  const result = Number($('fResult').value.trim());
+  const date = $('fDate').value;
+  const rr = $('fRR').value.trim();
+  const dir = $('fDir').value;
+  const comment = $('fComment').value.trim();
+
+  if(!pair || !date || isNaN(result)){ alert('Par, Data e Resultado são obrigatórios (resultado numérico).'); return; }
+
+  const imgs = [];
+  const f1 = $('fImg1').files[0], f2 = $('fImg2').files[0];
+  if(f1) imgs.push(await toBase64(f1));
+  if(f2) imgs.push(await toBase64(f2));
+
+  const payload = { pair, result, date, rr, dir, comment, imgs };
+
+  if(editIndex === -1){
+    trades.push(payload);
+  } else {
+    // preserve old images if none uploaded
+    if(imgs.length === 0 && trades[editIndex].imgs) payload.imgs = trades[editIndex].imgs;
+    trades[editIndex] = payload;
+  }
+
+  closeForm();
+  renderTable();
 }
-function closeModal(){document.getElementById("tradeModal").style.display="none";}
-async function saveTrade(){
-  const pair=document.getElementById("pair").value.trim(),result=Number(document.getElementById("result").value||0),date=document.getElementById("date").value,comment=document.getElementById("comment").value.trim();
-  const f1=document.getElementById("img1").files[0],f2=document.getElementById("img2").files[0];
-  const imgs=[];
-  if(f1)imgs.push(await toB64(f1));
-  if(f2)imgs.push(await toB64(f2));
-  const obj={pair,result,date,comment,imgs};
-  if(editIndex==-1)trades.push(obj);else trades[editIndex]=obj;
-  closeModal();render();
+
+/* remove trade */
+function removeTrade(i){
+  if(confirm('Deseja apagar esta trade?')){
+    trades.splice(i,1);
+    renderTable();
+  }
 }
-function del(i){if(confirm("Remover trade?")){trades.splice(i,1);render();}}
-function edit(i){openModal(i);}
-function toB64(f){return new Promise(r=>{const rd=new FileReader();rd.onload=()=>r(rd.result);rd.readAsDataURL(f);});}
-document.getElementById("addBtn").onclick=()=>openModal(-1);
-document.getElementById("saveBtn").onclick=saveTrade;
-document.getElementById("tradeModal").onclick=e=>{if(e.target.id==="tradeModal")closeModal();}
-document.getElementById("clearBtn").onclick=()=>{if(confirm("Apagar todas as trades?")){trades=[];save();render();}};
-document.getElementById("prevMonth").onclick=()=>{month--;if(month<0){month=11;year--;}renderCalendar();};
-document.getElementById("nextMonth").onclick=()=>{month++;if(month>11){month=0;year++;}renderCalendar();};
-render();
+
+/* Export CSV */
+function exportCSV(){
+  if(!trades.length){ alert('Nenhuma trade para exportar'); return; }
+  const header = ['pair','result','date','rr','dir','comment','imgs'];
+  const rows = trades.map(t => [
+    `"${(t.pair||'').replace(/"/g,'""')}"`,
+    Number(t.result||0),
+    t.date || '',
+    `"${(t.rr||'').replace(/"/g,'""')}"`,
+    `"${(t.dir||'').replace(/"/g,'""')}"`,
+    `"${(t.comment||'').replace(/"/g,'""')}"`,
+    `"${(t.imgs || []).join('|')}"` // images base64 concatenated with |
+  ]);
+  const csv = [header.join(','), ...rows.map(r=>r.join(','))].join('\\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'alpha_journal_trades.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* Theme toggle */
+function applyTheme(isLight){
+  if(isLight) document.body.classList.add('light'); else document.body.classList.remove('light');
+  // re-render chart to pick up colors
+  renderChart();
+}
+
+/* ================== Wire events ================== */
+$('btnAdd').addEventListener('click', ()=> openForm(-1));
+$('btnClear').addEventListener('click', ()=> { if(confirm('Apagar todas as trades?')){ trades=[]; save(); renderTable(); }});
+$('btnExport').addEventListener('click', exportCSV);
+$('btnTheme').addEventListener('click', ()=> { const isLight = document.body.classList.contains('light'); applyTheme(!isLight); localStorage.setItem('aj_theme_light', (!isLight)); });
+
+$('btnSave')?.addEventListener('click', saveForm);
+$('btnCancel')?.addEventListener('click', closeForm);
+
+// modal close by clicking outside
+$('imgModal').addEventListener('click', (e) => { if(e.target.id==='imgModal') closeImg(); });
+$('commentModal').addEventListener('click', (e) => { if(e.target.id==='commentModal') $('commentModal').style.display='none'; });
+$('formModal').addEventListener('click', (e) => { if(e.target.id==='formModal') closeForm(); });
+
+// calendar nav
+$('prevMonth').addEventListener('click', ()=> { calMonth--; if(calMonth<0){ calMonth=11; calYear--; } renderCalendar(); });
+$('nextMonth').addEventListener('click', ()=> { calMonth++; if(calMonth>11){ calMonth=0; calYear++; } renderCalendar(); });
+
+/* ================== Init ================== */
+// apply saved theme or default dark
+const savedTheme = localStorage.getItem('aj_theme_light');
+applyTheme(savedTheme === 'true');
+
+// Ensure default date for new forms
+document.addEventListener('DOMContentLoaded', ()=> {
+  // default fDate to today
+  const d = new Date().toISOString().slice(0,10);
+  if(!$('fDate').value) $('fDate').value = d;
+
+  // wire save button (ensure exists)
+  const saveBtn = $('btnSave');
+  if(saveBtn) saveBtn.addEventListener('click', saveForm);
+
+  renderTable();
+  renderCalendar();
+});
 </script>
 </body>
 </html>
