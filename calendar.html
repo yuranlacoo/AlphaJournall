@@ -145,9 +145,17 @@
   <script>
     let currentDate = new Date();
 
-    function getTrades() {
-      return JSON.parse(localStorage.getItem("trades") || "[]");
-    }
+   function getTrades() {
+  // Lê a mesma key que o dashboard usa
+  const raw = localStorage.getItem('alpha_journal_v2');
+  if (!raw) return [];
+  try {
+    return JSON.parse(raw);
+  } catch (e) {
+    console.error('Erro a parsear alpha_journal_v2:', e);
+    return [];
+  }
+}
 
     function renderCalendar() {
       const trades = getTrades();
@@ -223,11 +231,13 @@
       renderCalendar();
     }
 
-    window.addEventListener("storage", (event) => {
-      if (event.key === "trades") {
-        renderCalendar();
-      }
-    });
+// Atualiza quando a chave usada pelo dashboard muda
+window.addEventListener("storage", (event) => {
+  if (event.key === "alpha_journal_v2") {
+    renderCalendar();
+  }
+});
+
 
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") {
