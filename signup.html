@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AlphaJournal — Criar Conta</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #0d0f11;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+.container {
+  background: #151719;
+  padding: 30px;
+  border-radius: 10px;
+  width: 320px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+}
+h2 { color: #00e0ff; text-align: center; }
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: none;
+  background: #222;
+  color: #fff;
+}
+button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #00e0ff;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+}
+a {
+  display: block;
+  text-align: center;
+  margin-top: 10px;
+  color: #00e0ff;
+  text-decoration: none;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>Criar Conta</h2>
+  <input id="email" type="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Senha">
+  <button onclick="signup()">Registrar</button>
+  <a href="login.html">Já tenho conta</a>
+</div>
+<script src="js/auth.js"></script>
+</body>
+</html>
