@@ -174,7 +174,11 @@
 
       for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-        const dayTrades = trades.filter(t => t.date === dateStr);
+       const dayTrades = trades.filter(t => {
+  const normalized = new Date(t.date).toISOString().slice(0, 10);
+  return normalized === dateStr;
+});
+
 
         const div = document.createElement("div");
         div.className = "day";
