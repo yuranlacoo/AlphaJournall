@@ -283,8 +283,14 @@ document.getElementById("addTradeBtn").onclick = () => {
   const comment = prompt("Comentário:");
   const dir = prompt("Direção (BUY/SELL):");
   const date = prompt("Data (AAAA-MM-DD):", new Date().toISOString().split("T")[0]);
+   const img1 = prompt("URL da 1ª imagem (deixe vazio se não tiver):");
+  const img2 = prompt("URL da 2ª imagem (opcional):");
+  const imgs = [];
+  if (img1) imgs.push(img1);
+  if (img2) imgs.push(img2);
+
   if (pair && !isNaN(result)) {
-    trades.push({ pair, result, rr, comment, dir, date });
+    trades.push({ pair, result, rr, comment, dir, date, imgs });
     renderTable();
   }
 };
