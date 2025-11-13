@@ -1,82 +1,64 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AlphaJournal - Login</title>
-  <style>
-    body {
-      background: #0f0f0f;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      font-family: Arial, sans-serif;
-    }
-    .login-box {
-      background: #1a1a1a;
-      padding: 20px;
-      border-radius: 10px;
-      width: 300px;
-      text-align: center;
-    }
-    input {
-      width: 90%;
-      padding: 8px;
-      margin: 8px 0;
-      border-radius: 5px;
-      border: none;
-    }
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #00bfff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover { background: #0088cc; }
-    a { color: #00bfff; text-decoration: none; display:block;margin-top:10px; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AlphaJournal — Login</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #0d0f11;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+.container {
+  background: #151719;
+  padding: 30px;
+  border-radius: 10px;
+  width: 320px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+}
+h2 { color: #00e0ff; text-align: center; }
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: none;
+  background: #222;
+  color: #fff;
+}
+button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #00e0ff;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+}
+a {
+  display: block;
+  text-align: center;
+  margin-top: 10px;
+  color: #00e0ff;
+  text-decoration: none;
+}
+</style>
 </head>
-
 <body>
-  <div class="login-box">
-    <h2>Entrar</h2>
-    <input type="text" id="username" placeholder="Usuário" />
-    <input type="password" id="password" placeholder="Senha" />
-    <button id="btnLogin">Entrar</button>
-    <a href="#" id="createAccount">Criar conta</a>
-  </div>
-
-  <script>
-    const userKey = "aj_user";
-    const loggedKey = "aj_logged";
-
-    document.getElementById("btnLogin").onclick = () => {
-      const u = document.getElementById("username").value.trim();
-      const p = document.getElementById("password").value.trim();
-      const stored = JSON.parse(localStorage.getItem(userKey));
-
-      if (!stored) return alert("Nenhum usuário encontrado. Crie uma conta primeiro.");
-      if (stored.user === u && stored.pass === p) {
-        localStorage.setItem(loggedKey, u);
-        window.location = "dashboard.html";
-      } else {
-        alert("Usuário ou senha incorretos!");
-      }
-    };
-
-    document.getElementById("createAccount").onclick = () => {
-      const u = prompt("Digite um nome de usuário:");
-      const p = prompt("Digite uma senha:");
-      if (u && p) {
-        localStorage.setItem(userKey, JSON.stringify({ user: u, pass: p }));
-        alert("Conta criada! Agora pode entrar.");
-      }
-    };
-  </script>
+<div class="container">
+  <h2>Login</h2>
+  <input id="email" type="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Senha">
+  <button onclick="login()">Entrar</button>
+  <a href="signup.html">Criar conta</a>
+</div>
+<script src="js/auth.js"></script>
 </body>
 </html>
+
