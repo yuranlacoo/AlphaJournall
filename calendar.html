@@ -5,107 +5,219 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AlphaJournall | Calendário</title>
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+
   <style>
     body {
       background-color: #0f0f10;
-      color: white;
-      font-family: 'Poppins', sans-serif;
+      color: #fff;
+      font-family: "Poppins", sans-serif;
       margin: 0;
       padding: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
+
     header {
       width: 100%;
       text-align: center;
       padding: 20px;
       border-bottom: 1px solid #333;
     }
+
+    header button {
+      background-color: #00bcd4;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-top: 10px;
+    }
+
+    header button:hover {
+      background-color: #0097a7;
+    }
+
     .stats {
       display: flex;
       justify-content: space-around;
-      width: 80%;
-      margin: 20px 0;
       flex-wrap: wrap;
+      width: 90%;
+      margin: 20px 0;
     }
+
     .stat-box {
       background: #1a1a1d;
       padding: 15px 25px;
       border-radius: 10px;
       text-align: center;
       margin: 10px;
-      min-width: 180px;
+      min-width: 150px;
     }
-    .calendar {
-      width: 80%;
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 5px;
-      margin-top: 20px;
-    }
-    .day {
-      height: 80px;
-      background: #1a1a1d;
-      border-radius: 10px;
-      text-align: center;
+
+    .month-nav {
       display: flex;
       justify-content: center;
       align-items: center;
-      flex-direction: column;
+      gap: 15px;
+      margin: 10px 0;
+    }
+
+    .month-nav button {
+      background: #00bcd4;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 5px 12px;
       cursor: pointer;
       transition: 0.3s;
     }
-    .day:hover {
-      background: #27272b;
+
+    .month-nav button:hover {
+      background: #0097a7;
     }
+
+    .calendar {
+      width: 90%;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+    }
+
+    .day {
+      background: #1a1a1d;
+      border-radius: 10px;
+      padding: 8px;
+      min-height: 100px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      font-size: 14px;
+      position: relative;
+      transition: 0.2s;
+    }
+
+    .day:hover {
+      background: #222;
+    }
+
+    .day-number {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
     .green { background: #0b6e4f; }
     .red { background: #a11d33; }
     .gray { background: #444; }
-    .month-nav {
-      margin: 10px;
+
+    .trade-info {
+      font-size: 12px;
+      text-align: center;
     }
-    button {
-      background-color: #00bcd4;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      padding: 8px 16px;
-      margin: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0097a7;
-    }
+
   </style>
 </head>
 <body>
+
   <header>
     <h1>Calendário de Trades</h1>
-    <button onclick="window.location.href='dashboard.html'">⬅ Voltar</button>
+    <button onclick="window.location.href='dashboard.html'">⬅ Voltar ao Dashboard</button>
   </header>
 
   <div class="stats">
-    <div class="stat-box"><strong>Total Trades</strong><br>24</div>
-    <div class="stat-box"><strong>P&L</strong><br>$521,29</div>
-    <div class="stat-box"><strong>Best Day</strong><br>$453,55</div>
-    <div class="stat-box"><strong>Worst Day</strong><br>-$133,11</div>
-    <div class="stat-box"><strong>Win Rate</strong><br>50%</div>
+    <div class="stat-box"><strong>Total Trades</strong><br><span id="totalTrades">0</span></div>
+    <div class="stat-box"><strong>P&L</strong><br><span id="totalPL">$0.00</span></div>
+    <div class="stat-box"><strong>Best Day</strong><br><span id="bestDay">$0.00</span></div>
+    <div class="stat-box"><strong>Worst Day</strong><br><span id="worstDay">$0.00</span></div>
+    <div class="stat-box"><strong>Win Rate</strong><br><span id="winRate">0%</span></div>
   </div>
 
   <div class="month-nav">
-    <button onclick="alert('← Mês anterior')">⬅</button>
-    <strong>Outubro 2025</strong>
-    <button onclick="alert('→ Próximo mês')">➡</button>
+    <button onclick="changeMonth(-1)">⬅</button>
+    <h2 id="monthYear"></h2>
+    <button onclick="changeMonth(1)">➡</button>
   </div>
 
-  <div class="calendar">
-    <div class="day red">20</div>
-    <div class="day red">21</div>
-    <div class="day red">22</div>
-    <div class="day green">23</div>
-    <div class="day green">19</div>
-    <div class="day red">26</div>
-  </div>
+  <div id="calendar" class="calendar"></div>
+
+  <script>
+    const trades = JSON.parse(localStorage.getItem("trades") || "[]");
+    let currentDate = new Date();
+
+    function renderCalendar() {
+      const calendar = document.getElementById("calendar");
+      const monthYear = document.getElementById("monthYear");
+
+      const month = currentDate.getMonth();
+      const year = currentDate.getFullYear();
+      monthYear.textContent = currentDate.toLocaleString("pt-BR", { month: "long", year: "numeric" });
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      calendar.innerHTML = "";
+
+      // Adicionar dias vazios antes do início do mês
+      for (let i = 0; i < (firstDay === 0 ? 6 : firstDay - 1); i++) {
+        const emptyDiv = document.createElement("div");
+        calendar.appendChild(emptyDiv);
+      }
+
+      let totalPL = 0, winCount = 0, lossCount = 0, breakevenCount = 0;
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        const dayTrades = trades.filter(t => t.date === dateStr);
+
+        const div = document.createElement("div");
+        div.className = "day";
+
+        const dayNumber = document.createElement("div");
+        dayNumber.className = "day-number";
+        dayNumber.textContent = day;
+        div.appendChild(dayNumber);
+
+        if (dayTrades.length > 0) {
+          let dayPL = 0;
+          dayTrades.forEach(t => {
+            dayPL += parseFloat(t.result || 0);
+          });
+
+          const info = document.createElement("div");
+          info.className = "trade-info";
+          info.innerHTML = `${dayTrades.length} Trades<br>${dayPL.toFixed(2)}`;
+          div.appendChild(info);
+
+          totalPL += dayPL;
+
+          if (dayPL > 0) { div.classList.add("green"); winCount++; }
+          else if (dayPL < 0) { div.classList.add("red"); lossCount++; }
+          else { div.classList.add("gray"); breakevenCount++; }
+        }
+
+        calendar.appendChild(div);
+      }
+
+      // Estatísticas gerais
+      const totalTrades = trades.length;
+      document.getElementById("totalTrades").textContent = totalTrades;
+      document.getElementById("totalPL").textContent = `$${totalPL.toFixed(2)}`;
+      document.getElementById("winRate").textContent = totalTrades > 0 ? `${((winCount / totalTrades) * 100).toFixed(2)}%` : "0%";
+      document.getElementById("bestDay").textContent = `$${Math.max(...trades.map(t => parseFloat(t.result || 0)), 0).toFixed(2)}`;
+      document.getElementById("worstDay").textContent = `$${Math.min(...trades.map(t => parseFloat(t.result || 0)), 0).toFixed(2)}`;
+    }
+
+    function changeMonth(offset) {
+      currentDate.setMonth(currentDate.getMonth() + offset);
+      renderCalendar();
+    }
+
+    document.addEventListener("DOMContentLoaded", renderCalendar);
+  </script>
+
 </body>
 </html>
+
