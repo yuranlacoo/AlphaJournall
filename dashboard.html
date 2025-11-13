@@ -1,3 +1,21 @@
+<script>
+
+  const loggedUser = localStorage.getItem('aj_logged');
+  if (!loggedUser) window.location = 'login.html';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const btnLogout = document.getElementById('btnLogout');
+    if (btnLogout) btnLogout.onclick = () => {
+      if (confirm('Deseja sair?')) {
+        localStorage.removeItem('aj_logged');
+        window.location = 'login.html';
+      }
+    };
+  });
+
+</script>
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
