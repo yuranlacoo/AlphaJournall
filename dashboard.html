@@ -174,16 +174,19 @@ let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
 
 function renderTable() {
-  const tbody = document.getElementById("tradeTable");
-  tbody.innerHTML = "";
-  let wins = 0, total = 0, sum = 0;
+  const tableBody = document.querySelector("#tradeTableBody");
+  tableBody.innerHTML = "";
 
   trades.forEach((t, i) => {
     const tr = document.createElement("tr");
-    let cls = t.result > 0 ? "win" : t.result < 0 ? "loss" : "breakeven";
+    const cls = t.result > 0 ? "win" : t.result < 0 ? "loss" : "be";
+
     tr.innerHTML = `
       <td>${t.pair}</td>
-      <td class="${cls}">${t.result > 0 ? 'WIN' : t.result < 0 ? 'LOSS' : 'BE'} (${t.result >= 0 ? '+' : ''}US$ ${t.result.toFixed(2)})</td>
+      <td class="${cls}">
+        ${t.result > 0 ? 'WIN' : t.result < 0 ? 'LOSS' : 'BE'} 
+        (${t.result >= 0 ? '+' : ''}US$ ${t.result.toFixed(2)})
+      </td>
       <td>${new Date(t.date).toLocaleDateString("pt-BR")}</td>
       <td>${t.rr}</td>
       <td>${t.comment}</td>
@@ -193,11 +196,11 @@ function renderTable() {
         <span class="action-btn" onclick="deleteTrade(${i})">🗑️</span>
       </td>
     `;
-    tbody.appendChild(tr);
-    total++;
-    if (t.result > 0) wins++;
-    sum += t.result;
-  });
+    tableBody.appendChild(tr);
+     });
+
+  localStorage.setItem("trades", JSON.stringify(trades));
+}
 
   document.getElementById("lucroTotal").textContent = `US$ ${sum.toFixed(2)}`;
   document.getElementById("trades").textContent = total;
