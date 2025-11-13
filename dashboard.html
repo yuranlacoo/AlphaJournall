@@ -199,6 +199,16 @@ $('prevMonth').onclick=()=>{calMonth--;if(calMonth<0){calMonth=11;calYear--;}ren
 $('nextMonth').onclick=()=>{calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCal();};
 if(localStorage.getItem('aj_theme_light')==='true')document.body.classList.add('light');
 renderTable();renderCal();
+  
+  const btnLogout = document.getElementById('btnLogout');
+  if (btnLogout) {
+    btnLogout.addEventListener('click', () => {
+      if (confirm('Deseja sair da sua conta?')) {
+        localStorage.removeItem('aj_logged');
+        window.location = 'login.html';
+      }
+    });
+  }
 </script>
 </body>
 </html>
