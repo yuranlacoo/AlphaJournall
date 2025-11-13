@@ -177,7 +177,6 @@
        const dayTrades = trades.filter(t => {
   const normalized = new Date(t.date).toISOString().slice(0, 10);
   return normalized === dateStr;
-});
 
 
         const div = document.createElement("div");
