@@ -1,18 +1,3 @@
-<script>
-
-  const loggedUser = localStorage.getItem('aj_logged');
-  if (!loggedUser) window.location = 'login.html';
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const btnLogout = document.getElementById('btnLogout');
-    if (btnLogout) btnLogout.onclick = () => {
-      if (confirm('Deseja sair?')) {
-        localStorage.removeItem('aj_logged');
-        window.location = 'login.html';
-      }
-    };
-  });
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -76,14 +61,12 @@ textarea{resize:vertical;min-height:80px}
 <body>
 <header>
   <h1>AlphaJournal</h1>
- <div class="controls">
+  <div class="controls">
     <button id="btnExport" class="btn-ghost btn-small">Exportar CSV</button>
     <button id="btnTheme" class="btn-ghost btn-small">Tema</button>
     <button id="btnAdd" class="btn-primary">+ Adicionar Trade</button>
     <button id="btnClear" class="btn-ghost btn-small">Limpar Tudo</button>
-    <button id="btnLogout">Sair</button>
-</div>
-
+  </div>
 </header>
 
 <main>
@@ -108,7 +91,7 @@ textarea{resize:vertical;min-height:80px}
       <div id="calTitle" class="cal-title">Mês</div>
       <button id="nextMonth" class="btn-ghost btn-small">→</button>
     </div>
-   
+    <div class="muted">verde=win • vermelho=loss • cinza=breakeven</div>
     <div class="cal-grid" id="calGrid"></div>
   </aside>
 </main>
@@ -214,12 +197,7 @@ $('btnTheme').onclick=themeToggle;
 $('prevMonth').onclick=()=>{calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCal();};
 $('nextMonth').onclick=()=>{calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCal();};
 if(localStorage.getItem('aj_theme_light')==='true')document.body.classList.add('light');
-document.addEventListener('DOMContentLoaded', () => {
-  renderTable();
-  renderCal();
-});
-
-  
+renderTable();renderCal();
 </script>
 </body>
 </html>
