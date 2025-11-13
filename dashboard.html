@@ -3,190 +3,148 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AlphaJournal</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<title>AlphaJournal Dashboard</title>
 <style>
-body {
-  margin: 0;
-  padding: 0;
-  font-family: "Inter", sans-serif;
-  background-color: #0e0e0e;
-  color: #f1f1f1;
-}
-header {
-  padding: 25px 40px;
-  border-bottom: 1px solid #1f1f1f;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-h1 {
-  font-size: 2.2em;
-  font-weight: 600;
-  color: #00E8FF;
-  letter-spacing: 1px;
-}
-button {
-  background-color: #00E8FF;
-  border: none;
-  padding: 10px 20px;
-  color: #000;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.2s;
-}
-button:hover {
-  background-color: #00bcd4;
-}
-main {
-  padding: 40px;
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 40px;
-}
-section {
-  background-color: #161616;
-  border-radius: 12px;
-  padding: 25px;
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
-}
-th, td {
-  padding: 10px 8px;
-  text-align: left;
-  border-bottom: 1px solid #222;
-}
-th {
-  color: #aaa;
-  font-weight: 500;
-}
-.win { color: #00ff95; font-weight: 600; }
-.loss { color: #ff5555; font-weight: 600; }
-.breakeven { color: #9b9b9b; font-weight: 600; }
-.summary {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 15px;
-}
-.summary div { text-align: center; }
-#calendar { width: 100%; color: #f1f1f1; }
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
-  margin-top: 15px;
-}
-.day {
-  text-align: center;
-  padding: 10px;
-  border-radius: 6px;
-  background-color: #202020;
-}
-.day.win { background-color: #008c4a; }
-.day.loss { background-color: #a00000; }
-.day.breakeven { background-color: #555; }
-.calendar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.calendar-header button {
-  background: none;
-  border: none;
-  color: #00E8FF;
-  font-size: 1.2em;
-  cursor: pointer;
-}
-canvas { margin-top: 20px; }
-.action-btn {
-  color: #00E8FF;
-  cursor: pointer;
-  margin-left: 5px;
-}
+  body {
+    background-color: #0e0f11;
+    color: #e2e2e2;
+    font-family: "Inter", sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    background: #15171a;
+    border-bottom: 1px solid #222;
+  }
+  h1 { color: #00e0ff; font-weight: 600; }
+  button {
+    background: #00e0ff;
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  main {
+    display: flex;
+    justify-content: space-between;
+    padding: 30px;
+    gap: 30px;
+  }
+  .dashboard {
+    flex: 2;
+    background: #15171a;
+    padding: 20px;
+    border-radius: 12px;
+  }
+  .calendar {
+    flex: 1;
+    background: #15171a;
+    padding: 20px;
+    border-radius: 12px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  th, td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #222;
+  }
+  .win { color: #00ff99; }
+  .loss { color: #ff4d4d; }
+  .be { color: #b5b5b5; }
+  .action-btn { cursor: pointer; margin: 0 5px; }
+  canvas {
+    width: 100%;
+    height: 200px;
+    margin-top: 15px;
+  }
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-top: 15px;
+  }
+  .day {
+    padding: 10px;
+    border-radius: 6px;
+    text-align: center;
+    background: #222;
+  }
+  .day.win { background: #007f5f; color: #fff; }
+  .day.loss { background: #8b0000; color: #fff; }
+  .day.be { background: #555; color: #fff; }
 </style>
 </head>
 <body>
-
 <header>
   <h1>AlphaJournal</h1>
-  <button id="addTradeBtn">➕ Adicionar Trade</button>
+  <div>
+    <button id="addTradeBtn">+ Adicionar Trade</button>
+    <button onclick="clearTrades()">🧹 Limpar Tudo</button>
+  </div>
 </header>
 
 <main>
-  <section>
-    <div class="summary">
-      <div>
-        <h3>Lucro Total</h3>
-        <p id="lucroTotal">R$ 0,00</p>
-      </div>
-      <div>
-        <h3>Winrate</h3>
-        <p id="winrate">--%</p>
-      </div>
-      <div>
-        <h3>Trades</h3>
-        <p id="trades">0</p>
-      </div>
-    </div>
+  <section class="dashboard">
+    <h2>Resumo</h2>
+    <p><b>Lucro Total:</b> <span id="totalProfit">US$ 0.00</span> | 
+       <b>Winrate:</b> <span id="winrate">0%</span> | 
+       <b>Trades:</b> <span id="tradeCount">0</span></p>
 
     <table>
       <thead>
-  <tr>
-    <th>Par</th>
-    <th>Resultado</th>
-    <th>Data</th>
-    <th>RR</th>
-    <th>Comentário</th>
-    <th>Direção</th>
-    <th>Imagens</th>
-    <th>Ações</th>
-  </tr>
-</thead>
-
-      <tbody id="tradeTable"></tbody>
+        <tr>
+          <th>Par</th>
+          <th>Resultado</th>
+          <th>Data</th>
+          <th>RR</th>
+          <th>Comentário</th>
+          <th>Direção</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="tradeTableBody"></tbody>
     </table>
 
-    <canvas id="equityChart" height="150"></canvas>
+    <canvas id="equityChart"></canvas>
   </section>
 
-  <section id="calendar">
-    <div class="calendar-header">
-      <button id="prevMonth">◀</button>
-      <h2 id="monthLabel">Calendário</h2>
-      <button id="nextMonth">▶</button>
-    </div>
+  <section class="calendar">
+    <h2>Calendário</h2>
     <div id="calendarGrid" class="calendar-grid"></div>
   </section>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 let trades = JSON.parse(localStorage.getItem("trades")) || [];
+const ctx = document.getElementById('equityChart').getContext('2d');
+let chart;
 
-];
+// === Atualiza gráfico e tabela ===
+function renderAll() {
+  const tbody = document.getElementById("tradeTableBody");
+  tbody.innerHTML = "";
 
-let currentMonth = new Date().getMonth();
-let currentYear = new Date().getFullYear();
-
-function renderTable() {
-  const tableBody = document.querySelector("#tradeTableBody");
-  tableBody.innerHTML = "";
+  let total = 0;
+  let wins = 0;
 
   trades.forEach((t, i) => {
     const tr = document.createElement("tr");
     const cls = t.result > 0 ? "win" : t.result < 0 ? "loss" : "be";
-
     tr.innerHTML = `
       <td>${t.pair}</td>
-      <td class="${cls}">
-        ${t.result > 0 ? 'WIN' : t.result < 0 ? 'LOSS' : 'BE'} 
-        (${t.result >= 0 ? '+' : ''}US$ ${t.result.toFixed(2)})
-      </td>
+      <td class="${cls}">${t.result > 0 ? 'WIN' : t.result < 0 ? 'LOSS' : 'BE'} 
+      (${t.result >= 0 ? '+' : ''}US$ ${t.result.toFixed(2)})</td>
       <td>${new Date(t.date).toLocaleDateString("pt-BR")}</td>
       <td>${t.rr}</td>
       <td>${t.comment}</td>
@@ -194,88 +152,79 @@ function renderTable() {
       <td>
         <span class="action-btn" onclick="editTrade(${i})">✏️</span>
         <span class="action-btn" onclick="deleteTrade(${i})">🗑️</span>
-      </td>
-    `;
-    tableBody.appendChild(tr);
-     });
+      </td>`;
+    tbody.appendChild(tr);
+
+    total += t.result;
+    if (t.result > 0) wins++;
+  });
+
+  document.getElementById("totalProfit").textContent = `US$ ${total.toFixed(2)}`;
+  document.getElementById("winrate").textContent = 
+    trades.length ? `${Math.round((wins / trades.length) * 100)}%` : "0%";
+  document.getElementById("tradeCount").textContent = trades.length;
 
   localStorage.setItem("trades", JSON.stringify(trades));
-}
-
-  document.getElementById("lucroTotal").textContent = `US$ ${sum.toFixed(2)}`;
-  document.getElementById("trades").textContent = total;
-  document.getElementById("winrate").textContent = ((wins / total) * 100).toFixed(0) + "%";
-  renderEquity();
+  renderChart();
   renderCalendar();
 }
 
-function renderEquity() {
-  const ctx = document.getElementById("equityChart").getContext("2d");
-  let balance = 0;
-  const labels = trades.map(t => new Date(t.date).toLocaleDateString("pt-BR"));
-  const data = trades.map(t => (balance += t.result));
-  new Chart(ctx, {
-    type: "line",
+// === Gráfico ===
+function renderChart() {
+  const labels = trades.map(t => t.date);
+  const equity = [];
+  let running = 0;
+  trades.forEach(t => { running += t.result; equity.push(running); });
+
+  if (chart) chart.destroy();
+  chart = new Chart(ctx, {
+    type: 'line',
     data: {
       labels,
       datasets: [{
-        label: "Equity Curve",
-        data,
-        borderWidth: 3,
-        borderColor: "#00E8FF",
-        tension: 0.3,
-        fill: true,
-        backgroundColor: "rgba(0, 232, 255, 0.1)",
-        pointRadius: 5,
-        pointBackgroundColor: data.map(v => v >= 0 ? "#00E8FF" : "#FF4E4E")
+        label: 'Equity',
+        data: equity,
+        borderColor: '#00e0ff',
+        borderWidth: 2,
+        fill: false,
+        tension: 0.2
       }]
     },
-    options: {
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { display: false }, ticks: { color: "#aaa" } },
-        y: { ticks: { color: "#aaa" }, grid: { color: "#222" } }
-      }
-    }
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: false } } }
   });
 }
 
+// === Calendário ===
 function renderCalendar() {
   const grid = document.getElementById("calendarGrid");
   grid.innerHTML = "";
-  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-  const monthName = new Date(currentYear, currentMonth).toLocaleString("pt-BR", { month: "long", year: "numeric" });
-  document.getElementById("monthLabel").textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  for (let i = 1; i <= daysInMonth; i++) {
-    const d = document.createElement("div");
-    d.classList.add("day");
-    const trade = trades.find(t => {
-      const td = new Date(t.date);
-      return td.getMonth() === currentMonth && td.getDate() === i;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const div = document.createElement("div");
+    div.className = "day";
+    div.textContent = d;
+
+    const dayTrades = trades.filter(t => {
+      const dt = new Date(t.date);
+      return dt.getFullYear() === year && dt.getMonth() === month && dt.getDate() === d;
     });
-    if (trade) d.classList.add(trade.result > 0 ? "win" : trade.result < 0 ? "loss" : "breakeven");
-    d.textContent = i;
-    grid.appendChild(d);
+
+    if (dayTrades.length) {
+      const profit = dayTrades.reduce((a, b) => a + b.result, 0);
+      if (profit > 0) div.classList.add("win");
+      else if (profit < 0) div.classList.add("loss");
+      else div.classList.add("be");
+    }
+
+    grid.appendChild(div);
   }
 }
 
-function editTrade(i) {
-  const t = trades[i];
-  const result = parseFloat(prompt("Novo resultado:", t.result));
-  const comment = prompt("Novo comentário:", t.comment);
-  if (!isNaN(result)) trades[i].result = result;
-  trades[i].comment = comment;
-  renderTable();
-}
-
-function deleteTrade(i) {
-  if (confirm("Apagar esta trade?")) {
-    trades.splice(i, 1);
-    renderTable();
-  }
-}
-
+// === Adicionar nova trade ===
 document.getElementById("addTradeBtn").onclick = () => {
   const pair = prompt("Par (ex: XAUUSD):");
   const result = parseFloat(prompt("Resultado em US$ (ex: -10 ou 30):"));
@@ -283,30 +232,57 @@ document.getElementById("addTradeBtn").onclick = () => {
   const comment = prompt("Comentário:");
   const dir = prompt("Direção (BUY/SELL):");
   const date = prompt("Data (AAAA-MM-DD):", new Date().toISOString().split("T")[0]);
-   const img1 = prompt("URL da 1ª imagem (deixe vazio se não tiver):");
+  const img1 = prompt("URL da 1ª imagem (opcional):");
   const img2 = prompt("URL da 2ª imagem (opcional):");
+
   const imgs = [];
   if (img1) imgs.push(img1);
   if (img2) imgs.push(img2);
 
   if (pair && !isNaN(result)) {
     trades.push({ pair, result, rr, comment, dir, date, imgs });
-    renderTable();
+    renderAll();
   }
 };
 
-document.getElementById("prevMonth").onclick = () => {
-  currentMonth--;
-  if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-  renderCalendar();
-};
-document.getElementById("nextMonth").onclick = () => {
-  currentMonth++;
-  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-  renderCalendar();
-};
+// === Editar trade ===
+function editTrade(i) {
+  const t = trades[i];
+  const pair = prompt("Par:", t.pair);
+  const result = parseFloat(prompt("Resultado US$:", t.result));
+  const rr = prompt("RR:", t.rr);
+  const comment = prompt("Comentário:", t.comment);
+  const dir = prompt("Direção:", t.dir);
+  const date = prompt("Data (AAAA-MM-DD):", t.date);
+  const img1 = prompt("URL da 1ª imagem:", (t.imgs && t.imgs[0]) || "");
+  const img2 = prompt("URL da 2ª imagem:", (t.imgs && t.imgs[1]) || "");
 
-renderTable();
+  const imgs = [];
+  if (img1) imgs.push(img1);
+  if (img2) imgs.push(img2);
+
+  trades[i] = { pair, result, rr, comment, dir, date, imgs };
+  renderAll();
+}
+
+// === Deletar trade ===
+function deleteTrade(i) {
+  if (confirm("Deseja apagar esta trade?")) {
+    trades.splice(i, 1);
+    renderAll();
+  }
+}
+
+// === Limpar tudo ===
+function clearTrades() {
+  if (confirm("Apagar todas as trades?")) {
+    trades = [];
+    localStorage.removeItem("trades");
+    renderAll();
+  }
+}
+
+renderAll();
 </script>
 </body>
 </html>
