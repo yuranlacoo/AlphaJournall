@@ -3,356 +3,147 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>AlphaJournal — Dashboard</title>
-
-<!-- Chart.js -->
+<title>AlphaJournal</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<!-- Styles -->
 <style>
-  :root{
-    --bg:#0d0f11; --panel:#151719; --muted:#9aa0a6; --accent:#00e0ff;
-    --win:#007f5f; --loss:#b22222; --be:#6e6e6e;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:#e9eef0}
-  header{display:flex;justify-content:space-between;align-items:center;padding:18px 28px;background:linear-gradient(180deg,#0f1416,#0b0c0d);border-bottom:1px solid #111}
-  header h1{color:var(--accent);margin:0;font-size:20px;letter-spacing:1px}
-  header .controls{display:flex;gap:10px}
-  button.primary{background:var(--accent);color:#000;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:700}
-  button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:#cfe7ea;padding:8px 12px;border-radius:8px;cursor:pointer}
-
-  main{display:flex;gap:24px;padding:22px}
-  .left{flex:2;background:var(--panel);padding:18px;border-radius:12px;min-height:520px}
-  .right{width:360px;background:var(--panel);padding:18px;border-radius:12px}
-
-  /* Summary */
-  .summary{display:flex;gap:18px;align-items:center;margin-bottom:12px}
-  .summary .stat{background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;flex:1;text-align:center}
-  .stat .label{font-size:12px;color:var(--muted);margin-bottom:6px}
-  .stat .value{font-size:18px;font-weight:700;color:#fff}
-
-  /* Table */
-  table{width:100%;border-collapse:collapse;margin-top:8px}
-  thead th{font-size:13px;color:var(--muted);text-align:left;padding:10px 8px;border-bottom:1px solid rgba(255,255,255,0.03)}
-  tbody td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,0.02);vertical-align:middle}
-  .win{color:var(--win);font-weight:700}
-  .loss{color:var(--loss);font-weight:700}
-  .be{color:var(--be);font-weight:700}
-  .actions{display:flex;gap:8px;align-items:center}
-  .action-btn{cursor:pointer;opacity:.92}
-
-  /* thumbnails */
-  .thumb{width:44px;height:34px;object-fit:cover;border-radius:6px;border:1px solid rgba(255,255,255,0.03);cursor:pointer;margin-right:6px}
-
-  /* calendar */
-  .cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-  .cal-title{font-weight:700}
-  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
-  .cal-day{height:44px;border-radius:8px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;color:#ddd}
-  .cal-day.win{background:var(--win);color:#fff}
-  .cal-day.loss{background:var(--loss);color:#fff}
-  .cal-day.be{background:var(--be);color:#fff}
-
-  /* modal */
-  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);z-index:9999}
-  .modal .card{background:#0f1112;padding:18px;border-radius:10px;max-width:90%;max-height:90%;overflow:auto}
-  .modal .img{max-width:100%;max-height:80vh;border-radius:8px}
-  .modal .close{display:inline-block;margin-top:12px;padding:8px 12px;border-radius:8px;background:var(--accent);color:#000;font-weight:700;cursor:pointer}
-
-  /* form modal */
-  .form-row{display:flex;gap:8px;margin-bottom:8px}
-  .form-row input,.form-row select,textarea{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:#0d1011;color:#fff}
-  .small{width:140px}
-
-  /* chart container */
-  .chart-wrap{margin-top:18px;background:linear-gradient(180deg,rgba(0,0,0,0.02),transparent);padding:12px;border-radius:10px}
-  .muted{color:var(--muted);font-size:13px}
-
-  @media(max-width:980px){
-    main{flex-direction:column;padding:12px}
-    .right{width:100%}
-  }
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#0d0f11;color:#eee}
+header{display:flex;justify-content:space-between;align-items:center;padding:15px 25px;background:#101214;border-bottom:1px solid #222}
+h1{color:#00e0ff;font-size:20px;margin:0}
+button{cursor:pointer;border:none;border-radius:6px;padding:8px 12px;font-weight:bold}
+button.primary{background:#00e0ff;color:#000}
+button.secondary{background:#1b1d20;color:#ccc}
+main{display:flex;gap:20px;padding:20px}
+.left{flex:2;background:#151719;padding:15px;border-radius:10px}
+.right{width:350px;background:#151719;padding:15px;border-radius:10px}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{padding:8px;border-bottom:1px solid #222;text-align:left}
+.win{color:#00ff8f} .loss{color:#ff5e5e} .be{color:#888}
+.thumb{width:40px;height:32px;object-fit:cover;border-radius:5px;margin-right:5px;cursor:pointer}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);justify-content:center;align-items:center;z-index:10}
+.modal-content{background:#111;padding:20px;border-radius:8px;max-width:500px;width:90%}
+.modal-content input,textarea,select{width:100%;margin:6px 0;padding:8px;border-radius:6px;border:1px solid #333;background:#0d0f11;color:#eee}
+.close{background:#00e0ff;color:#000;margin-top:10px}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:10px}
+.day{height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#222;color:#bbb}
+.day.win{background:#007f5f;color:#fff}
+.day.loss{background:#b22222;color:#fff}
+.day.be{background:#666;color:#fff}
+.chart{margin-top:15px}
 </style>
 </head>
 <body>
 
 <header>
   <h1>AlphaJournal</h1>
-  <div class="controls">
-    <button class="primary" id="btnAdd">+ Adicionar Trade</button>
-    <button class="ghost" id="btnClear">Limpar Tudo</button>
+  <div>
+    <button class="primary" id="addBtn">+ Adicionar Trade</button>
+    <button class="secondary" id="clearBtn">Limpar Tudo</button>
   </div>
 </header>
 
 <main>
-  <section class="left">
-    <div class="summary">
-      <div class="stat"><div class="label">Lucro Total</div><div id="totalProfit" class="value">US$ 0.00</div></div>
-      <div class="stat"><div class="label">Winrate</div><div id="winRate" class="value">0%</div></div>
-      <div class="stat"><div class="label">Trades</div><div id="tradeCount" class="value">0</div></div>
-    </div>
+  <div class="left">
+    <h3>Resumo</h3>
+    <p id="summary">Lucro: US$ 0.00 | Winrate: 0% | Trades: 0</p>
+    <table>
+      <thead><tr><th>Par</th><th>Resultado</th><th>Data</th><th>Comentário</th><th>Imagens</th><th>Ações</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="chart"><canvas id="equityChart"></canvas></div>
+  </div>
 
-    <div style="overflow:auto;max-height:300px">
-      <table>
-        <thead>
-          <tr>
-            <th>Par</th><th>Resultado</th><th>Data</th><th>RR</th><th>Comentário</th><th>Imagens</th><th>Direção</th><th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="tbodyTrades"></tbody>
-      </table>
+  <div class="right">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <button class="secondary" id="prevMonth">←</button>
+      <h4 id="monthLabel">Mês</h4>
+      <button class="secondary" id="nextMonth">→</button>
     </div>
-
-    <div class="chart-wrap">
-      <canvas id="equityChart"></canvas>
-    </div>
-  </section>
-
-  <aside class="right">
-    <div class="cal-header">
-      <button id="prevMonth" class="ghost">←</button>
-      <div class="cal-title" id="calTitle">Mês</div>
-      <button id="nextMonth" class="ghost">→</button>
-    </div>
-    <div class="muted">verde=win • vermelho=loss • cinza=breakeven</div>
-    <div style="height:12px"></div>
-    <div class="cal-grid" id="calGrid"></div>
-  </aside>
+    <small style="color:#888">verde=win • vermelho=loss • cinza=be</small>
+    <div class="calendar" id="calendar"></div>
+  </div>
 </main>
 
-<!-- MODAL: image viewer -->
-<div class="modal" id="imgModal">
-  <div class="card">
-    <img id="modalImg" class="img" src="" alt="print"/>
-    <div style="text-align:right"><button class="close" onclick="closeImgModal()">Fechar</button></div>
+<!-- MODAL -->
+<div class="modal" id="tradeModal">
+  <div class="modal-content">
+    <h3 id="modalTitle">Nova Trade</h3>
+    <input id="pair" placeholder="Par (ex: XAUUSD)">
+    <input id="result" placeholder="Resultado (ex: 30 ou -20)">
+    <input id="date" type="date">
+    <textarea id="comment" placeholder="Comentário"></textarea>
+    <input id="img1" type="file" accept="image/*">
+    <input id="img2" type="file" accept="image/*">
+    <button class="close" id="saveBtn">Salvar</button>
   </div>
 </div>
 
-<!-- MODAL: form add/edit -->
-<div class="modal" id="formModal">
-  <div class="card" style="width:520px">
-    <h3 id="formTitle">Adicionar Trade</h3>
-    <div style="margin-top:10px">
-      <div class="form-row"><input id="fPair" placeholder="Par (XAUUSD)"></div>
-      <div class="form-row"><input id="fResult" placeholder="Resultado (ex: 30 ou -15)" class="small"><input id="fDate" type="date" class="small"><input id="fRR" placeholder="RR (1:3)" class="small"></div>
-      <div class="form-row"><select id="fDir"><option>BUY</option><option>SELL</option></select></div>
-      <div class="form-row"><textarea id="fComment" placeholder="Comentário" rows="3"></textarea></div>
-      <div class="form-row">
-        <input id="fImg1" type="file" accept="image/*">
-        <input id="fImg2" type="file" accept="image/*">
-      </div>
-      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
-        <button class="ghost" onclick="closeForm()">Cancelar</button>
-        <button class="primary" id="saveTradeBtn">Salvar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- JS -->
 <script>
-/* ========= Data & init ========= */
-let trades = JSON.parse(localStorage.getItem('aj_trades_v1')) || [];
-const maxImgs = 2;
-let editIndex = -1;
-let calMonth = (new Date()).getMonth();
-let calYear = (new Date()).getFullYear();
-const eqCtx = document.getElementById('equityChart').getContext('2d');
-let eqChart = null;
+let trades = JSON.parse(localStorage.getItem("trades")||"[]");
+let editIndex=-1,month=new Date().getMonth(),year=new Date().getFullYear();
+let chart;
 
-/* ======= Helpers ======= */
-function saveAll(){ localStorage.setItem('aj_trades_v1', JSON.stringify(trades)); }
-function fmtBR(v){ return 'US$ ' + Number(v||0).toFixed(2); }
-function clamp(n, s=0, e=1e9){ return Math.max(s, Math.min(e, n)); }
-
-/* ======= Render table ======= */
-function renderTable(){
-  const tbody = document.getElementById('tbodyTrades');
-  tbody.innerHTML = '';
-  let total=0, wins=0;
+function save(){localStorage.setItem("trades",JSON.stringify(trades));}
+function fmt(v){return "US$ "+Number(v).toFixed(2);}
+function render(){
+  const tbody=document.getElementById("tbody");
+  tbody.innerHTML="";
+  let total=0,wins=0;
   trades.forEach((t,i)=>{
-    total += Number(t.result||0);
-    if(Number(t.result)>0) wins++;
-    const cls = Number(t.result)>0 ? 'win' : Number(t.result)<0 ? 'loss' : 'be';
-    // comment short + clickable
-    const short = (t.comment||'').length>30 ? (t.comment||'').slice(0,30)+'...' : (t.comment||'');
-    const commentEl = `<div style="cursor:pointer;color:var(--accent)" onclick="openComment(${i})">${short || '—'}</div>`;
-    const imgs = (t.imgs||[]).map(src=>`<img src="${src}" class="thumb" onclick="openImg('${src}')">`).join('') || '—';
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${t.pair||'—'}</td>
-      <td class="${cls}">${Number(t.result)>0? 'WIN' : Number(t.result)<0 ? 'LOSS' : 'BE'} (${Number(t.result)>=0?'+':''}${fmtBR(Number(t.result))})</td>
-      <td>${t.date||''}</td>
-      <td>${t.rr||''}</td>
-      <td>${commentEl}</td>
-      <td>${imgs}</td>
-      <td>${t.dir||''}</td>
-      <td class="actions">
-        <span class="action-btn" title="Editar" onclick="openForm(${i})">✏️</span>
-        <span class="action-btn" title="Apagar" onclick="removeTrade(${i})">🗑️</span>
-      </td>
-    `;
+    total+=t.result;if(t.result>0)wins++;
+    const tr=document.createElement("tr");
+    const cls=t.result>0?"win":t.result<0?"loss":"be";
+    const imgs=t.imgs?.map(s=>`<img src="${s}" class="thumb">`).join("")||"—";
+    tr.innerHTML=`<td>${t.pair}</td><td class="${cls}">${t.result>0?'+':''}${fmt(t.result)}</td><td>${t.date}</td><td>${t.comment||''}</td><td>${imgs}</td>
+    <td><button onclick="edit(${i})">✏️</button><button onclick="del(${i})">🗑️</button></td>`;
     tbody.appendChild(tr);
   });
-  document.getElementById('totalProfit').textContent = fmtBR(total);
-  document.getElementById('tradeCount').textContent = trades.length;
-  document.getElementById('winRate').textContent = trades.length ? Math.round((wins/trades.length)*100) + '%' : '0%';
-  saveAll();
-  renderChart();
-  renderCalendar();
+  document.getElementById("summary").innerText=`Lucro: ${fmt(total)} | Winrate: ${trades.length?Math.round((wins/trades.length)*100):0}% | Trades: ${trades.length}`;
+  save();renderCalendar();renderChart();
 }
-
-/* ======= Chart ======= */
-function renderChart(){
-  // order by date asc
-  const ordered = [...trades].sort((a,b)=> new Date(a.date) - new Date(b.date));
-  let running = 0;
-  const labels = ordered.map(t => t.date);
-  const data = ordered.map(t => (running += Number(t.result||0)));
-  if(eqChart) eqChart.destroy();
-  eqChart = new Chart(eqCtx, {
-    type:'line',
-    data:{ labels, datasets:[{ label:'Equity', data, borderColor:'#00e0ff', backgroundColor:'rgba(0,224,255,0.08)', tension:0.3, fill:true, pointRadius:4 }]},
-    options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#bfc9cc'}},y:{ticks:{color:'#bfc9cc'}}}
-  });
-}
-
-/* ======= Calendar ======= */
 function renderCalendar(){
-  const grid = document.getElementById('calGrid');
-  grid.innerHTML = '';
-  // title
-  const title = new Date(calYear, calMonth, 1).toLocaleString('pt-BR',{month:'long', year:'numeric'});
-  document.getElementById('calTitle').textContent = title.charAt(0).toUpperCase()+title.slice(1);
-  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
-  const firstWeekday = new Date(calYear, calMonth, 1).getDay(); // 0=Sun
-  // Add blanks for first week (convert so Monday first not necessary)
-  for(let i=0;i<firstWeekday;i++){ const b=document.createElement('div'); grid.appendChild(b); }
-  for(let d=1; d<=daysInMonth; d++){
-    const div = document.createElement('div'); div.className='cal-day';
-    const dayStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    // find trades on this day
-    const dayTrades = trades.filter(t=>t.date === dayStr);
-    if(dayTrades.length){
-      const profit = dayTrades.reduce((s,t)=>s+Number(t.result||0),0);
-      if(profit>0) div.classList.add('win');
-      else if(profit<0) div.classList.add('loss');
-      else div.classList.add('be');
-    }
-    div.textContent = d;
-    grid.appendChild(div);
+  const c=document.getElementById("calendar");c.innerHTML="";
+  const label=new Date(year,month,1).toLocaleString("pt-BR",{month:"long",year:"numeric"});
+  document.getElementById("monthLabel").innerText=label.charAt(0).toUpperCase()+label.slice(1);
+  const days=new Date(year,month+1,0).getDate();
+  for(let d=1;d<=days;d++){
+    const div=document.createElement("div");div.className="day";div.innerText=d;
+    const date=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const ts=trades.filter(t=>t.date===date);
+    if(ts.length){const sum=ts.reduce((a,b)=>a+b.result,0);div.classList.add(sum>0?"win":sum<0?"loss":"be");}
+    c.appendChild(div);
   }
 }
-
-/* ======= Image modal ======= */
-function openImg(src){
-  document.getElementById('modalImg').src = src;
-  document.getElementById('imgModal').style.display = 'flex';
+function renderChart(){
+  const ctx=document.getElementById("equityChart");
+  let eq=0,labels=[],data=[];
+  trades.sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(t=>{eq+=t.result;labels.push(t.date);data.push(eq);});
+  if(chart)chart.destroy();
+  chart=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'Equity',data,borderColor:'#00e0ff',fill:true,tension:.3}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#888'}},y:{ticks:{color:'#888'}}}}});
 }
-function closeImgModal(){ document.getElementById('imgModal').style.display = 'none'; }
-
-/* ======= Comment modal ======= */
-function openComment(i){
-  const txt = trades[i].comment || '(sem comentário)';
-  // reuse form modal to show simple card
-  const card = document.createElement('div');
-  card.className='card';
-  card.style.width='480px';
-  card.style.padding='16px';
-  card.innerHTML = `<div style="white-space:pre-wrap">${txt}</div><div style="text-align:right;margin-top:12px"><button class="close" onclick="this.parentElement.parentElement.remove()">Fechar</button></div>`;
-  const wrapper = document.createElement('div');
-  wrapper.className='modal';
-  wrapper.style.display='flex';
-  wrapper.appendChild(card);
-  document.body.appendChild(wrapper);
-  // clicking outside removes
-  wrapper.onclick = (e)=> { if(e.target === wrapper) wrapper.remove(); }
+function openModal(i=-1){editIndex=i;document.getElementById("tradeModal").style.display="flex";
+  const t=i==-1?{}:trades[i];document.getElementById("pair").value=t.pair||'';document.getElementById("result").value=t.result||'';document.getElementById("date").value=t.date||'';document.getElementById("comment").value=t.comment||'';
 }
-
-/* ======= Form (add/edit) ======= */
-function openForm(index=-1){
-  editIndex = index;
-  const modal = document.getElementById('formModal');
-  document.getElementById('formTitle').textContent = index===-1? 'Adicionar Trade' : 'Editar Trade';
-  // clear or populate
-  document.getElementById('fPair').value = index===-1 ? '' : trades[index].pair || '';
-  document.getElementById('fResult').value = index===-1 ? '' : trades[index].result || '';
-  document.getElementById('fDate').value = index===-1 ? (new Date()).toISOString().split('T')[0] : trades[index].date || '';
-  document.getElementById('fRR').value = index===-1 ? '' : trades[index].rr || '';
-  document.getElementById('fDir').value = index===-1 ? 'BUY' : trades[index].dir || 'BUY';
-  document.getElementById('fComment').value = index===-1 ? '' : trades[index].comment || '';
-  // reset file inputs
-  document.getElementById('fImg1').value = '';
-  document.getElementById('fImg2').value = '';
-  modal.style.display = 'flex';
+function closeModal(){document.getElementById("tradeModal").style.display="none";}
+async function saveTrade(){
+  const pair=document.getElementById("pair").value.trim(),result=Number(document.getElementById("result").value||0),date=document.getElementById("date").value,comment=document.getElementById("comment").value.trim();
+  const f1=document.getElementById("img1").files[0],f2=document.getElementById("img2").files[0];
+  const imgs=[];
+  if(f1)imgs.push(await toB64(f1));
+  if(f2)imgs.push(await toB64(f2));
+  const obj={pair,result,date,comment,imgs};
+  if(editIndex==-1)trades.push(obj);else trades[editIndex]=obj;
+  closeModal();render();
 }
-function closeForm(){ document.getElementById('formModal').style.display = 'none'; }
-
-/* convert file to base64 */
-function fileToBase64(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
-
-/* save from form */
-document.getElementById('saveTradeBtn').onclick = async ()=>{
-  const pair = document.getElementById('fPair').value.trim();
-  const result = Number(document.getElementById('fResult').value.trim());
-  const date = document.getElementById('fDate').value;
-  const rr = document.getElementById('fRR').value.trim();
-  const dir = document.getElementById('fDir').value;
-  const comment = document.getElementById('fComment').value.trim();
-
-  if(!pair || isNaN(result) || !date){ alert('Par, Resultado e Data são obrigatórios'); return; }
-
-  // images
-  const f1 = document.getElementById('fImg1').files[0];
-  const f2 = document.getElementById('fImg2').files[0];
-  const imgs = [];
-  if(f1){ try{ imgs.push(await fileToBase64(f1)); }catch(e){console.error(e);} }
-  if(f2){ try{ imgs.push(await fileToBase64(f2)); }catch(e){console.error(e);} }
-
-  const payload = { pair, result, date, rr, dir, comment, imgs };
-
-  if(editIndex === -1){
-    trades.push(payload);
-  } else {
-    // keep existing images if none uploaded
-    if(imgs.length===0 && trades[editIndex].imgs) payload.imgs = trades[editIndex].imgs;
-    trades[editIndex] = payload;
-  }
-
-  closeForm();
-  renderTable();
-};
-
-/* ======= Remove trade ======= */
-function removeTrade(i){
-  if(confirm('Deseja apagar esta trade?')){
-    trades.splice(i,1);
-    renderTable();
-  }
-}
-
-/* ======= Clear all ======= */
-document.getElementById('btnClear').addEventListener('click', ()=>{
-  if(confirm('Apagar todas as trades?')){
-    trades = []; saveAll(); renderTable();
-  }
-});
-
-/* ======= Add button opens form ======= */
-document.getElementById('btnAdd').addEventListener('click', ()=> openForm(-1));
-
-/* ======= Calendar navigation ======= */
-document.getElementById('prevMonth').addEventListener('click', ()=>{ calMonth--; if(calMonth<0){ calMonth=11; calYear--; } renderCalendar(); });
-document.getElementById('nextMonth').addEventListener('click', ()=>{ calMonth++; if(calMonth>11){ calMonth=0; calYear++; } renderCalendar(); });
-
-/* ======= Close modals on outside click ======= */
-document.getElementById('imgModal').addEventListener('click', (e)=>{ if(e.target.id==='imgModal') closeImgModal(); });
-document.getElementById('formModal').addEventListener('click', (e)=>{ if(e.target.id==='formModal') closeForm(); });
-
-/* ======= Init ======= */
-renderTable();
-renderCalendar();
+function del(i){if(confirm("Remover trade?")){trades.splice(i,1);render();}}
+function edit(i){openModal(i);}
+function toB64(f){return new Promise(r=>{const rd=new FileReader();rd.onload=()=>r(rd.result);rd.readAsDataURL(f);});}
+document.getElementById("addBtn").onclick=()=>openModal(-1);
+document.getElementById("saveBtn").onclick=saveTrade;
+document.getElementById("tradeModal").onclick=e=>{if(e.target.id==="tradeModal")closeModal();}
+document.getElementById("clearBtn").onclick=()=>{if(confirm("Apagar todas as trades?")){trades=[];save();render();}};
+document.getElementById("prevMonth").onclick=()=>{month--;if(month<0){month=11;year--;}renderCalendar();};
+document.getElementById("nextMonth").onclick=()=>{month++;if(month>11){month=0;year++;}renderCalendar();};
+render();
 </script>
 </body>
 </html>
