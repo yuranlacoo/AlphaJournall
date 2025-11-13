@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlphaJournal — Entrar</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+  <div class="bg-white p-8 rounded-2xl shadow-xl w-96">
+    <h1 class="text-2xl font-bold text-center mb-6">AlphaJournal — Login</h1>
+
+    <input id="email" type="email" placeholder="Email"
+      class="w-full mb-3 p-3 border rounded focus:ring focus:ring-blue-300 outline-none" />
+
+    <input id="password" type="password" placeholder="Senha"
+      class="w-full mb-3 p-3 border rounded focus:ring focus:ring-blue-300 outline-none" />
+
+    <button id="btnLogin" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
+      Entrar
+    </button>
+
+    <p class="text-center mt-4 text-sm">
+      Não tem conta? 
+      <a href="#" id="btnCreate" class="text-blue-600 hover:underline">Criar conta</a>
+    </p>
+  </div>
+
+  <script>
+    document.getElementById('btnLogin').addEventListener('click', () => {
+      const email = document.getElementById('email').value.trim();
+      const pass = document.getElementById('password').value.trim();
+
+      if (email === '' || pass === '') {
+        alert('Preencha todos os campos!');
+        return;
+      }
+
+      // Aqui seria feita a verificação (Firebase, API, etc.)
+      // Mas como é um teste, vamos simular login:
+      localStorage.setItem('aj_logged', email);
+
+      // Redireciona para o dashboard
+      window.location = 'dashboard.html';
+    });
+
+    document.getElementById('btnCreate').addEventListener('click', () => {
+      alert('Sistema de criação de conta em breve!');
+      // futuramente: window.location = 'register.html';
+    });
+  </script>
+
+</body>
+</html>
