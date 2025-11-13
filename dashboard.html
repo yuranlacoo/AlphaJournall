@@ -89,13 +89,42 @@ textarea{resize:vertical;min-height:80px}
   </section>
 
   <aside class="right">
-    <div class="cal-header">
-      <button id="prevMonth" class="btn-ghost btn-small">←</button>
-      <div id="calTitle" class="cal-title">Mês</div>
-      <button id="nextMonth" class="btn-ghost btn-small">→</button>
-    </div>
 
-    <div class="cal-grid" id="calGrid"></div>
+  <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+    <button id="fAll" class="btn-ghost btn-small" style="background:var(--accent);color:#000;">All</button>
+    <button id="fLong" class="btn-ghost btn-small">Long</button>
+    <button id="fShort" class="btn-ghost btn-small">Short</button>
+  </div>
+
+  <!-- TÍTULO -->
+  <h3 style="margin:0 0 10px 0;">Long/Short Trades</h3>
+  <p class="muted" style="margin-bottom:18px;">
+    Estatísticas completas dos seus trades. Filtre por LONG, SHORT ou ALL.
+  </p>
+
+  <!-- TOTAL TRADES -->
+  <div class="stat" style="margin-bottom:14px;">
+    <div class="label">Total Trades</div>
+    <div id="ls_total_trades" class="value">0</div>
+  </div>
+
+  <!-- DONUT -->
+  <div class="chart-wrap">
+    <canvas id="donutChart"></canvas>
+  </div>
+
+  <!-- MÉTRICAS -->
+  <div style="margin-top:14px; font-size:14px; line-height:1.7;">
+    <div>Total Winners: <b id="ls_winners">0</b></div>
+    <div>Total Losers: <b id="ls_losers">0</b></div>
+    <div>BreakEven: <b id="ls_be">0</b></div>
+    <div>Best Win: <b id="ls_best_win">US$ 0.00</b></div>
+    <div>Worst Loss: <b id="ls_worst_loss">US$ 0.00</b></div>
+    <div>Average Win: <b id="ls_avg_win">US$ 0.00</b></div>
+    <div>Average Loss: <b id="ls_avg_loss">US$ 0.00</b></div>
+  </div>
+
+
   </aside>
 </main>
 
