@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trading Journal</title>
+<title>AlphaJournal</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -17,11 +17,28 @@ body {
 header {
   padding: 25px 40px;
   border-bottom: 1px solid #1f1f1f;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 h1 {
   font-size: 2.2em;
   font-weight: 600;
-  color: #fff;
+  color: #00E8FF;
+  letter-spacing: 1px;
+}
+button {
+  background-color: #00E8FF;
+  border: none;
+  padding: 10px 20px;
+  color: #000;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+button:hover {
+  background-color: #00bcd4;
 }
 main {
   padding: 40px;
@@ -51,18 +68,14 @@ th {
 }
 .win { color: #00ff95; font-weight: 600; }
 .loss { color: #ff5555; font-weight: 600; }
+.breakeven { color: #9b9b9b; font-weight: 600; }
 .summary {
   display: flex;
   justify-content: space-around;
   margin-bottom: 15px;
 }
-.summary div {
-  text-align: center;
-}
-#calendar {
-  width: 100%;
-  color: #f1f1f1;
-}
+.summary div { text-align: center; }
+#calendar { width: 100%; color: #f1f1f1; }
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -77,15 +90,32 @@ th {
 }
 .day.win { background-color: #008c4a; }
 .day.loss { background-color: #a00000; }
-canvas {
-  margin-top: 20px;
+.day.breakeven { background-color: #555; }
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.calendar-header button {
+  background: none;
+  border: none;
+  color: #00E8FF;
+  font-size: 1.2em;
+  cursor: pointer;
+}
+canvas { margin-top: 20px; }
+.action-btn {
+  color: #00E8FF;
+  cursor: pointer;
+  margin-left: 5px;
 }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Trading Journal</h1>
+  <h1>AlphaJournal</h1>
+  <button id="addTradeBtn">➕ Adicionar Trade</button>
 </header>
 
 <main>
@@ -114,6 +144,7 @@ canvas {
           <th>RR</th>
           <th>Comentário</th>
           <th>Direção</th>
+          <th>Ações</th>
         </tr>
       </thead>
       <tbody id="tradeTable"></tbody>
@@ -123,35 +154,45 @@ canvas {
   </section>
 
   <section id="calendar">
-    <h2>Calendário</h2>
+    <div class="calendar-header">
+      <button id="prevMonth">◀</button>
+      <h2 id="monthLabel">Calendário</h2>
+      <button id="nextMonth">▶</button>
+    </div>
     <div id="calendarGrid" class="calendar-grid"></div>
   </section>
 </main>
 
 <script>
-// =================== Dados de exemplo ===================
-const trades = [
+let trades = [
   { pair: "XAUUSD", result: 36.04, rr: "1:3.17", comment: "Nos Time Frames", dir: "BUY", date: "2025-11-10" },
   { pair: "XAUUSD", result: -10.80, rr: "1:2.80", comment: "Entrada tarde", dir: "BUY", date: "2025-11-13" },
+  { pair: "EURUSD", result: 0, rr: "1:1.5", comment: "Sai no zero", dir: "SELL", date: "2025-11-11" },
   { pair: "EURUSD", result: 14.50, rr: "1:1.5", comment: "Scalp rápido", dir: "SELL", date: "2025-11-12" }
 ];
 
-// =================== Funções ===================
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
+
 function renderTable() {
   const tbody = document.getElementById("tradeTable");
   tbody.innerHTML = "";
-
   let wins = 0, total = 0, sum = 0;
 
-  trades.forEach(t => {
+  trades.forEach((t, i) => {
     const tr = document.createElement("tr");
+    let cls = t.result > 0 ? "win" : t.result < 0 ? "loss" : "breakeven";
     tr.innerHTML = `
       <td>${t.pair}</td>
-      <td class="${t.result >= 0 ? 'win' : 'loss'}">${t.result >= 0 ? 'WIN' : 'LOSS'} (${t.result >= 0 ? '+' : ''}US$ ${t.result.toFixed(2)})</td>
+      <td class="${cls}">${t.result > 0 ? 'WIN' : t.result < 0 ? 'LOSS' : 'BE'} (${t.result >= 0 ? '+' : ''}US$ ${t.result.toFixed(2)})</td>
       <td>${new Date(t.date).toLocaleDateString("pt-BR")}</td>
       <td>${t.rr}</td>
       <td>${t.comment}</td>
       <td>${t.dir}</td>
+      <td>
+        <span class="action-btn" onclick="editTrade(${i})">✏️</span>
+        <span class="action-btn" onclick="deleteTrade(${i})">🗑️</span>
+      </td>
     `;
     tbody.appendChild(tr);
     total++;
@@ -162,6 +203,8 @@ function renderTable() {
   document.getElementById("lucroTotal").textContent = `US$ ${sum.toFixed(2)}`;
   document.getElementById("trades").textContent = total;
   document.getElementById("winrate").textContent = ((wins / total) * 100).toFixed(0) + "%";
+  renderEquity();
+  renderCalendar();
 }
 
 function renderEquity() {
@@ -169,7 +212,6 @@ function renderEquity() {
   let balance = 0;
   const labels = trades.map(t => new Date(t.date).toLocaleDateString("pt-BR"));
   const data = trades.map(t => (balance += t.result));
-
   new Chart(ctx, {
     type: "line",
     data: {
@@ -199,21 +241,64 @@ function renderEquity() {
 function renderCalendar() {
   const grid = document.getElementById("calendarGrid");
   grid.innerHTML = "";
-  const daysInMonth = 30;
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const monthName = new Date(currentYear, currentMonth).toLocaleString("pt-BR", { month: "long", year: "numeric" });
+  document.getElementById("monthLabel").textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+
   for (let i = 1; i <= daysInMonth; i++) {
     const d = document.createElement("div");
     d.classList.add("day");
-    const trade = trades.find(t => new Date(t.date).getDate() === i);
-    if (trade) d.classList.add(trade.result >= 0 ? "win" : "loss");
+    const trade = trades.find(t => {
+      const td = new Date(t.date);
+      return td.getMonth() === currentMonth && td.getDate() === i;
+    });
+    if (trade) d.classList.add(trade.result > 0 ? "win" : trade.result < 0 ? "loss" : "breakeven");
     d.textContent = i;
     grid.appendChild(d);
   }
 }
 
-// =================== Render ===================
+function editTrade(i) {
+  const t = trades[i];
+  const result = parseFloat(prompt("Novo resultado:", t.result));
+  const comment = prompt("Novo comentário:", t.comment);
+  if (!isNaN(result)) trades[i].result = result;
+  trades[i].comment = comment;
+  renderTable();
+}
+
+function deleteTrade(i) {
+  if (confirm("Apagar esta trade?")) {
+    trades.splice(i, 1);
+    renderTable();
+  }
+}
+
+document.getElementById("addTradeBtn").onclick = () => {
+  const pair = prompt("Par (ex: XAUUSD):");
+  const result = parseFloat(prompt("Resultado em US$ (ex: -10 ou 30):"));
+  const rr = prompt("RR (ex: 1:2.5):");
+  const comment = prompt("Comentário:");
+  const dir = prompt("Direção (BUY/SELL):");
+  const date = prompt("Data (AAAA-MM-DD):", new Date().toISOString().split("T")[0]);
+  if (pair && !isNaN(result)) {
+    trades.push({ pair, result, rr, comment, dir, date });
+    renderTable();
+  }
+};
+
+document.getElementById("prevMonth").onclick = () => {
+  currentMonth--;
+  if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+  renderCalendar();
+};
+document.getElementById("nextMonth").onclick = () => {
+  currentMonth++;
+  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+  renderCalendar();
+};
+
 renderTable();
-renderEquity();
-renderCalendar();
 </script>
 </body>
 </html>
