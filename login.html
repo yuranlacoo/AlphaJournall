@@ -2,54 +2,81 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AlphaJournal — Entrar</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlphaJournal - Login</title>
+  <style>
+    body {
+      background: #0f0f0f;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+    .login-box {
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 10px;
+      width: 300px;
+      text-align: center;
+    }
+    input {
+      width: 90%;
+      padding: 8px;
+      margin: 8px 0;
+      border-radius: 5px;
+      border: none;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #00bfff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover { background: #0088cc; }
+    a { color: #00bfff; text-decoration: none; display:block;margin-top:10px; }
+  </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
-  <div class="bg-white p-8 rounded-2xl shadow-xl w-96">
-    <h1 class="text-2xl font-bold text-center mb-6">AlphaJournal — Login</h1>
-
-    <input id="email" type="email" placeholder="Email"
-      class="w-full mb-3 p-3 border rounded focus:ring focus:ring-blue-300 outline-none" />
-
-    <input id="password" type="password" placeholder="Senha"
-      class="w-full mb-3 p-3 border rounded focus:ring focus:ring-blue-300 outline-none" />
-
-    <button id="btnLogin" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
-      Entrar
-    </button>
-
-    <p class="text-center mt-4 text-sm">
-      Não tem conta? 
-      <a href="#" id="btnCreate" class="text-blue-600 hover:underline">Criar conta</a>
-    </p>
+<body>
+  <div class="login-box">
+    <h2>Entrar</h2>
+    <input type="text" id="username" placeholder="Usuário" />
+    <input type="password" id="password" placeholder="Senha" />
+    <button id="btnLogin">Entrar</button>
+    <a href="#" id="createAccount">Criar conta</a>
   </div>
 
   <script>
-    document.getElementById('btnLogin').addEventListener('click', () => {
-      const email = document.getElementById('email').value.trim();
-      const pass = document.getElementById('password').value.trim();
+    const userKey = "aj_user";
+    const loggedKey = "aj_logged";
 
-      if (email === '' || pass === '') {
-        alert('Preencha todos os campos!');
-        return;
+    document.getElementById("btnLogin").onclick = () => {
+      const u = document.getElementById("username").value.trim();
+      const p = document.getElementById("password").value.trim();
+      const stored = JSON.parse(localStorage.getItem(userKey));
+
+      if (!stored) return alert("Nenhum usuário encontrado. Crie uma conta primeiro.");
+      if (stored.user === u && stored.pass === p) {
+        localStorage.setItem(loggedKey, u);
+        window.location = "dashboard.html";
+      } else {
+        alert("Usuário ou senha incorretos!");
       }
+    };
 
-      // Aqui seria feita a verificação (Firebase, API, etc.)
-      // Mas como é um teste, vamos simular login:
-      localStorage.setItem('aj_logged', email);
-
-      // Redireciona para o dashboard
-      window.location = 'dashboard.html';
-    });
-
-    document.getElementById('btnCreate').addEventListener('click', () => {
-      alert('Sistema de criação de conta em breve!');
-      // futuramente: window.location = 'register.html';
-    });
+    document.getElementById("createAccount").onclick = () => {
+      const u = prompt("Digite um nome de usuário:");
+      const p = prompt("Digite uma senha:");
+      if (u && p) {
+        localStorage.setItem(userKey, JSON.stringify({ user: u, pass: p }));
+        alert("Conta criada! Agora pode entrar.");
+      }
+    };
   </script>
-
 </body>
 </html>
