@@ -1,345 +1,219 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AlphaJournal — Dashboard</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trading Journal</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", sans-serif;
+  background-color: #0e0e0e;
+  color: #f1f1f1;
+}
+header {
+  padding: 25px 40px;
+  border-bottom: 1px solid #1f1f1f;
+}
+h1 {
+  font-size: 2.2em;
+  font-weight: 600;
+  color: #fff;
+}
+main {
+  padding: 40px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 40px;
+}
+section {
+  background-color: #161616;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+th, td {
+  padding: 10px 8px;
+  text-align: left;
+  border-bottom: 1px solid #222;
+}
+th {
+  color: #aaa;
+  font-weight: 500;
+}
+.win { color: #00ff95; font-weight: 600; }
+.loss { color: #ff5555; font-weight: 600; }
+.summary {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 15px;
+}
+.summary div {
+  text-align: center;
+}
+#calendar {
+  width: 100%;
+  color: #f1f1f1;
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin-top: 15px;
+}
+.day {
+  text-align: center;
+  padding: 10px;
+  border-radius: 6px;
+  background-color: #202020;
+}
+.day.win { background-color: #008c4a; }
+.day.loss { background-color: #a00000; }
+canvas {
+  margin-top: 20px;
+}
+</style>
 </head>
 <body>
-  <div class="layout">
-    <aside class="sidebar">
-      <div class="logo"><div class="badge">AJ</div><div><div class="brand-title">AlphaJournal</div><div class="muted small">Trade Journal</div></div></div>
-      <nav class="menu">
-        <a class="active">Dashboard</a>
-        <a href="register-trade.html">Registrar Trade</a>
-          <li><a href="calendar.html">Calendário</a></li>
-      </nav>
-    </aside>
 
-    <main class="main">
-      <div class="topbar">
-        <div><div class="muted">Bem-vindo</div><div id="userName" class="bold">—</div></div>
-        <div style="display:flex;gap:10px;align-items:center"><input id="quickSearch" class="searchInput" placeholder="Pesquisar..." /><button id="btnLogout" class="btn ghost">Sair</button></div>
+<header>
+  <h1>Trading Journal</h1>
+</header>
+
+<main>
+  <section>
+    <div class="summary">
+      <div>
+        <h3>Lucro Total</h3>
+        <p id="lucroTotal">R$ 0,00</p>
       </div>
+      <div>
+        <h3>Winrate</h3>
+        <p id="winrate">--%</p>
+      </div>
+      <div>
+        <h3>Trades</h3>
+        <p id="trades">0</p>
+      </div>
+    </div>
 
-      <div class="cards">
-        <div class="card"><div class="label">Lucro Total</div><div id="cardProfit" class="value">$ 0,00</div></div>
-        <div class="card"><div class="label">Winrate</div><div id="cardWinrate" class="value">-- %</div></div>
-        <div class="card"><div class="label">Trades</div><div id="cardCount" class="value">0</div></div>
-      <div class="card">
-  <div class="label">Lucro do Mês</div>
-  <div id="cardMonthProfit" class="value">R$ 0,00</div>
-</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Par</th>
+          <th>Resultado</th>
+          <th>Data</th>
+          <th>RR</th>
+          <th>Comentário</th>
+          <th>Direção</th>
+        </tr>
+      </thead>
+      <tbody id="tradeTable"></tbody>
+    </table>
 
-<div class="card">
-  <div class="label">Semana</div>
-  <div id="cardWeekProfit" class="value">R$ 0,00</div>
-</div>
+    <canvas id="equityChart" height="150"></canvas>
+  </section>
 
-<div class="card">
-  <div class="label">Moeda</div>
-  <select id="currencySelect" class="value" style="background:none;border:none;color:#fff">
-    <option value="BRL">BRL</option>
-    <option value="USD">USD</option>
-    <option value="EUR">EUR</option>
-  </select>
-</div>
-<div class="card">
-  <div class="label">Lucro do Mês</div>
-  <div id="cardMonthProfit" class="value">R$ 0,00</div>
-</div>
-
-<div class="card">
-  <div class="label">Semana</div>
-  <div id="cardWeekProfit" class="value">R$ 0,00</div>
-</div>
-
-<div class="card">
-  <div class="label">Moeda</div>
-  <select id="currencySelect" class="value" style="background:none;border:none;color:#fff">
-    <option value="BRL">BRL</option>
-    <option value="USD">USD</option>
-    <option value="EUR">EUR</option>
-  </select>
-</div>
-
-
-      <div class="panel">
-        <section class="panel-left">
-          
-          <canvas id="equityChart" height="130"></canvas>
-<canvas id="distChart" height="120" style="margin-top:20px"></canvas>
-
-        <script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <section id="calendar">
+    <h2>Calendário</h2>
+    <div id="calendarGrid" class="calendar-grid"></div>
+  </section>
+</main>
 
 <script>
-firebase.auth().onAuthStateChanged(async (user) => {
-    if (!user) {
-        console.log("Usuário não logado");
-        return;
-    }
+// =================== Dados de exemplo ===================
+const trades = [
+  { pair: "XAUUSD", result: 36.04, rr: "1:3.17", comment: "Nos Time Frames", dir: "BUY", date: "2025-11-10" },
+  { pair: "XAUUSD", result: -10.80, rr: "1:2.80", comment: "Entrada tarde", dir: "BUY", date: "2025-11-13" },
+  { pair: "EURUSD", result: 14.50, rr: "1:1.5", comment: "Scalp rápido", dir: "SELL", date: "2025-11-12" }
+];
 
-    console.log("Usuário logado:", user.uid);
+// =================== Funções ===================
+function renderTable() {
+  const tbody = document.getElementById("tradeTable");
+  tbody.innerHTML = "";
 
-    const tradesSnap = await db.collection("users")
-        .doc(user.uid)
-        .collection("trades")
-        .orderBy("date", "asc")
-        .get();
+  let wins = 0, total = 0, sum = 0;
 
-    if (tradesSnap.empty) {
-        console.log("Nenhuma trade encontrada");
-        return;
-    }
+  trades.forEach(t => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${t.pair}</td>
+      <td class="${t.result >= 0 ? 'win' : 'loss'}">${t.result >= 0 ? 'WIN' : 'LOSS'} (${t.result >= 0 ? '+' : ''}US$ ${t.result.toFixed(2)})</td>
+      <td>${new Date(t.date).toLocaleDateString("pt-BR")}</td>
+      <td>${t.rr}</td>
+      <td>${t.comment}</td>
+      <td>${t.dir}</td>
+    `;
+    tbody.appendChild(tr);
+    total++;
+    if (t.result > 0) wins++;
+    sum += t.result;
+  });
 
-    const labels = [];
-    const equity = [];
-    let balance = 0;
-
-    tradesSnap.forEach(doc => {
-        const t = doc.data();
-        const result = parseFloat(t.result || 0);
-        const date = new Date(t.date);
-
-        balance += result;
-        labels.push(date.toLocaleDateString("pt-BR"));
-        equity.push(balance);
-    });
-
-    const ctx = document.getElementById("equityChart").getContext("2d");
-    
-    new Chart(ctx, {
-        type: "line",
-        data: {
-            labels,
-            datasets: [{
-                data: equity,
-                fill: true,
-                borderWidth: 3,
-                tension: 0.4,
-                pointRadius: 0,
-                borderColor: "#00E8FF",
-                backgroundColor: "rgba(0, 232, 255, 0.10)"
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: ctx => R$ ${ctx.raw.toFixed(2)}
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    ticks: { color: "#ffffff" },
-                    grid: { display: false }
-                },
-                y: {
-                    ticks: {
-                        color: "#ffffff",
-                        callback: v => R$ ${v}
-                    },
-                    grid: { color: "rgba(255,255,255,0.05)" }
-                }
-            }
-        }
-    });
-});
-</script>
-
-          <div style="margin-top:12px"><h3>Histórico</h3><div id="tradesContainer" class="list"></div></div>
-        </section>
-
-        <aside class="panel-right">
-          <div class="calendar" id="calendarWrap">
-            <div class="cal-header">
-          
-            </div>
-
-            <div class="cal-weekdays"><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div></div>
-            <div class="cal-grid" id="calGrid"></div>
-          </div>
-        </aside>
-      </div>
-    </main>
-  </div>
-
-  <div id="modal" class="modal" aria-hidden="true"><div class="modal-box"><button id="closeModal" class="btn ghost small">Fechar</button><h4 id="modalAtivo"></h4><div id="modalDate" class="muted"></div><img id="modalImg" alt="Print" style="width:100%;margin-top:10px"/><div id="modalObs" style="margin-top:10px; white-space:pre-wrap"></div></div></div>
-
-  <script src="firebase.js"></script>
-  <script>
-    const auth = window.auth; const db = window.db;
-    const userName = document.getElementById('userName'), btnLogout = document.getElementById('btnLogout');
-    const tradesContainer = document.getElementById('tradesContainer'), cardProfit = document.getElementById('cardProfit');
-    const cardWinrate = document.getElementById('cardWinrate'), cardCount = document.getElementById('cardCount');
-    const calGrid = document.getElementById('calGrid'), calMonthLabel = document.getElementById('calMonth');
-    const prevMonthBtn = document.getElementById('prevMonth'), nextMonthBtn = document.getElementById('nextMonth');
-    const modal = document.getElementById('modal'), modalImg = document.getElementById('modalImg'), modalAtivo = document.getElementById('modalAtivo'), modalDate = document.getElementById('modalDate'), modalObs = document.getElementById('modalObs'), closeModal = document.getElementById('closeModal');
-
-    let equityChart, tradesCache = [], currentUser = null, calOffset = 0;
-    function fmtBRL(v){ return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
-    function openModal(t){ modalAtivo.textContent = t.ativo || '-'; modalDate.textContent = t.data || '-'; modalImg.src = t.imageURL || ''; modalObs.textContent = (t.obs || '') + '\\nSetup: ' + (t.setup || '-'); modal.style.display = 'flex'; }
-    closeModal.addEventListener('click', ()=> { modal.style.display='none'; modal.setAttribute('aria-hidden','true'); });
-    btnLogout.addEventListener('click', ()=> auth.signOut());
-
-    function renderTrades(list){
-      tradesContainer.innerHTML = '';
-      if(!list.length){ tradesContainer.innerHTML = '<div class="muted">Nenhum trade</div>'; return; }
-      list.forEach(t=>{ const div = document.createElement('div'); div.className='trade-item'; div.innerHTML = <div style="flex:1"><div class="bold">${t.ativo}</div><div class="muted small" style="margin-top:6px">${t.data} • ${t.tipo || ''} • ${t.resultado || ''}</div></div><div style="text-align:right"><div style="font-weight:800;color:${t.financeiro>=0? '#00eaff':'#ff6b6b'}">${fmtBRL(t.financeiro)}</div></div>; if(t.imageURL){ const img = document.createElement('img'); img.src = t.imageURL; img.className='thumb'; img.style.cursor='pointer'; img.addEventListener('click', ()=> openModal(t)); div.appendChild(img); } tradesContainer.appendChild(div); });
-    }
-
-    function updateCards(list){
-      let total=0,wins=0,sum=0;
-      list.forEach(t=>{ const r=Number(t.financeiro||0); total+=r; sum+=r; if(r>0) wins++; });
-      cardProfit.textContent = fmtBRL(total); cardCount.textContent = list.length; cardWinrate.textContent = list.length? Math.round((wins/list.length)*100)+'%':'--%';
-    }
-
-   function updateChart(list) {
-    if (!list.length) return;
-
-    const labels = [];
-    const equity = [];
-    let balance = 0;
-
-    // ✅Ordena pelas datas reais
-    const ordered = [...list].sort((a, b) => new Date(a.data) - new Date(b.data));
-
-    ordered.forEach(t => {
-        const result = parseFloat((t.financeiro || "0").replace(/[^\d-.,]/g, "").replace(",", "."));
-        const date = new Date(t.data);
-        balance += result;
-
-        labels.push(date.toLocaleDateString("pt-BR"));
-        equity.push(balance);
-    });
-
-    const ctx = document.getElementById("equityChart").getContext("2d");
-
-    if (equityChart) {
-        equityChart.data.labels = labels;
-        equityChart.data.datasets[0].data = equity;
-        equityChart.update();
-        return;
-    }
-
-    equityChart = new Chart(ctx, {
-        type: "line",
-        data: {
-            labels,
-            datasets: [{
-                label: "Equity",
-                data: equity,
-                borderWidth: 3,
-                tension: 0.35,
-                pointRadius: 4,
-                pointHoverRadius: 6,
-                fill: true,
-                borderColor: "#00E8FF",
-                backgroundColor: "rgba(0, 232, 255, 0.15)",
-                pointBackgroundColor: ctx => {
-                    const v = equity[ctx.dataIndex];
-                    return v >= 0 ? "#00E8FF" : "#FF4E4E";
-                }
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: ctx => `R$ ${ctx.raw.toFixed(2)}`
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    grid: { display: false },
-                    ticks: { color: "#ffffff" }
-                },
-                y: {
-                    ticks: {
-                        color: "#ffffff",
-                        callback: v => `R$ ${v}`
-                    },
-                    grid: { color: "rgba(255,255,255,0.07)" }
-                }
-            }
-        }
-    });
+  document.getElementById("lucroTotal").textContent = `US$ ${sum.toFixed(2)}`;
+  document.getElementById("trades").textContent = total;
+  document.getElementById("winrate").textContent = ((wins / total) * 100).toFixed(0) + "%";
 }
 
-      const rows=[...list].reverse(); const labels=[], data=[]; let acc=0;
-      rows.forEach(r=>{ acc+=Number(r.financeiro||0); labels.push(r.data||''); data.push(acc); });
-      if(!equityChart){ const ctx = document.getElementById('equityChart').getContext('2d'); equityChart = new Chart(ctx,{ type:'line', data:{ labels, datasets:[{ label:'Equity', data, borderColor:'#00eaff', backgroundColor:'rgba(0,232,255,0.06)', tension:0.2 }]}, options:{ responsive:true, maintainAspectRatio:false } }); } else { equityChart.data.labels = labels; equityChart.data.datasets[0].data = data; equityChart.update(); }
-    }
+function renderEquity() {
+  const ctx = document.getElementById("equityChart").getContext("2d");
+  let balance = 0;
+  const labels = trades.map(t => new Date(t.date).toLocaleDateString("pt-BR"));
+  const data = trades.map(t => (balance += t.result));
 
-    function renderCalendarForOffset(offsetMonths){
-      const now = new Date(); const first = new Date(now.getFullYear(), now.getMonth()+offsetMonths,1); const month = first.getMonth(); const year = first.getFullYear();
-      calMonthLabel.textContent = first.toLocaleString('pt-BR',{month:'long',year:'numeric'});
-      const startDay = (new Date(year,month,1).getDay()+6)%7; const daysInMonth = new Date(year,month+1,0).getDate();
-      calGrid.innerHTML = '';
-      for(let i=0;i<startDay;i++){ const b=document.createElement('div'); b.className='cal-day'; calGrid.appendChild(b); }
-      for(let d=1; d<=daysInMonth; d++){
-        const iso = ${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}; const dayEl = document.createElement('div'); dayEl.className='cal-day';
-        const num = document.createElement('div'); num.className='date-num'; num.textContent=d; dayEl.appendChild(num);
-        const trades = tradesCache.filter(t => (t.data||'').slice(0,10) === iso);
-        if(trades.length){
-          const anyPos = trades.some(t => Number(t.financeiro||0) > 0);
-          const anyNeg = trades.some(t => Number(t.financeiro||0) < 0);
-          if(anyPos && anyNeg) dayEl.classList.add('mix'); else if(anyPos) dayEl.classList.add('tp'); else if(anyNeg) dayEl.classList.add('sl');
-          const anyBE = trades.some(t => (t.resultado||'').toLowerCase() === 'be') || (Math.abs(trades.reduce((s,tt)=> s + Number(tt.financeiro||0),0)) < 0.0001);
-          if(anyBE && !anyPos && !anyNeg){ dayEl.classList.remove('tp','sl','mix'); dayEl.classList.add('be'); }
-          const totalVal = trades.reduce((s,tt)=> s + Number(tt.financeiro||0),0);
-          const summ = document.createElement('div'); summ.className='summary'; summ.innerHTML = <div style="font-size:14px;font-weight:800;color:${totalVal>=0? '#00eaff':'#ff6b6b'}">${fmtBRL(totalVal)}</div><div class="count">${trades.length} Trade${trades.length>1?'s':''}</div>; dayEl.appendChild(summ);
-          const thumbTrade = trades.find(t => t.imageURL);
-          if(thumbTrade && thumbTrade.imageURL){ const img = document.createElement('img'); img.className='thumb-small'; img.src = thumbTrade.imageURL; img.alt='print'; img.addEventListener('click',(ev)=>{ ev.stopPropagation(); openModal(thumbTrade); }); dayEl.appendChild(img); }
-          dayEl.style.cursor='pointer'; dayEl.addEventListener('click', ()=>{ const first = trades[0]; modalAtivo.textContent = ${first.ativo} (${trades.length} trade${trades.length>1?'s':''}); modalDate.textContent = iso; modalImg.src = first.imageURL || ''; modalObs.textContent = trades.map(t=>${t.ativo} — ${fmtBRL(t.financeiro)} — ${t.setup || '-'} — ${t.resultado || ''}).join('\\n'); modal.style.display='flex'; modal.setAttribute('aria-hidden','false'); });
-        }
-        calGrid.appendChild(dayEl);
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [{
+        label: "Equity Curve",
+        data,
+        borderWidth: 3,
+        borderColor: "#00E8FF",
+        tension: 0.3,
+        fill: true,
+        backgroundColor: "rgba(0, 232, 255, 0.1)",
+        pointRadius: 5,
+        pointBackgroundColor: data.map(v => v >= 0 ? "#00E8FF" : "#FF4E4E")
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: "#aaa" } },
+        y: { ticks: { color: "#aaa" }, grid: { color: "#222" } }
       }
     }
+  });
+}
 
-    prevMonthBtn.addEventListener('click', ()=>{ calOffset--; renderCalendarForOffset(calOffset); });
-    nextMonthBtn.addEventListener('click', ()=>{ calOffset++; renderCalendarForOffset(calOffset); });
+function renderCalendar() {
+  const grid = document.getElementById("calendarGrid");
+  grid.innerHTML = "";
+  const daysInMonth = 30;
+  for (let i = 1; i <= daysInMonth; i++) {
+    const d = document.createElement("div");
+    d.classList.add("day");
+    const trade = trades.find(t => new Date(t.date).getDate() === i);
+    if (trade) d.classList.add(trade.result >= 0 ? "win" : "loss");
+    d.textContent = i;
+    grid.appendChild(d);
+  }
+}
 
-    <script>
-    const auth = window.auth; const db = window.db;
-    ...
-    auth.onAuthStateChanged(user => {
-      if(!user) return window.location.href = 'index.html';
-      currentUser = user; userName.textContent = user.email.split('@')[0];
-      const tradesRef = db.collection('users').doc(user.uid).collection('trades').orderBy('createdAt','desc');
-      tradesRef.onSnapshot(snap=>{
-        tradesCache = snap.docs.map(d => ({ id:d.id, ...d.data() }));
-        renderTrades(tradesCache); updateCards(tradesCache); updateChart(tradesCache); renderCalendarForOffset(calOffset);
-      }, err=>{ console.error(err); tradesContainer.innerHTML = '<div class="muted">Erro ao carregar trades</div>'; });
-    });
-
-    auth.onAuthStateChanged(user => {
-      if(!user) return window.location.href = 'index.html';
-      currentUser = user; userName.textContent = user.email.split('@')[0];
-      const tradesRef = db.collection('users').doc(user.uid).collection('trades').orderBy('createdAt','desc');
-      tradesRef.onSnapshot(snap=>{
-        tradesCache = snap.docs.map(d => ({ id:d.id, ...d.data() }));
-       let distChart;
-let currency = "BRL";
-
-const currencySelect = document.getElementById("currencySelect");
-currencySelect.addEventListener("change", () => {
-  currency = currencySelect.value;
-        renderAll();
-      }, err=>{ console.error(err); tradesContainer.innerHTML = '<div class="muted">Erro ao carregar trades</div>'; });
-    });
-  </script>
+// =================== Render ===================
+renderTable();
+renderEquity();
+renderCalendar();
+</script>
 </body>
 </html>
