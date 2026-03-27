@@ -1,172 +1,100 @@
-<!DOCTYPE html>
-<html lang="pt">
+<!doctype html>
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Alpha Journal</title>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AlphaJournal — Entrar</title>
 
-<!-- Fonte -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <!-- FAVICON -->
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 
-<style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Inter', sans-serif;
-}
+  <link rel="stylesheet" href="style.css">
 
-body {
-  background: #0b1020;
-  color: #fff;
-  padding: 20px;
-}
-
-/* GRID */
-.container {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-}
-
-/* CARDS */
-.card {
-  background: #11182e;
-  padding: 20px;
-  border-radius: 15px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.4);
-}
-
-.title {
-  font-size: 12px;
-  color: #6c7aa0;
-  margin-bottom: 10px;
-}
-
-.value {
-  font-size: 24px;
-  font-weight: 600;
-}
-
-.green { color: #00ffcc; }
-.red { color: #ff4d6d; }
-
-/* GRÁFICO */
-.chart {
-  grid-column: span 2;
-}
-
-canvas {
-  width: 100%;
-  height: 100px;
-}
-
-/* CALENDÁRIO */
-.calendar {
-  grid-column: span 2;
-}
-
-.days {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.day {
-  padding: 15px;
-  text-align: center;
-  border-radius: 8px;
-  background: #182040;
-}
-
-.day.green { background: #123f35; }
-.day.red { background: #3a1c2a; }
-
-/* LISTAS */
-.list {
-  line-height: 2;
-  font-size: 14px;
-}
-
-/* RESPONSIVO */
-@media(max-width: 900px) {
-  .container {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
+  <!-- Firebase compat SDKs (necessários) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 </head>
-
 <body>
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div class="brand">AlphaJournal</div>
+          <div class="muted small">Seu trade journal profissional</div>
+        </div>
+      </div>
 
-<h2 style="margin-bottom:20px;">AlphaJournal</h2>
+      <div class="tabs">
+        <button id="tabLogin" class="tab active">Entrar</button>
+        <button id="tabRegister" class="tab">Criar Conta</button>
+      </div>
 
-<div class="container">
+      <form id="loginForm" class="form">
+        <input name="email" type="email" placeholder="E-mail" required>
+        <input name="password" type="password" placeholder="Senha" required>
+        <button type="submit" class="btn primary">Entrar</button>
+        <div id="loginMsg" class="msg"></div>
+      </form>
 
-  <!-- CARDS -->
-  <div class="card">
-    <div class="title">NET P&L</div>
-    <div class="value green">$8,245</div>
-  </div>
+      <form id="registerForm" class="form hidden">
+        <input id="regEmail" type="email" placeholder="E-mail" required>
+        <input id="regPassword" type="password" placeholder="Senha (min 6)" required>
+        <button id="btnRegister" type="button" class="btn primary">Criar Conta</button>
+        <div id="regMsg" class="msg"></div>
+      </form>
+    </div>
+  </div>
 
-  <div class="card">
-    <div class="title">WIN RATE</div>
-    <div class="value">67.3%</div>
-  </div>
+  <!-- inicializa Firebase (arquivo local) -->
+  <script src="firebase.js"></script>
 
-  <div class="card">
-    <div class="title">PROFIT FACTOR</div>
-  
-  </div>
+  <script>
+    const tabLogin = document.getElementById('tabLogin');
+    const tabRegister = document.getElementById('tabRegister');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const loginMsg = document.getElementById('loginMsg');
+    const regMsg = document.getElementById('regMsg');
+    const btnRegister = document.getElementById('btnRegister');
 
-  <div class="card">
-    <div class="title">MAX DRAWDOWN</div>
-  
-  </div>
+    tabLogin.addEventListener('click', ()=>{ tabLogin.classList.add('active'); tabRegister.classList.remove('active'); loginForm.classList.remove('hidden'); registerForm.classList.add('hidden'); loginMsg.textContent=''; });
+    tabRegister.addEventListener('click', ()=>{ tabRegister.classList.add('active'); tabLogin.classList.remove('active'); registerForm.classList.remove('hidden'); loginForm.classList.add('hidden'); regMsg.textContent=''; });
 
-  <!-- GRÁFICO -->
-  <div class="card chart">
-    <div class="title">Equity Curve</div>
+    // redirect if logged in
+    auth.onAuthStateChanged(u=>{ if(u) window.location.href='dashboard.html'; });
 
-  </div>
+    loginForm.addEventListener('submit', async (e)=>{
+      e.preventDefault(); loginMsg.textContent='';
+      const email = loginForm.email.value.trim();
+      const pwd = loginForm.password.value.trim();
+      try{
+        await auth.signInWithEmailAndPassword(email,pwd);
+        window.location.href='dashboard.html';
+      }catch(err){
+        loginMsg.textContent = err.message;
+      }
+    });
 
-
-
-
-    </div>
-  </div>
-
-</div>
-
-<!-- CHART JS -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-const ctx = document.getElementById('chart');
-
-new Chart(ctx, {
-  type: 'line',
-  data: {
-    labels: ["1","2","3","4","5","6","7"],
-    datasets: [{
-      data: [1000, 2000, 3000, 4000, 3800, 4200, 5000],
-      borderColor: "#00ffcc",
-      borderWidth: 2,
-      tension: 0.4,
-      fill: true,
-      backgroundColor: "rgba(0,255,204,0.1)"
-    }]
-  },
-  options: {
-    plugins: { legend: { display: false }},
-    scales: {
-      x: { display: false },
-      y: { display: false }
-    }
-  }
-});
-</script>
-
+    btnRegister.addEventListener('click', async ()=>{
+      regMsg.textContent='';
+      const email = document.getElementById('regEmail').value.trim();
+      const pwd = document.getElementById('regPassword').value.trim();
+      if(!email||!pwd){ regMsg.textContent='Preencha email e senha.'; return; }
+      try{
+        await auth.createUserWithEmailAndPassword(email,pwd);
+        // cria scaffold do user para evitar writes faltando caminho
+        const uid = auth.currentUser.uid;
+        await db.collection('users').doc(uid).set({ createdAt: firebase.firestore.FieldValue.serverTimestamp(), email: email });
+        alert('Conta criada — faça login.');
+        tabLogin.click();
+      }catch(err){
+        regMsg.textContent = err.message;
+      }
+    });
+  </script>
 </body>
+
+<script type="module" src="login.js"></script>
+
 </html>
