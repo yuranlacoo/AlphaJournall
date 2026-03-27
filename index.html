@@ -1,100 +1,1054 @@
-<!doctype html>
-<html lang="pt-BR">
+<!DOCTYPE html>
+<html lang="pt-PT">
 <head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AlphaJournal — Entrar</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trading Journal Dashboard</title>
+  <style>
+    :root {
+      --bg: #070b1a;
+      --bg-2: #0b1023;
+      --panel: rgba(13, 19, 42, 0.95);
+      --panel-2: rgba(10, 15, 34, 0.95);
+      --border: rgba(83, 105, 181, 0.14);
+      --text: #d8e2ff;
+      --muted: #7f8db7;
+      --cyan: #27f3df;
+      --green: #1ec98d;
+      --red: #ff5a76;
+      --gray: #7a8298;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      --card-radius: 18px;
+      --cell-win: rgba(30, 201, 141, 0.20);
+      --cell-loss: rgba(255, 90, 118, 0.18);
+      --cell-be: rgba(122, 130, 152, 0.22);
+      --cell-empty: rgba(39, 243, 223, 0.03);
+    }
 
-  <!-- FAVICON -->
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+    body.light {
+      --bg: #eef3ff;
+      --bg-2: #dde7ff;
+      --panel: rgba(255, 255, 255, 0.95);
+      --panel-2: rgba(245, 248, 255, 0.98);
+      --border: rgba(74, 102, 180, 0.15);
+      --text: #111b36;
+      --muted: #6a789f;
+      --cyan: #00b8c9;
+      --green: #0f9d68;
+      --red: #df3758;
+      --gray: #7b8396;
+      --shadow: 0 12px 30px rgba(48, 73, 137, 0.12);
+      --cell-win: rgba(15, 157, 104, 0.18);
+      --cell-loss: rgba(223, 55, 88, 0.15);
+      --cell-be: rgba(123, 131, 150, 0.18);
+      --cell-empty: rgba(0, 184, 201, 0.05);
+    }
 
-  <link rel="stylesheet" href="style.css">
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(39,243,223,0.08), transparent 28%),
+        radial-gradient(circle at top right, rgba(39,243,223,0.05), transparent 22%),
+        linear-gradient(160deg, var(--bg) 0%, var(--bg-2) 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
 
-  <!-- Firebase compat SDKs (necessários) -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .brand p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .btn, .file-label {
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      box-shadow: var(--shadow);
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn:hover, .file-label:hover { transform: translateY(-1px); border-color: rgba(39,243,223,0.35); }
+    .btn.primary { background: linear-gradient(180deg, rgba(39,243,223,0.16), rgba(39,243,223,0.07)); }
+    .btn.danger { border-color: rgba(255,90,118,0.2); }
+    .btn.small { padding: 10px 14px; font-size: 12px; }
+    input[type="file"] { display: none; }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--border);
+      border-radius: var(--card-radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(39,243,223,0.02), transparent 40%, transparent 70%, rgba(39,243,223,0.015));
+      pointer-events: none;
+    }
+
+    .stat-card { min-height: 112px; }
+    .span-2 { grid-column: span 2; }
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+    .span-9 { grid-column: span 9; }
+    .span-12 { grid-column: span 12; }
+
+    .eyebrow {
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-size: clamp(28px, 3vw, 40px);
+      font-weight: 700;
+      color: var(--cyan);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .stat-value.red { color: var(--red); }
+    .stat-value.green { color: var(--green); }
+
+    .subtext {
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+    }
+
+    .equity-wrap {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .equity-chart {
+      flex: 1;
+      min-height: 120px;
+      width: 100%;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+
+    .day-cell {
+      border-radius: 8px;
+      min-height: 72px;
+      border: 1px solid rgba(255,255,255,0.04);
+      background: var(--cell-empty);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+
+    .day-cell:hover { transform: translateY(-2px); border-color: rgba(39,243,223,0.18); }
+    .day-cell.win { background: var(--cell-win); }
+    .day-cell.loss { background: var(--cell-loss); }
+    .day-cell.be { background: var(--cell-be); }
+    .day-cell.empty { opacity: 0.45; }
+
+    .day-number {
+      font-size: 13px;
+      color: var(--text);
+      opacity: 0.95;
+    }
+
+    .day-result {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .list-panel {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .list-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      font-size: 15px;
+    }
+
+    .list-row .label { color: var(--text); }
+    .list-row .value { color: var(--cyan); font-weight: 600; }
+
+    .empty-state {
+      border: 1px dashed var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 14px;
+      margin-top: 12px;
+    }
+
+    .trades-section {
+      margin-top: 18px;
+    }
+
+    .trade-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .trade-item {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      background: rgba(255,255,255,0.02);
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+    }
+
+    .trade-field small {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 6px;
+    }
+
+    .trade-field strong {
+      font-size: 14px;
+      word-break: break-word;
+    }
+
+    .trade-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
+
+    .floating-add {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 30;
+      border-radius: 999px;
+      padding: 16px 20px;
+      font-weight: 700;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 6, 16, 0.72);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 20px;
+    }
+
+    .modal.open { display: flex; }
+
+    .modal-card {
+      width: min(720px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 18px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .form-group.full { grid-column: span 2; }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 14px 14px;
+      font: inherit;
+      outline: none;
+    }
+
+    textarea { min-height: 120px; resize: vertical; }
+
+    .preview-image {
+      margin-top: 10px;
+      width: 100%;
+      max-height: 220px;
+      object-fit: cover;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      display: none;
+    }
+
+    .legend {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 14px;
+    }
+
+    .legend span { display: inline-flex; align-items: center; gap: 8px; }
+    .dot { width: 10px; height: 10px; border-radius: 999px; display: inline-block; }
+    .dot.win { background: var(--green); }
+    .dot.loss { background: var(--red); }
+    .dot.be { background: var(--gray); }
+
+    @media (max-width: 1100px) {
+      .span-2, .span-3, .span-4, .span-5, .span-6, .span-9 { grid-column: span 12; }
+      .trade-item { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 700px) {
+      body { padding: 16px; }
+      .calendar-grid { grid-template-columns: repeat(3, 1fr); }
+      .form-grid, .trade-item { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: span 1; }
+      .floating-add { left: 16px; right: 16px; bottom: 16px; justify-content: center; }
+      .actions { width: 100%; }
+    }
+  </style>
 </head>
 <body>
-  <div class="auth-wrap">
-    <div class="auth-card">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div>
-          <div class="brand">AlphaJournal</div>
-          <div class="muted small">Seu trade journal profissional</div>
-        </div>
-      </div>
+  <div class="container">
+    <header class="topbar" id="topo">
+      <div class="brand">
+        <h1>Trading Journal</h1>
+        <p>Dashboard local • guarda automaticamente no browser</p>
+      </div>
+      <div class="actions">
+        <button class="btn" id="themeToggle">Tema: Preto</button>
+        <label class="file-label" for="csvInput">CSV</label>
+        <input type="file" id="csvInput" accept=".csv" />
+        <a class="btn" href="#calendarSection">Calendário</a>
+        <a class="btn" href="#tradesSection">Trades</a>
+        <button class="btn danger" id="logoutBtn">Sair</button>
+      </div>
+    </header>
 
-      <div class="tabs">
-        <button id="tabLogin" class="tab active">Entrar</button>
-        <button id="tabRegister" class="tab">Criar Conta</button>
-      </div>
+    <main class="dashboard-grid">
+      <section class="card stat-card span-2">
+        <div class="eyebrow">Net P&amp;L</div>
+        <div class="stat-value" id="netPnl">$0</div>
+        <div class="subtext" id="weekPnl">+$0 esta semana</div>
+      </section>
 
-      <form id="loginForm" class="form">
-        <input name="email" type="email" placeholder="E-mail" required>
-        <input name="password" type="password" placeholder="Senha" required>
-        <button type="submit" class="btn primary">Entrar</button>
-        <div id="loginMsg" class="msg"></div>
-      </form>
+      <section class="card stat-card span-2">
+        <div class="eyebrow">Win Rate</div>
+        <div class="stat-value" id="winRate">0.0%</div>
+        <div class="subtext"><span id="tradeCount">0</span> trades</div>
+      </section>
 
-      <form id="registerForm" class="form hidden">
-        <input id="regEmail" type="email" placeholder="E-mail" required>
-        <input id="regPassword" type="password" placeholder="Senha (min 6)" required>
-        <button id="btnRegister" type="button" class="btn primary">Criar Conta</button>
-        <div id="regMsg" class="msg"></div>
-      </form>
-    </div>
-  </div>
+      <section class="card stat-card span-2">
+        <div class="eyebrow">Profit Factor</div>
+        <div class="stat-value" id="profitFactor">0.00</div>
+        <div class="subtext">Avg RR <span id="avgRr">0.0</span></div>
+      </section>
 
-  <!-- inicializa Firebase (arquivo local) -->
-  <script src="firebase.js"></script>
+      <section class="card stat-card span-2">
+        <div class="eyebrow">Max Drawdown</div>
+        <div class="stat-value red" id="maxDrawdown">$0</div>
+        <div class="subtext">Best streak: <span id="bestStreak">0</span> wins</div>
+      </section>
 
-  <script>
-    const tabLogin = document.getElementById('tabLogin');
-    const tabRegister = document.getElementById('tabRegister');
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-    const loginMsg = document.getElementById('loginMsg');
-    const regMsg = document.getElementById('regMsg');
-    const btnRegister = document.getElementById('btnRegister');
+      <section class="card span-4">
+        <div class="equity-wrap">
+          <div class="section-title">
+            <div>
+              <div class="eyebrow">Equity Curve</div>
+              <h2>Linha de evolução</h2>
+            </div>
+          </div>
+          <svg class="equity-chart" id="equityChart" viewBox="0 0 420 140" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="equityFill" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="rgba(39,243,223,0.35)"></stop>
+                <stop offset="100%" stop-color="rgba(39,243,223,0.02)"></stop>
+              </linearGradient>
+            </defs>
+            <path id="equityArea" fill="url(#equityFill)" opacity="0.95"></path>
+            <path id="equityPath" fill="none" stroke="var(--cyan)" stroke-width="3" stroke-linecap="round"></path>
+          </svg>
+        </div>
+      </section>
 
-    tabLogin.addEventListener('click', ()=>{ tabLogin.classList.add('active'); tabRegister.classList.remove('active'); loginForm.classList.remove('hidden'); registerForm.classList.add('hidden'); loginMsg.textContent=''; });
-    tabRegister.addEventListener('click', ()=>{ tabRegister.classList.add('active'); tabLogin.classList.remove('active'); registerForm.classList.remove('hidden'); loginForm.classList.add('hidden'); regMsg.textContent=''; });
+      <section class="card span-6" id="calendarSection">
+        <div class="section-title">
+          <div>
+            <div class="eyebrow">P&amp;L Calendar</div>
+            <h2 id="calendarTitle">Calendário - mês atual</h2>
+          </div>
+          <div class="subtext" id="calendarSummary">Sem trades ainda</div>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+        <div class="legend">
+          <span><i class="dot win"></i> Win</span>
+          <span><i class="dot loss"></i> Loss</span>
+          <span><i class="dot be"></i> Breakeven</span>
+        </div>
+      </section>
 
-    // redirect if logged in
-    auth.onAuthStateChanged(u=>{ if(u) window.location.href='dashboard.html'; });
+      <section class="card span-3">
+        <div class="section-title">
+          <div>
+            <div class="eyebrow">By Strategy</div>
+            <h2>Estratégias</h2>
+          </div>
+        </div>
+        <div class="list-panel" id="strategyList"></div>
+        <div class="empty-state" id="strategyEmpty">Ainda não existem trades para calcular estratégias.</div>
+      </section>
 
-    loginForm.addEventListener('submit', async (e)=>{
-      e.preventDefault(); loginMsg.textContent='';
-      const email = loginForm.email.value.trim();
-      const pwd = loginForm.password.value.trim();
-      try{
-        await auth.signInWithEmailAndPassword(email,pwd);
-        window.location.href='dashboard.html';
-      }catch(err){
-        loginMsg.textContent = err.message;
-      }
-    });
+      <section class="card span-3">
+        <div class="section-title">
+          <div>
+            <div class="eyebrow">Sessions</div>
+            <h2>Sessões</h2>
+          </div>
+        </div>
+        <div class="list-panel" id="sessionList"></div>
+        <div class="empty-state" id="sessionEmpty">Ainda não existem trades para calcular sessões.</div>
+      </section>
 
-    btnRegister.addEventListener('click', async ()=>{
-      regMsg.textContent='';
-      const email = document.getElementById('regEmail').value.trim();
-      const pwd = document.getElementById('regPassword').value.trim();
-      if(!email||!pwd){ regMsg.textContent='Preencha email e senha.'; return; }
-      try{
-        await auth.createUserWithEmailAndPassword(email,pwd);
-        // cria scaffold do user para evitar writes faltando caminho
-        const uid = auth.currentUser.uid;
-        await db.collection('users').doc(uid).set({ createdAt: firebase.firestore.FieldValue.serverTimestamp(), email: email });
-        alert('Conta criada — faça login.');
-        tabLogin.click();
-      }catch(err){
-        regMsg.textContent = err.message;
-      }
-    });
-  </script>
+      <section class="card span-12 trades-section" id="tradesSection">
+        <div class="section-title">
+          <div>
+            <div class="eyebrow">Trade Log</div>
+            <h2>Histórico de Trades</h2>
+          </div>
+          <button class="btn small primary" id="scrollTopBtn">Ir ao topo</button>
+        </div>
+        <div class="empty-state" id="tradesEmpty">Primeira vez a usar: adiciona o teu primeiro trade no botão no canto inferior direito.</div>
+        <div class="trade-list" id="tradeList"></div>
+      </section>
+    </main>
+  </div>
+
+  <button class="btn primary floating-add" id="openTradeModal">+ Adicionar Trade</button>
+
+  <div class="modal" id="tradeModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Adicionar Trade</h3>
+        <button class="btn small" id="closeTradeModal">Fechar</button>
+      </div>
+
+      <form id="tradeForm">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="tradeDate">Data</label>
+            <input type="date" id="tradeDate" required />
+          </div>
+          <div class="form-group">
+            <label for="tradePair">Par</label>
+            <input type="text" id="tradePair" placeholder="Ex: EURUSD" required />
+          </div>
+
+          <div class="form-group">
+            <label for="tradeResult">Resultado ($)</label>
+            <input type="number" step="0.01" id="tradeResult" placeholder="Ex: 120" required />
+          </div>
+          <div class="form-group">
+            <label for="tradeRR">RR</label>
+            <input type="number" step="0.1" id="tradeRR" placeholder="Ex: 2.5" required />
+          </div>
+
+          <div class="form-group">
+            <label for="tradeSide">Sell / Buy</label>
+            <select id="tradeSide" required>
+              <option value="Buy">Buy</option>
+              <option value="Sell">Sell</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="tradeSession">Sessão</label>
+            <select id="tradeSession" required>
+              <option value="Asia">Asia</option>
+              <option value="London">London</option>
+              <option value="New York">New York</option>
+            </select>
+          </div>
+
+          <div class="form-group full">
+            <label for="tradeStrategy">Estratégia</label>
+            <input type="text" id="tradeStrategy" placeholder="Ex: Breakout, Reversal, Trend Follow" required />
+          </div>
+
+          <div class="form-group full">
+            <label for="tradeComment">Comentário</label>
+            <textarea id="tradeComment" placeholder="Escreve a tua tese, emoção, entrada, erro, melhoria..."></textarea>
+          </div>
+
+          <div class="form-group full">
+            <label for="tradeImage">Imagem da trade</label>
+            <input type="file" id="tradeImage" accept="image/*" />
+            <img class="preview-image" id="imagePreview" alt="Preview da trade" />
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+          <button type="button" class="btn" id="cancelTrade">Cancelar</button>
+          <button type="submit" class="btn primary">Salvar Trade</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'trading_journal_dashboard_v1';
+    const THEME_KEY = 'trading_journal_theme_v1';
+
+    const defaultState = {
+      trades: []
+    };
+
+    const els = {
+      netPnl: document.getElementById('netPnl'),
+      weekPnl: document.getElementById('weekPnl'),
+      winRate: document.getElementById('winRate'),
+      tradeCount: document.getElementById('tradeCount'),
+      profitFactor: document.getElementById('profitFactor'),
+      avgRr: document.getElementById('avgRr'),
+      maxDrawdown: document.getElementById('maxDrawdown'),
+      bestStreak: document.getElementById('bestStreak'),
+      equityPath: document.getElementById('equityPath'),
+      equityArea: document.getElementById('equityArea'),
+      calendarGrid: document.getElementById('calendarGrid'),
+      calendarTitle: document.getElementById('calendarTitle'),
+      calendarSummary: document.getElementById('calendarSummary'),
+      strategyList: document.getElementById('strategyList'),
+      strategyEmpty: document.getElementById('strategyEmpty'),
+      sessionList: document.getElementById('sessionList'),
+      sessionEmpty: document.getElementById('sessionEmpty'),
+      tradeList: document.getElementById('tradeList'),
+      tradesEmpty: document.getElementById('tradesEmpty'),
+      themeToggle: document.getElementById('themeToggle'),
+      csvInput: document.getElementById('csvInput'),
+      logoutBtn: document.getElementById('logoutBtn'),
+      scrollTopBtn: document.getElementById('scrollTopBtn'),
+      openTradeModal: document.getElementById('openTradeModal'),
+      closeTradeModal: document.getElementById('closeTradeModal'),
+      cancelTrade: document.getElementById('cancelTrade'),
+      tradeModal: document.getElementById('tradeModal'),
+      tradeForm: document.getElementById('tradeForm'),
+      tradeDate: document.getElementById('tradeDate'),
+      tradePair: document.getElementById('tradePair'),
+      tradeResult: document.getElementById('tradeResult'),
+      tradeRR: document.getElementById('tradeRR'),
+      tradeSide: document.getElementById('tradeSide'),
+      tradeSession: document.getElementById('tradeSession'),
+      tradeStrategy: document.getElementById('tradeStrategy'),
+      tradeComment: document.getElementById('tradeComment'),
+      tradeImage: document.getElementById('tradeImage'),
+      imagePreview: document.getElementById('imagePreview')
+    };
+
+    let state = loadState();
+    let currentImageBase64 = '';
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (saved && Array.isArray(saved.trades)) return saved;
+      } catch (e) {}
+      return structuredClone(defaultState);
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function currency(v) {
+      const sign = v < 0 ? '-' : '';
+      return `${sign}$${Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+    }
+
+    function setTheme(theme) {
+      document.body.classList.toggle('light', theme === 'light');
+      els.themeToggle.textContent = `Tema: ${theme === 'light' ? 'Claro' : 'Preto'}`;
+      localStorage.setItem(THEME_KEY, theme);
+    }
+
+    function getTheme() {
+      return localStorage.getItem(THEME_KEY) || 'dark';
+    }
+
+    function getTradeStatus(result) {
+      if (result > 0) return 'win';
+      if (result < 0) return 'loss';
+      return 'be';
+    }
+
+    function renderDashboard() {
+      const trades = [...state.trades].sort((a, b) => new Date(a.date) - new Date(b.date));
+      const totalTrades = trades.length;
+      const wins = trades.filter(t => Number(t.result) > 0);
+      const losses = trades.filter(t => Number(t.result) < 0);
+      const breakevens = trades.filter(t => Number(t.result) === 0);
+      const net = trades.reduce((sum, t) => sum + Number(t.result), 0);
+      const winRate = totalTrades ? (wins.length / totalTrades) * 100 : 0;
+      const grossProfit = wins.reduce((sum, t) => sum + Number(t.result), 0);
+      const grossLoss = Math.abs(losses.reduce((sum, t) => sum + Number(t.result), 0));
+      const profitFactor = grossLoss === 0 ? (grossProfit > 0 ? grossProfit : 0) : grossProfit / grossLoss;
+      const avgRr = totalTrades ? trades.reduce((sum, t) => sum + Number(t.rr || 0), 0) / totalTrades : 0;
+      const maxDrawdown = calculateMaxDrawdown(trades);
+      const bestStreak = calculateBestWinStreak(trades);
+      const weekPnl = calculateCurrentWeekPnl(trades);
+
+      els.netPnl.textContent = currency(net);
+      els.netPnl.classList.toggle('red', net < 0);
+      els.netPnl.classList.toggle('green', net >= 0);
+      els.weekPnl.textContent = `${weekPnl >= 0 ? '+' : '-'}${currency(Math.abs(weekPnl)).replace('-', '')} esta semana`;
+      els.winRate.textContent = `${winRate.toFixed(1)}%`;
+      els.tradeCount.textContent = totalTrades;
+      els.profitFactor.textContent = totalTrades ? profitFactor.toFixed(2) : '0.00';
+      els.avgRr.textContent = totalTrades ? avgRr.toFixed(1) : '0.0';
+      els.maxDrawdown.textContent = currency(maxDrawdown);
+      els.bestStreak.textContent = bestStreak;
+
+      renderEquityCurve(trades);
+      renderCalendar(trades);
+      renderStrategyBreakdown(trades);
+      renderSessionBreakdown(trades);
+      renderTradeList([...trades].sort((a, b) => new Date(b.date) - new Date(a.date)));
+
+      els.tradesEmpty.style.display = totalTrades ? 'none' : 'block';
+    }
+
+    function calculateCurrentWeekPnl(trades) {
+      const now = new Date();
+      const start = new Date(now);
+      const day = start.getDay();
+      const diff = (day === 0 ? -6 : 1) - day;
+      start.setDate(start.getDate() + diff);
+      start.setHours(0,0,0,0);
+      return trades.filter(t => new Date(t.date) >= start).reduce((sum, t) => sum + Number(t.result), 0);
+    }
+
+    function calculateBestWinStreak(trades) {
+      let streak = 0, best = 0;
+      for (const t of trades) {
+        if (Number(t.result) > 0) {
+          streak++;
+          best = Math.max(best, streak);
+        } else {
+          streak = 0;
+        }
+      }
+      return best;
+    }
+
+    function calculateMaxDrawdown(trades) {
+      let equity = 0;
+      let peak = 0;
+      let maxDD = 0;
+      for (const t of trades) {
+        equity += Number(t.result);
+        if (equity > peak) peak = equity;
+        const dd = peak - equity;
+        if (dd > maxDD) maxDD = dd;
+      }
+      return -maxDD;
+    }
+
+    function renderEquityCurve(trades) {
+      const values = [0];
+      let running = 0;
+      trades.forEach(t => {
+        running += Number(t.result);
+        values.push(running);
+      });
+
+      const width = 420;
+      const height = 140;
+      const padding = 12;
+      const min = Math.min(...values, 0);
+      const max = Math.max(...values, 1);
+      const range = max - min || 1;
+      const stepX = values.length > 1 ? (width - padding * 2) / (values.length - 1) : width - padding * 2;
+
+      const points = values.map((v, i) => {
+        const x = padding + i * stepX;
+        const y = height - padding - ((v - min) / range) * (height - padding * 2);
+        return [x, y];
+      });
+
+      const path = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0]} ${p[1]}`).join(' ');
+      const area = `${path} L ${points[points.length - 1][0]} ${height - padding} L ${points[0][0]} ${height - padding} Z`;
+      els.equityPath.setAttribute('d', path);
+      els.equityArea.setAttribute('d', area);
+    }
+
+    function renderCalendar(trades) {
+      els.calendarGrid.innerHTML = '';
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      const monthName = now.toLocaleDateString('pt-PT', { month: 'long', year: 'numeric' });
+      els.calendarTitle.textContent = `Calendário - ${monthName}`;
+
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const grouped = {};
+
+      trades.forEach(trade => {
+        const d = new Date(trade.date);
+        if (d.getFullYear() === year && d.getMonth() === month) {
+          const key = d.getDate();
+          if (!grouped[key]) grouped[key] = [];
+          grouped[key].push(trade);
+        }
+      });
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayTrades = grouped[day] || [];
+        const total = dayTrades.reduce((sum, t) => sum + Number(t.result), 0);
+        const status = dayTrades.length ? getTradeStatus(total) : 'empty';
+        const div = document.createElement('a');
+        div.href = '#tradesSection';
+        div.className = `day-cell ${status}`;
+        div.innerHTML = `
+          <div class="day-number">${day}</div>
+          <div class="day-result">${dayTrades.length ? currency(total) : ''}</div>
+        `;
+        div.addEventListener('click', () => {
+          if (dayTrades.length) {
+            const firstId = dayTrades[0].id;
+            const el = document.getElementById(`trade-${firstId}`);
+            if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
+          }
+        });
+        els.calendarGrid.appendChild(div);
+      }
+
+      els.calendarSummary.textContent = `${trades.length} trades • ${Object.keys(grouped).length} dias operados • ${breakevenText(trades)}`;
+    }
+
+    function breakevenText(trades) {
+      const be = trades.filter(t => Number(t.result) === 0).length;
+      return `${be} breakeven`;
+    }
+
+    function renderStrategyBreakdown(trades) {
+      const map = {};
+      trades.forEach(t => {
+        const key = t.strategy || 'Sem estratégia';
+        map[key] = (map[key] || 0) + Number(t.result);
+      });
+      const entries = Object.entries(map).sort((a, b) => b[1] - a[1]);
+      els.strategyList.innerHTML = '';
+      els.strategyEmpty.style.display = entries.length ? 'none' : 'block';
+      entries.forEach(([name, value]) => {
+        const row = document.createElement('div');
+        row.className = 'list-row';
+        row.innerHTML = `<span class="label">${name}</span><span class="value">${currency(value)}</span>`;
+        els.strategyList.appendChild(row);
+      });
+    }
+
+    function renderSessionBreakdown(trades) {
+      const map = {};
+      trades.forEach(t => {
+        const key = t.session || 'Sem sessão';
+        map[key] = (map[key] || 0) + Number(t.result);
+      });
+      const entries = Object.entries(map).sort((a, b) => b[1] - a[1]);
+      els.sessionList.innerHTML = '';
+      els.sessionEmpty.style.display = entries.length ? 'none' : 'block';
+      entries.forEach(([name, value]) => {
+        const row = document.createElement('div');
+        row.className = 'list-row';
+        row.innerHTML = `<span class="label">${name}</span><span class="value">${currency(value)}</span>`;
+        els.sessionList.appendChild(row);
+      });
+    }
+
+    function renderTradeList(trades) {
+      els.tradeList.innerHTML = '';
+      trades.forEach(trade => {
+        const item = document.createElement('div');
+        item.className = 'trade-item';
+        item.id = `trade-${trade.id}`;
+        item.innerHTML = `
+          <div class="trade-field"><small>Data</small><strong>${formatDate(trade.date)}</strong></div>
+          <div class="trade-field"><small>Par</small><strong>${trade.pair}</strong></div>
+          <div class="trade-field"><small>Resultado</small><strong>${currency(Number(trade.result))}</strong></div>
+          <div class="trade-field"><small>RR</small><strong>${Number(trade.rr).toFixed(1)}</strong></div>
+          <div class="trade-field"><small>Lado</small><strong>${trade.side}</strong></div>
+          <div class="trade-field"><small>Sessão</small><strong>${trade.session}</strong></div>
+          <div class="trade-field"><small>Estratégia</small><strong>${trade.strategy}</strong></div>
+          <div class="trade-field" style="grid-column: span 2;"><small>Comentário</small><strong>${escapeHtml(trade.comment || '—')}</strong></div>
+          <div class="trade-field" style="grid-column: span 2;">
+            <small>Imagem</small>
+            ${trade.image ? `<img src="${trade.image}" alt="Trade image" style="width:100%; max-height:180px; object-fit:cover; border-radius:14px; border:1px solid var(--border);">` : '<strong>Sem imagem</strong>'}
+          </div>
+        `;
+
+        const actions = document.createElement('div');
+        actions.className = 'trade-actions';
+        actions.innerHTML = `<button class="btn small danger">Eliminar</button>`;
+        actions.querySelector('button').addEventListener('click', () => {
+          if (confirm('Eliminar este trade?')) {
+            state.trades = state.trades.filter(t => t.id !== trade.id);
+            saveState();
+            renderDashboard();
+          }
+        });
+        item.appendChild(actions);
+        els.tradeList.appendChild(item);
+      });
+    }
+
+    function formatDate(dateStr) {
+      return new Date(dateStr).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function openModal() {
+      els.tradeModal.classList.add('open');
+    }
+
+    function closeModal() {
+      els.tradeModal.classList.remove('open');
+      els.tradeForm.reset();
+      currentImageBase64 = '';
+      els.imagePreview.style.display = 'none';
+      els.imagePreview.removeAttribute('src');
+      els.tradeDate.value = new Date().toISOString().slice(0, 10);
+    }
+
+    function handleImageUpload(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        currentImageBase64 = e.target.result;
+        els.imagePreview.src = currentImageBase64;
+        els.imagePreview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function addTradeFromForm(e) {
+      e.preventDefault();
+      const trade = {
+        id: crypto.randomUUID(),
+        date: els.tradeDate.value,
+        pair: els.tradePair.value.trim(),
+        result: Number(els.tradeResult.value),
+        rr: Number(els.tradeRR.value),
+        side: els.tradeSide.value,
+        session: els.tradeSession.value,
+        strategy: els.tradeStrategy.value.trim(),
+        comment: els.tradeComment.value.trim(),
+        image: currentImageBase64
+      };
+
+      state.trades.push(trade);
+      saveState();
+      renderDashboard();
+      closeModal();
+      location.hash = '#tradesSection';
+    }
+
+    function parseCSV(text) {
+      const lines = text.trim().split(/\r?\n/);
+      if (lines.length < 2) return [];
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      return lines.slice(1).map(line => {
+        const values = line.split(',');
+        const row = Object.fromEntries(headers.map((h, i) => [h, (values[i] || '').trim()]));
+        return {
+          id: crypto.randomUUID(),
+          date: row.date || new Date().toISOString().slice(0, 10),
+          pair: row.pair || 'N/A',
+          result: Number(row.result || 0),
+          rr: Number(row.rr || 0),
+          side: row.side || 'Buy',
+          session: row.session || 'London',
+          strategy: row.strategy || 'Imported',
+          comment: row.comment || '',
+          image: row.image || ''
+        };
+      }).filter(t => t.date && !Number.isNaN(t.result));
+    }
+
+    els.themeToggle.addEventListener('click', () => {
+      const current = getTheme();
+      setTheme(current === 'dark' ? 'light' : 'dark');
+    });
+
+    els.openTradeModal.addEventListener('click', openModal);
+    els.closeTradeModal.addEventListener('click', closeModal);
+    els.cancelTrade.addEventListener('click', closeModal);
+    els.tradeModal.addEventListener('click', (e) => {
+      if (e.target === els.tradeModal) closeModal();
+    });
+    els.tradeForm.addEventListener('submit', addTradeFromForm);
+    els.tradeImage.addEventListener('change', (e) => handleImageUpload(e.target.files[0]));
+
+    els.csvInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const imported = parseCSV(event.target.result);
+        if (!imported.length) {
+          alert('CSV inválido. Usa colunas: date,pair,result,rr,side,session,strategy,comment,image');
+          return;
+        }
+        state.trades.push(...imported);
+        saveState();
+        renderDashboard();
+        alert(`${imported.length} trade(s) importado(s) com sucesso.`);
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    });
+
+    els.logoutBtn.addEventListener('click', () => {
+      const confirmReset = confirm('Queres sair e limpar todos os dados guardados neste browser?');
+      if (!confirmReset) return;
+      localStorage.removeItem(STORAGE_KEY);
+      state = structuredClone(defaultState);
+      renderDashboard();
+      alert('Sessão limpa com sucesso.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    els.scrollTopBtn.addEventListener('click', () => {
+      document.getElementById('topo').scrollIntoView({ behavior: 'smooth' });
+    });
+
+    setTheme(getTheme());
+    els.tradeDate.value = new Date().toISOString().slice(0, 10);
+    renderDashboard();
+  </script>
 </body>
-
-<script type="module" src="login.js"></script>
-
 </html>
