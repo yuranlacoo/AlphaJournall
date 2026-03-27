@@ -3,239 +3,191 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Alpha Journal PRO</title>
+<title>Alpha Journal</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root {
-  --bg:#0b1020;
-  --card:#11182e;
-  --text:#fff;
-  --green:#00ffcc;
-  --red:#ff4d6d;
-  --gray:#888;
+  --bg: #0b1020;
+  --card: #11182e;
+  --text: #ffffff;
+  --accent: #00ffcc;
+}
+
+.light {
+  --bg: #f5f5f5;
+  --card: #ffffff;
+  --text: #111;
+  --accent: #0077ff;
 }
 
 body {
-  margin:0;
-  font-family:Inter;
-  background:var(--bg);
-  color:var(--text);
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
 }
 
 /* HEADER */
 .header {
-  display:flex;
-  justify-content:space-between;
-  padding:15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+}
+
+.actions button {
+  margin-left: 10px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 /* GRID */
 .container {
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:20px;
-  padding:20px;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
 }
 
 .card {
-  background:var(--card);
-  padding:20px;
-  border-radius:10px;
+  background: var(--card);
+  padding: 20px;
+  border-radius: 12px;
 }
 
-.value { font-size:20px; }
+.title {
+  font-size: 12px;
+  opacity: 0.6;
+}
 
-/* CALENDARIO */
+.value {
+  font-size: 22px;
+  margin-top: 5px;
+}
+
+.chart {
+  grid-column: span 2;
+}
+
+.calendar {
+  grid-column: span 2;
+}
+
 .days {
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  gap:8px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  margin-top: 10px;
 }
+
 .day {
-  padding:10px;
-  text-align:center;
-  border-radius:5px;
-  background:#1a2140;
-}
-.win { background:#123f35; }
-.loss { background:#3a1c2a; }
-.be { background:#444; }
-
-/* BOTÃO ADD */
-.add-btn {
-  position:fixed;
-  bottom:20px;
-  right:20px;
-  background:#00ffcc;
-  color:#000;
-  border:none;
-  padding:15px;
-  border-radius:50%;
-  font-size:20px;
-  cursor:pointer;
+  padding: 12px;
+  text-align: center;
+  border-radius: 6px;
+  background: #182040;
 }
 
-/* MODAL */
-.modal {
-  display:none;
-  position:fixed;
-  top:0;left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.7);
-  justify-content:center;
-  align-items:center;
+/* EMPTY STATE */
+.empty {
+  text-align: center;
+  padding: 40px;
+  opacity: 0.6;
 }
 
-.modal-content {
-  background:#11182e;
-  padding:20px;
-  border-radius:10px;
-  width:300px;
-}
-
-.modal input, .modal select {
-  width:100%;
-  margin:5px 0;
-  padding:8px;
+/* RESPONSIVO */
+@media(max-width: 900px){
+  .container { grid-template-columns: 1fr; }
 }
 </style>
 </head>
 
 <body>
 
+<!-- HEADER -->
 <div class="header">
   <h2>AlphaJournal</h2>
+
+  <div class="actions">
+    <button onclick="toggleTheme()">Tema</button>
+    <button onclick="goCalendar()">Calendário</button>
+    <button onclick="exportCSV()">Exportar CSV</button>
+    <button onclick="logout()">Sair</button>
+  </div>
 </div>
 
+<!-- DASHBOARD -->
 <div class="container">
-  <div class="card"><div>NET P&L</div><div class="value" id="pnl">$0</div></div>
-  <div class="card"><div>WIN RATE</div><div class="value" id="winrate">0%</div></div>
-  <div class="card"><div>PROFIT FACTOR</div><div class="value">-</div></div>
-  <div class="card"><div>DRAWDOWN</div><div class="value">-</div></div>
 
-  <div class="card" style="grid-column:span 2;">
-    <canvas id="chart"></canvas>
+  <div class="card">
+    <div class="title">NET P&L</div>
+    <div class="value">$0.00</div>
   </div>
 
-  <div class="card" style="grid-column:span 2;">
-    <div class="days" id="calendar"></div>
+  <div class="card">
+    <div class="title">WIN RATE</div>
+    <div class="value">0%</div>
   </div>
-</div>
 
-<!-- BOTÃO -->
-<button class="add-btn" onclick="openModal()">+</button>
-
-<!-- MODAL -->
-<div class="modal" id="modal">
-  <div class="modal-content">
-    <h3>Adicionar Trade</h3>
-
-    <input id="pair" placeholder="Par (ex: XAUUSD)">
-    <input id="result" type="number" placeholder="Resultado ($)">
-    <input id="rr" placeholder="RR (ex: 1:2)">
-    <input id="comment" placeholder="Comentário">
-    <input id="image" type="file">
-
-    <select id="type">
-      <option value="win">Win</option>
-      <option value="loss">Loss</option>
-      <option value="be">Breakeven</option>
-    </select>
-
-    <input id="date" type="date">
-
-    <button onclick="addTrade()">Salvar</button>
-    <button onclick="closeModal()">Fechar</button>
+  <div class="card">
+    <div class="title">PROFIT FACTOR</div>
+    <div class="value">0.00</div>
   </div>
+
+  <div class="card">
+    <div class="title">MAX DRAWDOWN</div>
+    <div class="value">$0</div>
+  </div>
+
+  <div class="card chart">
+    <div class="title">Equity Curve</div>
+    <div class="empty">Sem dados ainda</div>
+  </div>
+
+  <div class="card calendar" id="calendarSection">
+    <div class="title">Calendário</div>
+    <div class="days">
+      <div class="day">1</div>
+      <div class="day">2</div>
+      <div class="day">3</div>
+      <div class="day">4</div>
+      <div class="day">5</div>
+      <div class="day">6</div>
+      <div class="day">7</div>
+    </div>
+  </div>
+
 </div>
 
 <script>
-let trades = JSON.parse(localStorage.getItem("trades")) || [];
 
-const ctx = document.getElementById("chart");
-let chart = new Chart(ctx,{
-  type:'line',
-  data:{labels:[],datasets:[{data:[],borderColor:'#00ffcc'}]},
-  options:{plugins:{legend:{display:false}}}
-});
-
-function save() {
-  localStorage.setItem("trades", JSON.stringify(trades));
+/* TEMA */
+function toggleTheme() {
+  document.body.classList.toggle("light");
 }
 
-function update() {
-  let pnl=0, wins=0;
-
-  let equity=[];
-  let total=0;
-
-  trades.forEach(t=>{
-    pnl += t.result;
-    if(t.type==="win") wins++;
-
-    total += t.result;
-    equity.push(total);
-  });
-
-  document.getElementById("pnl").innerText = "$"+pnl;
-  document.getElementById("winrate").innerText =
-    trades.length ? ((wins/trades.length)*100).toFixed(1)+"%" : "0%";
-
-  chart.data.labels = trades.map((_,i)=>i+1);
-  chart.data.datasets[0].data = equity;
-  chart.update();
-
-  renderCalendar();
+/* IR PARA CALENDÁRIO */
+function goCalendar() {
+  document.getElementById("calendarSection").scrollIntoView({ behavior: "smooth" });
 }
 
-function renderCalendar(){
-  const cal = document.getElementById("calendar");
-  cal.innerHTML = "";
-
-  for(let i=1;i<=31;i++){
-    let div = document.createElement("div");
-    div.className="day";
-    div.innerText=i;
-
-    let trade = trades.find(t=> new Date(t.date).getDate()==i);
-    if(trade) div.classList.add(trade.type);
-
-    cal.appendChild(div);
-  }
+/* EXPORT CSV */
+function exportCSV() {
+  const csv = "data:text/csv;charset=utf-8,Sem dados ainda";
+  const link = document.createElement("a");
+  link.href = encodeURI(csv);
+  link.download = "trades.csv";
+  link.click();
 }
 
-function addTrade(){
-  const file = document.getElementById("image").files[0];
-  let reader = new FileReader();
-
-  reader.onload = function(){
-    trades.push({
-      pair:pair.value,
-      result:Number(result.value),
-      rr:rr.value,
-      comment:comment.value,
-      image:reader.result,
-      type:type.value,
-      date:date.value
-    });
-
-    save();
-    update();
-    closeModal();
-  }
-
-  if(file) reader.readAsDataURL(file);
-  else reader.onload();
+/* SAIR */
+function logout() {
+  alert("Sessão encerrada (simulação)");
 }
 
-function openModal(){ modal.style.display="flex"; }
-function closeModal(){ modal.style.display="none"; }
-
-update();
 </script>
 
 </body>
