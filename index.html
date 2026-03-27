@@ -2,110 +2,98 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
+<title>AlphaJournal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Alpha Journal Pro</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-:root{
-  --bg:#0b1020;
-  --card:#121a2f;
-  --text:#fff;
-  --accent:#00ffcc;
-  --red:#ff4d6d;
-}
-
 body{
   margin:0;
   font-family:Inter;
-  background:var(--bg);
-  color:var(--text);
-  display:flex;
-}
-
-/* SIDEBAR */
-.sidebar{
-  width:220px;
-  height:100vh;
-  background:#0f1530;
-  padding:20px;
-}
-
-.sidebar h2{
-  margin-bottom:30px;
-}
-
-.menu button{
-  width:100%;
-  margin-bottom:10px;
-  padding:10px;
-  border:none;
-  border-radius:8px;
-  background:#1a2140;
+  background:#0a0f1f;
   color:#fff;
-  cursor:pointer;
-}
-
-/* MAIN */
-.main{
-  flex:1;
-  padding:20px;
 }
 
 /* HEADER */
 .header{
   display:flex;
   justify-content:space-between;
-  margin-bottom:20px;
+  padding:15px 25px;
 }
 
 .actions button{
   margin-left:10px;
+  background:#121a2f;
+  border:none;
+  color:#fff;
+  padding:6px 12px;
+  border-radius:6px;
+  cursor:pointer;
 }
 
 /* GRID */
-.grid{
+.container{
+  padding:20px;
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:20px;
 }
 
 .card{
-  background:var(--card);
+  background:#121a2f;
   padding:20px;
   border-radius:14px;
 }
 
+.title{
+  font-size:12px;
+  opacity:0.6;
+}
+
+.value{
+  font-size:22px;
+  margin-top:5px;
+}
+
+.green{color:#00ffcc;}
+.red{color:#ff4d6d;}
+
+/* CHART */
 .chart{grid-column:span 2;}
 .calendar{grid-column:span 2;}
 
-/* TABLE */
-table{
-  width:100%;
-  border-collapse:collapse;
+/* CALENDAR */
+.days{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:10px;
+  margin-top:10px;
 }
 
-td,th{
-  padding:10px;
-  border-bottom:1px solid #333;
+.day{
+  padding:12px;
+  text-align:center;
+  border-radius:6px;
+  background:#1a2140;
 }
 
-.win{color:var(--accent);}
-.loss{color:var(--red);}
+.win{background:#123f35;}
+.loss{background:#3a1c2a;}
+.be{background:#444;}
 
 /* ADD BUTTON */
 .add{
   position:fixed;
-  bottom:20px;
-  right:20px;
-  background:var(--accent);
-  border:none;
-  width:60px;
-  height:60px;
+  bottom:25px;
+  right:25px;
+  width:65px;
+  height:65px;
   border-radius:50%;
-  font-size:30px;
+  border:none;
+  background:#00ffcc;
+  font-size:28px;
   cursor:pointer;
 }
 
@@ -121,15 +109,15 @@ td,th{
 }
 
 .box{
-  background:var(--card);
+  background:#121a2f;
   padding:20px;
   border-radius:10px;
-  width:300px;
+  width:320px;
 }
 
 .box input,.box select{
   width:100%;
-  margin:5px 0;
+  margin:6px 0;
   padding:8px;
 }
 </style>
@@ -137,173 +125,148 @@ td,th{
 
 <body>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <h2>Alpha</h2>
-  <div class="menu">
-    <button onclick="showSection('dashboard')">Dashboard</button>
-    <button onclick="showSection('trades')">Trades</button>
-    <button onclick="scrollCalendar()">Calendário</button>
-  </div>
-</div>
-
-<!-- MAIN -->
-<div class="main">
-
 <div class="header">
-  <h2>Dashboard</h2>
+  <h2>AlphaJournal</h2>
+
   <div class="actions">
     <button onclick="toggleTheme()">Tema</button>
+    <button onclick="scrollCalendar()">Calendário</button>
     <button onclick="exportCSV()">CSV</button>
     <button onclick="logout()">Sair</button>
   </div>
 </div>
 
-<div id="dashboard">
+<div class="container">
 
-<div class="grid">
+  <div class="card"><div class="title">NET P&L</div><div id="pnl" class="value">$0</div></div>
+  <div class="card"><div class="title">WIN RATE</div><div id="winrate" class="value">0%</div></div>
+  <div class="card"><div class="title">PROFIT FACTOR</div><div class="value">0</div></div>
+  <div class="card"><div class="title">MAX DRAWDOWN</div><div class="value">0</div></div>
 
-<div class="card"><div>NET P&L</div><h2 id="pnl">$0</h2></div>
-<div class="card"><div>WIN RATE</div><h2 id="winrate">0%</h2></div>
-<div class="card"><div>TRADES</div><h2 id="count">0</h2></div>
-<div class="card"><div>RR MÉDIO</div><h2 id="rravg">0</h2></div>
+  <div class="card chart">
+    <canvas id="chart"></canvas>
+  </div>
 
-<div class="card chart">
-<canvas id="chart"></canvas>
-</div>
-
-<div class="card calendar" id="calendarBox">
-<div id="calendar"></div>
-</div>
-
-</div>
-</div>
-
-<!-- TRADES -->
-<div id="trades" style="display:none;">
-<table>
-<thead>
-<tr>
-<th>Par</th><th>Resultado</th><th>RR</th><th>Tipo</th>
-</tr>
-</thead>
-<tbody id="table"></tbody>
-</table>
-</div>
+  <div class="card calendar" id="calendarBox">
+    <div class="title">P&L Calendar</div>
+    <div class="days" id="calendar"></div>
+  </div>
 
 </div>
 
 <button class="add" onclick="openModal()">+</button>
 
 <div class="modal" id="modal">
-<div class="box">
-<h3>Trade</h3>
+  <div class="box">
+    <h3>Adicionar Trade</h3>
 
-<input id="pair" placeholder="Par">
-<input id="result" type="number" placeholder="Resultado">
-<input id="rr" placeholder="RR">
-<input id="date" type="date">
+    <input id="pair" placeholder="Par">
+    <input id="result" type="number" placeholder="Resultado">
+    <input id="rr" placeholder="RR">
+    <input id="comment" placeholder="Comentário">
+    <input type="file" id="image">
 
-<select id="type">
-<option value="win">Win</option>
-<option value="loss">Loss</option>
-<option value="be">BE</option>
-</select>
+    <select id="direction">
+      <option>Buy</option>
+      <option>Sell</option>
+    </select>
 
-<button onclick="addTrade()">Salvar</button>
-<button onclick="closeModal()">Fechar</button>
+    <select id="type">
+      <option value="win">Win</option>
+      <option value="loss">Loss</option>
+      <option value="be">Breakeven</option>
+    </select>
 
-</div>
+    <input type="date" id="date">
+
+    <button onclick="addTrade()">Salvar</button>
+    <button onclick="closeModal()">Fechar</button>
+  </div>
 </div>
 
 <script>
 let trades = JSON.parse(localStorage.getItem("trades")) || [];
 
-const chart=new Chart(chartCanvas,{
-type:'line',
-data:{labels:[],datasets:[{data:[],borderColor:"#00ffcc"}]},
-options:{plugins:{legend:{display:false}}}
+const chart = new Chart(document.getElementById("chart"),{
+  type:'line',
+  data:{labels:[],datasets:[{data:[],borderColor:"#00ffcc",tension:.4}]},
+  options:{plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:false}}}
 });
 
 function save(){localStorage.setItem("trades",JSON.stringify(trades));}
 
 function update(){
-let pnl=0,wins=0,rr=0,equity=[],total=0;
+  let pnl=0,wins=0,total=0,eq=[];
 
-table.innerHTML="";
+  trades.forEach(t=>{
+    pnl+=t.result;
+    if(t.type=="win")wins++;
+    total+=t.result;
+    eq.push(total);
+  });
 
-trades.forEach(t=>{
-pnl+=t.result;
-if(t.type=="win")wins++;
-rr+=parseFloat(t.rr)||0;
+  pnlEl.innerText="$"+pnl;
+  winrate.innerText=trades.length?((wins/trades.length)*100).toFixed(1)+"%":"0%";
 
-total+=t.result;
-equity.push(total);
+  chart.data.labels=trades.map((_,i)=>i+1);
+  chart.data.datasets[0].data=eq;
+  chart.update();
 
-table.innerHTML+=`
-<tr>
-<td>${t.pair}</td>
-<td class="${t.type}">${t.result}</td>
-<td>${t.rr}</td>
-<td>${t.type}</td>
-</tr>`;
-});
-
-pnl.innerText="$"+pnl;
-winrate.innerText=trades.length?((wins/trades.length)*100).toFixed(1)+"%":"0%";
-count.innerText=trades.length;
-rravg.innerText=trades.length?(rr/trades.length).toFixed(2):0;
-
-chart.data.labels=trades.map((_,i)=>i+1);
-chart.data.datasets[0].data=equity;
-chart.update();
-
-renderCalendar();
+  renderCalendar();
 }
 
 function renderCalendar(){
-calendar.innerHTML="";
-for(let i=1;i<=31;i++){
-let d=document.createElement("div");
-d.innerText=i;
-let t=trades.find(x=>new Date(x.date).getDate()==i);
-if(t)d.className=t.type;
-calendar.appendChild(d);
-}
+  calendar.innerHTML="";
+  for(let i=1;i<=31;i++){
+    let d=document.createElement("div");
+    d.className="day";
+    d.innerText=i;
+
+    let t=trades.find(x=>new Date(x.date).getDate()==i);
+    if(t)d.classList.add(t.type);
+
+    calendar.appendChild(d);
+  }
 }
 
 function addTrade(){
-trades.push({
-pair:pair.value,
-result:+result.value,
-rr:rr.value,
-type:type.value,
-date:date.value
-});
-save();update();closeModal();
+  const file=image.files[0];
+  let reader=new FileReader();
+
+  reader.onload=function(){
+    trades.push({
+      pair:pair.value,
+      result:+result.value,
+      rr:rr.value,
+      comment:comment.value,
+      image:reader.result,
+      direction:direction.value,
+      type:type.value,
+      date:date.value
+    });
+
+    save(); update(); closeModal();
+  }
+
+  if(file) reader.readAsDataURL(file);
+  else reader.onload();
 }
 
 function openModal(){modal.style.display="flex";}
 function closeModal(){modal.style.display="none";}
-
-function showSection(s){
-dashboard.style.display="none";
-tradesDiv.style.display="none";
-document.getElementById(s).style.display="block";
-}
-
 function toggleTheme(){document.body.classList.toggle("light");}
+function scrollCalendar(){calendarBox.scrollIntoView({behavior:"smooth"});}
 
 function exportCSV(){
-let csv="pair,result\n";
-trades.forEach(t=>csv+=`${t.pair},${t.result}\n`);
-let a=document.createElement("a");
-a.href="data:text/csv,"+encodeURIComponent(csv);
-a.download="trades.csv";
-a.click();
+  let csv="pair,result\n";
+  trades.forEach(t=>csv+=`${t.pair},${t.result}\n`);
+  let a=document.createElement("a");
+  a.href="data:text/csv,"+encodeURIComponent(csv);
+  a.download="trades.csv";
+  a.click();
 }
 
-function logout(){alert("Logout");}
+function logout(){alert("Sessão encerrada");}
 
 update();
 </script>
