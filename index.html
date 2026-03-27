@@ -1050,5 +1050,379 @@
     els.tradeDate.value = new Date().toISOString().slice(0, 10);
     renderDashboard();
   </script>
+  <!-- ===== BLOCO EXTRA PARA ADICIONAR (LOGIN / REGISTO, MUDAR MÊS, EDITAR TRADE, EXPORTAR CSV) ===== -->
+  <script>
+    // =========================
+    // EXTRA FEATURES ADD-ON V1
+    // Cola este bloco NO FINAL do teu index, mesmo antes de </body>
+    // =========================
+
+    const USER_STORAGE_KEY = 'trading_journal_user_v1';
+    const AUTH_SESSION_KEY = 'trading_journal_auth_v1';
+
+    // ---------- AUTH UI ----------
+    const authOverlay = document.createElement('div');
+    authOverlay.id = 'authOverlay';
+    authOverlay.style.cssText = `
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(4,8,18,0.82);
+      backdrop-filter: blur(8px);
+      display: none; align-items: center; justify-content: center;
+      padding: 20px;
+    `;
+
+    authOverlay.innerHTML = `
+      <div style="width:min(520px,100%); background:linear-gradient(180deg,var(--panel),var(--panel-2)); border:1px solid var(--border); border-radius:24px; padding:28px; box-shadow:var(--shadow);">
+        <div style="margin-bottom:18px;">
+          <div class="eyebrow">Trading Journal</div>
+          <h2 style="margin:0; font-size:26px; letter-spacing:.08em; text-transform:uppercase;">Login / Registo</h2>
+          <p style="color:var(--muted); margin-top:8px;">Cria uma conta local no browser para entrar no teu dashboard.</p>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-bottom:18px;">
+          <button class="btn primary" id="showLoginBtn" type="button">Login</button>
+          <button class="btn" id="showRegisterBtn" type="button">Registo</button>
+        </div>
+
+        <form id="authForm" style="display:grid; gap:14px;">
+          <div>
+            <label for="authName">Nome</label>
+            <input id="authName" type="text" placeholder="O teu nome" />
+          </div>
+          <div>
+            <label for="authEmail">Email</label>
+            <input id="authEmail" type="email" placeholder="teuemail@email.com" required />
+          </div>
+          <div>
+            <label for="authPassword">Palavra-passe</label>
+            <input id="authPassword" type="password" placeholder="••••••••" required />
+          </div>
+          <button class="btn primary" id="authSubmitBtn" type="submit">Entrar</button>
+        </form>
+      </div>
+    `;
+
+    document.body.appendChild(authOverlay);
+
+    let authMode = 'login';
+    const authForm = document.getElementById('authForm');
+    const authName = document.getElementById('authName');
+    const authEmail = document.getElementById('authEmail');
+    const authPassword = document.getElementById('authPassword');
+    const authSubmitBtn = document.getElementById('authSubmitBtn');
+    const showLoginBtn = document.getElementById('showLoginBtn');
+    const showRegisterBtn = document.getElementById('showRegisterBtn');
+
+    function setAuthMode(mode) {
+      authMode = mode;
+      authName.parentElement.style.display = mode === 'register' ? 'block' : 'none';
+      authSubmitBtn.textContent = mode === 'register' ? 'Criar Conta' : 'Entrar';
+      showLoginBtn.classList.toggle('primary', mode === 'login');
+      showRegisterBtn.classList.toggle('primary', mode === 'register');
+    }
+
+    function getSavedUser() {
+      try { return JSON.parse(localStorage.getItem(USER_STORAGE_KEY)); } catch { return null; }
+    }
+
+    function getAuthSession() {
+      return localStorage.getItem(AUTH_SESSION_KEY) === 'true';
+    }
+
+    function setAuthSession(value) {
+      localStorage.setItem(AUTH_SESSION_KEY, value ? 'true' : 'false');
+    }
+
+    function requireAuth() {
+      const user = getSavedUser();
+      const logged = getAuthSession();
+      if (!user || !logged) {
+        authOverlay.style.display = 'flex';
+      } else {
+        authOverlay.style.display = 'none';
+      }
+    }
+
+    showLoginBtn.addEventListener('click', () => setAuthMode('login'));
+    showRegisterBtn.addEventListener('click', () => setAuthMode('register'));
+
+    authForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = authEmail.value.trim();
+      const password = authPassword.value.trim();
+      const name = authName.value.trim();
+
+      if (!email || !password) {
+        alert('Preenche email e palavra-passe.');
+        return;
+      }
+
+      if (authMode === 'register') {
+        if (!name) {
+          alert('Preenche o nome para criar conta.');
+          return;
+        }
+        const user = { name, email, password };
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+        setAuthSession(true);
+        authOverlay.style.display = 'none';
+        alert('Conta criada com sucesso.');
+      } else {
+        const savedUser = getSavedUser();
+        if (!savedUser) {
+          alert('Ainda não existe conta. Faz primeiro o registo.');
+          return;
+        }
+        if (savedUser.email !== email || savedUser.password !== password) {
+          alert('Email ou palavra-passe incorretos.');
+          return;
+        }
+        setAuthSession(true);
+        authOverlay.style.display = 'none';
+        alert(`Bem-vindo, ${savedUser.name || 'Trader'}!`);
+      }
+    });
+
+    setAuthMode('login');
+    requireAuth();
+
+    // ---------- EXPORT CSV BUTTON ----------
+    const exportBtn = document.createElement('button');
+    exportBtn.className = 'btn';
+    exportBtn.id = 'exportCsvBtn';
+    exportBtn.textContent = 'Exportar CSV';
+
+    const actionsWrap = document.querySelector('.actions');
+    if (actionsWrap) {
+      const logoutBtn = document.getElementById('logoutBtn');
+      actionsWrap.insertBefore(exportBtn, logoutBtn);
+    }
+
+    exportBtn.addEventListener('click', () => {
+      if (!state.trades.length) {
+        alert('Não existem trades para exportar.');
+        return;
+      }
+
+      const headers = ['date','pair','result','rr','side','session','strategy','comment','image'];
+      const rows = state.trades.map(t => [
+        t.date,
+        safeCsv(t.pair),
+        t.result,
+        t.rr,
+        safeCsv(t.side),
+        safeCsv(t.session),
+        safeCsv(t.strategy),
+        safeCsv(t.comment || ''),
+        safeCsv(t.image || '')
+      ]);
+
+      const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('
+');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'trading-journal-export.csv';
+      link.click();
+    });
+
+    function safeCsv(value) {
+      return `"${String(value).replace(/"/g, '""')}"`;
+    }
+
+    // ---------- CALENDAR MONTH NAVIGATION ----------
+    let calendarOffset = 0;
+
+    const calendarTitleWrap = document.querySelector('#calendarSection .section-title');
+    if (calendarTitleWrap) {
+      const nav = document.createElement('div');
+      nav.style.cssText = 'display:flex; gap:10px; align-items:center;';
+      nav.innerHTML = `
+        <button class="btn small" id="prevMonthBtn">◀</button>
+        <button class="btn small" id="nextMonthBtn">▶</button>
+      `;
+      calendarTitleWrap.appendChild(nav);
+
+      document.getElementById('prevMonthBtn').addEventListener('click', () => {
+        calendarOffset--;
+        renderDashboard();
+      });
+
+      document.getElementById('nextMonthBtn').addEventListener('click', () => {
+        calendarOffset++;
+        renderDashboard();
+      });
+    }
+
+    const originalRenderCalendar = renderCalendar;
+    renderCalendar = function(trades) {
+      els.calendarGrid.innerHTML = '';
+      const now = new Date();
+      const current = new Date(now.getFullYear(), now.getMonth() + calendarOffset, 1);
+      const year = current.getFullYear();
+      const month = current.getMonth();
+      const monthName = current.toLocaleDateString('pt-PT', { month: 'long', year: 'numeric' });
+      els.calendarTitle.textContent = `Calendário - ${monthName}`;
+
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const grouped = {};
+
+      trades.forEach(trade => {
+        const d = new Date(trade.date);
+        if (d.getFullYear() === year && d.getMonth() === month) {
+          const key = d.getDate();
+          if (!grouped[key]) grouped[key] = [];
+          grouped[key].push(trade);
+        }
+      });
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayTrades = grouped[day] || [];
+        const total = dayTrades.reduce((sum, t) => sum + Number(t.result), 0);
+        const status = dayTrades.length ? getTradeStatus(total) : 'empty';
+        const div = document.createElement('a');
+        div.href = '#tradesSection';
+        div.className = `day-cell ${status}`;
+        div.innerHTML = `
+          <div class="day-number">${day}</div>
+          <div class="day-result">${dayTrades.length ? currency(total) : ''}</div>
+        `;
+        div.addEventListener('click', () => {
+          if (dayTrades.length) {
+            const firstId = dayTrades[0].id;
+            const el = document.getElementById(`trade-${firstId}`);
+            if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
+          }
+        });
+        els.calendarGrid.appendChild(div);
+      }
+
+      const monthTrades = trades.filter(t => {
+        const d = new Date(t.date);
+        return d.getFullYear() === year && d.getMonth() === month;
+      });
+
+      els.calendarSummary.textContent = `${monthTrades.length} trades • ${Object.keys(grouped).length} dias operados • ${monthTrades.filter(t => Number(t.result) === 0).length} breakeven`;
+    };
+
+    // ---------- EDIT TRADE ----------
+    let editingTradeId = null;
+
+    const originalAddTradeFromForm = addTradeFromForm;
+    addTradeFromForm = function(e) {
+      e.preventDefault();
+      const trade = {
+        id: editingTradeId || crypto.randomUUID(),
+        date: els.tradeDate.value,
+        pair: els.tradePair.value.trim(),
+        result: Number(els.tradeResult.value),
+        rr: Number(els.tradeRR.value),
+        side: els.tradeSide.value,
+        session: els.tradeSession.value,
+        strategy: els.tradeStrategy.value.trim(),
+        comment: els.tradeComment.value.trim(),
+        image: currentImageBase64
+      };
+
+      if (editingTradeId) {
+        state.trades = state.trades.map(t => t.id === editingTradeId ? trade : t);
+      } else {
+        state.trades.push(trade);
+      }
+
+      saveState();
+      renderDashboard();
+      closeModal();
+      editingTradeId = null;
+      location.hash = '#tradesSection';
+    };
+
+    els.tradeForm.removeEventListener('submit', originalAddTradeFromForm);
+    els.tradeForm.addEventListener('submit', addTradeFromForm);
+
+    const originalCloseModal = closeModal;
+    closeModal = function() {
+      originalCloseModal();
+      editingTradeId = null;
+    };
+
+    const originalRenderTradeList = renderTradeList;
+    renderTradeList = function(trades) {
+      els.tradeList.innerHTML = '';
+      trades.forEach(trade => {
+        const item = document.createElement('div');
+        item.className = 'trade-item';
+        item.id = `trade-${trade.id}`;
+        item.innerHTML = `
+          <div class="trade-field"><small>Data</small><strong>${formatDate(trade.date)}</strong></div>
+          <div class="trade-field"><small>Par</small><strong>${trade.pair}</strong></div>
+          <div class="trade-field"><small>Resultado</small><strong>${currency(Number(trade.result))}</strong></div>
+          <div class="trade-field"><small>RR</small><strong>${Number(trade.rr).toFixed(1)}</strong></div>
+          <div class="trade-field"><small>Lado</small><strong>${trade.side}</strong></div>
+          <div class="trade-field"><small>Sessão</small><strong>${trade.session}</strong></div>
+          <div class="trade-field"><small>Estratégia</small><strong>${trade.strategy}</strong></div>
+          <div class="trade-field" style="grid-column: span 2;"><small>Comentário</small><strong>${escapeHtml(trade.comment || '—')}</strong></div>
+          <div class="trade-field" style="grid-column: span 2;">
+            <small>Imagem</small>
+            ${trade.image ? `<img src="${trade.image}" alt="Trade image" style="width:100%; max-height:180px; object-fit:cover; border-radius:14px; border:1px solid var(--border);">` : '<strong>Sem imagem</strong>'}
+          </div>
+        `;
+
+        const actions = document.createElement('div');
+        actions.className = 'trade-actions';
+        actions.innerHTML = `
+          <button class="btn small" style="margin-right:10px;">Editar</button>
+          <button class="btn small danger">Eliminar</button>
+        `;
+
+        const [editBtn, deleteBtn] = actions.querySelectorAll('button');
+
+        editBtn.addEventListener('click', () => {
+          editingTradeId = trade.id;
+          els.tradeDate.value = trade.date;
+          els.tradePair.value = trade.pair;
+          els.tradeResult.value = trade.result;
+          els.tradeRR.value = trade.rr;
+          els.tradeSide.value = trade.side;
+          els.tradeSession.value = trade.session;
+          els.tradeStrategy.value = trade.strategy;
+          els.tradeComment.value = trade.comment || '';
+          currentImageBase64 = trade.image || '';
+
+          if (trade.image) {
+            els.imagePreview.src = trade.image;
+            els.imagePreview.style.display = 'block';
+          } else {
+            els.imagePreview.style.display = 'none';
+          }
+
+          openModal();
+        });
+
+        deleteBtn.addEventListener('click', () => {
+          if (confirm('Eliminar este trade?')) {
+            state.trades = state.trades.filter(t => t.id !== trade.id);
+            saveState();
+            renderDashboard();
+          }
+        });
+
+        item.appendChild(actions);
+        els.tradeList.appendChild(item);
+      });
+    };
+
+    // ---------- LOGOUT NOW GOES TO LOGIN ----------
+    const logoutBtnExtra = document.getElementById('logoutBtn');
+    logoutBtnExtra.replaceWith(logoutBtnExtra.cloneNode(true));
+    const newLogoutBtn = document.getElementById('logoutBtn');
+    newLogoutBtn.addEventListener('click', () => {
+      setAuthSession(false);
+      authOverlay.style.display = 'flex';
+      alert('Saíste da tua conta. Faz login novamente para entrar.');
+    });
+
+    renderDashboard();
+  </script>
 </body>
 </html>
