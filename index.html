@@ -876,7 +876,7 @@
   <script>
     const STORAGE_KEY = 'trading_journal_dashboard_v1';
     const THEME_KEY = 'trading_journal_theme_v1';
-    const USER_STORAGE_KEY = 'trading_journal_user_v1';
+    const USERS_STORAGE_KEY = 'trading_journal_users_v1';
     const AUTH_SESSION_KEY = 'trading_journal_auth_v1';
 
     const defaultState = { trades: [] };
@@ -1406,22 +1406,44 @@
       els.showRegisterBtn.classList.toggle('primary', mode === 'register');
     }
 
-    function getSavedUser() {
-      try { return JSON.parse(localStorage.getItem(USER_STORAGE_KEY)); } catch { return null; }
+    function getSavedUsers() {
+      try {
+        const users = JSON.parse(localStorage.getItem(USERS_STORAGE_KEY));
+        return Array.isArray(users) ? users : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+    }
+
+    function getCurrentUser() {
+      try {
+        return JSON.parse(localStorage.getItem(AUTH_SESSION_KEY));
+      } catch {
+        return null;
+      }
     }
 
     function getAuthSession() {
-      return localStorage.getItem(AUTH_SESSION_KEY) === 'true';
+      return !!getCurrentUser();
     }
 
-    function setAuthSession(value) {
-      localStorage.setItem(AUTH_SESSION_KEY, value ? 'true' : 'false');
+    function setAuthSession(user) {
+      if (user) {
+        localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(user));
+      } else {
+        localStorage.removeItem(AUTH_SESSION_KEY);
+      }
     }
 
     function requireAuth() {
-      const user = getSavedUser();
-      const logged = getAuthSession();
-      if (!user || !logged) {
+      const users = getSavedUsers();
+      const loggedUser = getCurrentUser();
+
+      if (!users.length || !loggedUser) {
         els.authOverlay.style.display = 'flex';
       } else {
         els.authOverlay.style.display = 'none';
@@ -1468,53 +1490,57 @@
     els.showLoginBtn.addEventListener('click', () => setAuthMode('login'));
     els.showRegisterBtn.addEventListener('click', () => setAuthMode('register'));
 
-   els.authForm.addEventListener('submit', (e) => {
-  e.preventDefault();
+    els.authForm.addEventListener('submit', (e) => {
+      e.preventDefault();
 
-  const email = els.authEmail.value.trim().toLowerCase();
-  const password = els.authPassword.value.trim();
-  const name = els.authName.value.trim();
+      const email = els.authEmail.value.trim().toLowerCase();
+      const password = els.authPassword.value.trim();
+      const name = els.authName.value.trim();
 
-  if (!email || !password) {
-    alert('Preenche email e palavra-passe.');
-    return;
-  }
+      if (!email || !password) {
+        alert('Preenche email e palavra-passe.');
+        return;
+      }
 
-  const savedUser = getSavedUser();
+      const users = getSavedUsers();
 
-  if (authMode === 'register') {
-    if (!name) {
-      alert('Preenche o nome para criar conta.');
-      return;
-    }
+      if (authMode === 'register') {
+        if (!name) {
+          alert('Preenche o nome para criar conta.');
+          return;
+        }
 
-    // Impedir email duplicado
-    if (savedUser && savedUser.email.toLowerCase() === email) {
-      alert('Este email já está registado. Faz login.');
-      return;
-    }
+        const emailExists = users.some(user => user.email.toLowerCase() === email);
 
-    const user = { name, email, password };
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
-    setAuthSession(true);
-    els.authOverlay.style.display = 'none';
-    alert('Conta criada com sucesso.');
-  } else {
-    if (!savedUser) {
-      alert('Ainda não existe conta. Faz primeiro o registo.');
-      return;
-    }
+        if (emailExists) {
+          alert('Este email já está registado. Usa outro email ou faz login.');
+          return;
+        }
 
-    if (savedUser.email.toLowerCase() !== email || savedUser.password !== password) {
-      alert('Email ou palavra-passe incorretos.');
-      return;
-    }
+        const newUser = { name, email, password };
+        users.push(newUser);
+        saveUsers(users);
+        setAuthSession(newUser);
+        els.authOverlay.style.display = 'none';
+        alert('Conta criada com sucesso.');
+      } else {
+        if (!users.length) {
+          alert('Ainda não existe conta. Faz primeiro o registo.');
+          return;
+        }
 
-    setAuthSession(true);
-    els.authOverlay.style.display = 'none';
-    alert(`Bem-vindo, ${savedUser.name || 'Trader'}!`);
-  }
-});
+        const foundUser = users.find(
+          user => user.email.toLowerCase() === email && user.password === password
+        );
+
+        if (!foundUser) {
+          alert('Email ou palavra-passe incorretos.');
+          return;
+        }
+
+        setAuthSession(foundUser);
+        els.authOverlay.style.display = 'none';
+        alert(`Bem-vindo, ${foundUser.name || 'Trader'}!`);
       }
     });
 
@@ -1560,7 +1586,7 @@
     els.exportCsvBtn.addEventListener('click', exportCSV);
 
     els.logoutBtn.addEventListener('click', () => {
-      setAuthSession(false);
+      setAuthSession(null);
       els.authOverlay.style.display = 'flex';
       alert('Saíste da tua conta. Faz login novamente para entrar.');
     });
