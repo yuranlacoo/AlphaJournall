@@ -46,6 +46,7 @@
 
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
+
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -77,14 +78,6 @@
       margin: 0;
       font-size: 28px;
       letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .brand p {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 13px;
-      letter-spacing: 0.06em;
       text-transform: uppercase;
     }
 
@@ -205,42 +198,152 @@
       font-weight: 600;
     }
 
+    /* ===== NOVO CALENDÁRIO ===== */
+    .calendar-shell {
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 22px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.02);
+    }
+
+    .calendar-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.02);
+      flex-wrap: wrap;
+    }
+
+    .calendar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .calendar-month-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+
+    .calendar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .calendar-stats-pill {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .calendar-stats-pill strong {
+      color: var(--text);
+    }
+
+    .calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      padding: 14px 14px 0;
+    }
+
+    .weekday-cell {
+      border: 1px solid rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.02);
+      border-radius: 14px;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
     .calendar-grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(7, 1fr);
       gap: 10px;
+      padding: 10px 14px 14px;
     }
 
     .day-cell {
-      border-radius: 8px;
-      min-height: 72px;
-      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 18px;
+      min-height: 120px;
+      border: 1px solid rgba(255,255,255,0.05);
       background: var(--cell-empty);
       padding: 12px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: transform 0.15s ease, border-color 0.15s ease;
+      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      text-decoration: none;
+      color: var(--text);
+      position: relative;
+      overflow: hidden;
     }
 
-    .day-cell:hover { transform: translateY(-2px); border-color: rgba(39,243,223,0.18); }
+    .day-cell:hover {
+      transform: translateY(-2px);
+      border-color: rgba(39,243,223,0.22);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+    }
+
     .day-cell.win { background: var(--cell-win); }
     .day-cell.loss { background: var(--cell-loss); }
     .day-cell.be { background: var(--cell-be); }
-    .day-cell.empty { opacity: 0.45; }
+    .day-cell.empty {
+      opacity: 0.55;
+      cursor: default;
+    }
 
     .day-number {
       font-size: 13px;
+      font-weight: 700;
       color: var(--text);
       opacity: 0.95;
     }
 
+    .day-content {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: flex-start;
+    }
+
     .day-result {
-      font-size: 12px;
-      color: var(--muted);
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .day-meta {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .week-label {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 11px;
+      color: var(--muted);
+      opacity: 0.75;
     }
 
     .list-panel {
@@ -302,6 +405,21 @@
     .trade-field strong {
       font-size: 14px;
       word-break: break-word;
+    }
+
+    .trade-thumb {
+      width: 100%;
+      max-height: 180px;
+      object-fit: cover;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      cursor: zoom-in;
+      transition: transform .18s ease, opacity .18s ease;
+    }
+
+    .trade-thumb:hover {
+      transform: scale(1.01);
+      opacity: .95;
     }
 
     .trade-actions {
@@ -399,6 +517,7 @@
       border-radius: 16px;
       border: 1px solid var(--border);
       display: none;
+      cursor: zoom-in;
     }
 
     .legend {
@@ -437,6 +556,59 @@
       box-shadow:var(--shadow);
     }
 
+    /* ===== VISUALIZADOR DE IMAGEM ===== */
+    .image-viewer {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 18, 0.92);
+      backdrop-filter: blur(6px);
+      z-index: 99999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .image-viewer.open {
+      display: flex;
+    }
+
+    .image-viewer-toolbar {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+      z-index: 3;
+      flex-wrap: wrap;
+    }
+
+    .image-viewer-stage {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: grab;
+      padding: 40px;
+    }
+
+    .image-viewer-stage.dragging {
+      cursor: grabbing;
+    }
+
+    .image-viewer img {
+      max-width: none;
+      max-height: none;
+      user-select: none;
+      -webkit-user-drag: none;
+      transform-origin: center center;
+      transition: transform 0.08s linear;
+      border-radius: 18px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.45);
+    }
+
     @media (max-width: 1100px) {
       .span-2, .span-3, .span-4, .span-5, .span-6, .span-9 { grid-column: span 12; }
       .trade-item { grid-template-columns: repeat(2, 1fr); }
@@ -445,12 +617,14 @@
 
     @media (max-width: 700px) {
       body { padding: 16px; }
-      .calendar-grid { grid-template-columns: repeat(3, 1fr); }
+      .calendar-grid { grid-template-columns: repeat(2, 1fr); }
+      .calendar-weekdays { grid-template-columns: repeat(2, 1fr); }
       .form-grid, .trade-item { grid-template-columns: 1fr; }
       .form-group.full { grid-column: span 1; }
       .trade-actions { grid-column: span 1; }
       .floating-add { left: 16px; right: 16px; bottom: 16px; justify-content: center; }
       .actions { width: 100%; }
+      .image-viewer-stage { padding: 20px; }
     }
   </style>
 </head>
@@ -490,7 +664,6 @@
     <header class="topbar" id="topo">
       <div class="brand">
         <h1>ALPHA JOURNAL X</h1>
-      
       </div>
       <div class="actions">
         <button class="btn" id="themeToggle">Tema: Preto</button>
@@ -553,15 +726,27 @@
         <div class="section-title">
           <div>
             <div class="eyebrow">P&amp;L Calendar</div>
-            <h2 id="calendarTitle">Calendário - mês atual</h2>
-          </div>
-          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-            <div class="subtext" id="calendarSummary">Sem trades ainda</div>
-            <button class="btn small" id="prevMonthBtn">◀</button>
-            <button class="btn small" id="nextMonthBtn">▶</button>
+            <h2>Calendário de Performance</h2>
           </div>
         </div>
-        <div class="calendar-grid" id="calendarGrid"></div>
+
+        <div class="calendar-shell">
+          <div class="calendar-toolbar">
+            <div class="calendar-left">
+              <button class="btn small" id="prevMonthBtn">◀</button>
+              <div class="calendar-month-title" id="calendarTitle">Calendário - mês atual</div>
+              <button class="btn small" id="nextMonthBtn">▶</button>
+            </div>
+
+            <div class="calendar-right">
+              <div class="calendar-stats-pill" id="calendarSummary">Sem trades ainda</div>
+            </div>
+          </div>
+
+          <div class="calendar-weekdays" id="calendarWeekdays"></div>
+          <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+
         <div class="legend">
           <span><i class="dot win"></i> Win</span>
           <span><i class="dot loss"></i> Loss</span>
@@ -675,6 +860,19 @@
     </div>
   </div>
 
+  <!-- VISUALIZADOR DE IMAGEM -->
+  <div class="image-viewer" id="imageViewer">
+    <div class="image-viewer-toolbar">
+      <button class="btn small" id="zoomOutBtn">−</button>
+      <button class="btn small" id="zoomInBtn">+</button>
+      <button class="btn small" id="resetZoomBtn">Reset</button>
+      <button class="btn small danger" id="closeViewerBtn">Fechar</button>
+    </div>
+    <div class="image-viewer-stage" id="imageViewerStage">
+      <img id="viewerImage" alt="Trade ampliada" />
+    </div>
+  </div>
+
   <script>
     const STORAGE_KEY = 'trading_journal_dashboard_v1';
     const THEME_KEY = 'trading_journal_theme_v1';
@@ -734,7 +932,14 @@
       showLoginBtn: document.getElementById('showLoginBtn'),
       showRegisterBtn: document.getElementById('showRegisterBtn'),
       prevMonthBtn: document.getElementById('prevMonthBtn'),
-      nextMonthBtn: document.getElementById('nextMonthBtn')
+      nextMonthBtn: document.getElementById('nextMonthBtn'),
+      imageViewer: document.getElementById('imageViewer'),
+      imageViewerStage: document.getElementById('imageViewerStage'),
+      viewerImage: document.getElementById('viewerImage'),
+      zoomInBtn: document.getElementById('zoomInBtn'),
+      zoomOutBtn: document.getElementById('zoomOutBtn'),
+      resetZoomBtn: document.getElementById('resetZoomBtn'),
+      closeViewerBtn: document.getElementById('closeViewerBtn')
     };
 
     let state = loadState();
@@ -742,6 +947,13 @@
     let editingTradeId = null;
     let calendarOffset = 0;
     let authMode = 'login';
+
+    let viewerScale = 1;
+    let viewerX = 0;
+    let viewerY = 0;
+    let isDraggingViewer = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
 
     function loadState() {
       try {
@@ -877,14 +1089,27 @@
 
     function renderCalendar(trades) {
       els.calendarGrid.innerHTML = '';
+      document.getElementById('calendarWeekdays').innerHTML = '';
+
+      const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      weekdayNames.forEach(day => {
+        const el = document.createElement('div');
+        el.className = 'weekday-cell';
+        el.textContent = day;
+        document.getElementById('calendarWeekdays').appendChild(el);
+      });
+
       const now = new Date();
       const current = new Date(now.getFullYear(), now.getMonth() + calendarOffset, 1);
       const year = current.getFullYear();
       const month = current.getMonth();
-      const monthName = current.toLocaleDateString('pt-PT', { month: 'long', year: 'numeric' });
-      els.calendarTitle.textContent = `Calendário - ${monthName}`;
 
+      const monthName = current.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      els.calendarTitle.textContent = monthName;
+
+      const firstDay = new Date(year, month, 1).getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
+
       const grouped = {};
 
       trades.forEach(trade => {
@@ -896,24 +1121,41 @@
         }
       });
 
+      for (let i = 0; i < firstDay; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'day-cell empty';
+        empty.innerHTML = `<div class="day-number"></div><div class="day-content"></div>`;
+        els.calendarGrid.appendChild(empty);
+      }
+
       for (let day = 1; day <= daysInMonth; day++) {
         const dayTrades = grouped[day] || [];
         const total = dayTrades.reduce((sum, t) => sum + Number(t.result), 0);
         const status = dayTrades.length ? getTradeStatus(total) : 'empty';
+
         const div = document.createElement('a');
-        div.href = '#tradesSection';
+        div.href = dayTrades.length ? '#tradesSection' : 'javascript:void(0)';
         div.className = `day-cell ${status}`;
+
+        const weekNumber = Math.ceil(day / 7);
+
         div.innerHTML = `
+          <div class="week-label">W${weekNumber}</div>
           <div class="day-number">${day}</div>
-          <div class="day-result">${dayTrades.length ? currency(total) : ''}</div>
+          <div class="day-content">
+            <div class="day-result">${dayTrades.length ? currency(total) : ''}</div>
+            <div class="day-meta">${dayTrades.length ? `${dayTrades.length} trade(s)` : ''}</div>
+          </div>
         `;
-        div.addEventListener('click', () => {
-          if (dayTrades.length) {
+
+        if (dayTrades.length) {
+          div.addEventListener('click', () => {
             const firstId = dayTrades[0].id;
             const el = document.getElementById(`trade-${firstId}`);
             if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
-          }
-        });
+          });
+        }
+
         els.calendarGrid.appendChild(div);
       }
 
@@ -922,7 +1164,11 @@
         return d.getFullYear() === year && d.getMonth() === month;
       });
 
-      els.calendarSummary.textContent = `${monthTrades.length} trades • ${Object.keys(grouped).length} dias operados • ${monthTrades.filter(t => Number(t.result) === 0).length} breakeven`;
+      const monthTotal = monthTrades.reduce((sum, t) => sum + Number(t.result), 0);
+
+      els.calendarSummary.innerHTML = `
+        <strong>${currency(monthTotal)}</strong> • ${monthTrades.length} trades • ${Object.keys(grouped).length} dias
+      `;
     }
 
     function renderStrategyBreakdown(trades) {
@@ -976,7 +1222,7 @@
           <div class="trade-field" style="grid-column: span 2;"><small>Comentário</small><strong>${escapeHtml(trade.comment || '—')}</strong></div>
           <div class="trade-field" style="grid-column: span 2;">
             <small>Imagem</small>
-            ${trade.image ? `<img src="${trade.image}" alt="Trade image" style="width:100%; max-height:180px; object-fit:cover; border-radius:14px; border:1px solid var(--border);">` : '<strong>Sem imagem</strong>'}
+            ${trade.image ? `<img src="${trade.image}" alt="Trade image" class="trade-thumb" data-full-image="${trade.image}">` : '<strong>Sem imagem</strong>'}
           </div>
         `;
 
@@ -989,6 +1235,12 @@
 
         actions.querySelector(`[data-edit="${trade.id}"]`).addEventListener('click', () => editTrade(trade.id));
         actions.querySelector(`[data-delete="${trade.id}"]`).addEventListener('click', () => deleteTrade(trade.id));
+
+        const thumb = item.querySelector('.trade-thumb');
+        if (thumb) {
+          thumb.addEventListener('click', () => openImageViewer(trade.image));
+        }
+
         item.appendChild(actions);
         els.tradeList.appendChild(item);
       });
@@ -1176,6 +1428,43 @@
       }
     }
 
+    /* ===== VISUALIZADOR DE IMAGEM ===== */
+    function updateViewerTransform() {
+      els.viewerImage.style.transform = `translate(${viewerX}px, ${viewerY}px) scale(${viewerScale})`;
+    }
+
+    function openImageViewer(src) {
+      if (!src) return;
+      els.viewerImage.src = src;
+      viewerScale = 1;
+      viewerX = 0;
+      viewerY = 0;
+      updateViewerTransform();
+      els.imageViewer.classList.add('open');
+    }
+
+    function closeImageViewer() {
+      els.imageViewer.classList.remove('open');
+      els.viewerImage.removeAttribute('src');
+    }
+
+    function zoomIn() {
+      viewerScale = Math.min(viewerScale + 0.2, 5);
+      updateViewerTransform();
+    }
+
+    function zoomOut() {
+      viewerScale = Math.max(viewerScale - 0.2, 0.5);
+      updateViewerTransform();
+    }
+
+    function resetZoom() {
+      viewerScale = 1;
+      viewerX = 0;
+      viewerY = 0;
+      updateViewerTransform();
+    }
+
     els.showLoginBtn.addEventListener('click', () => setAuthMode('login'));
     els.showRegisterBtn.addEventListener('click', () => setAuthMode('register'));
 
@@ -1224,11 +1513,17 @@
     els.openTradeModal.addEventListener('click', () => openModal(false));
     els.closeTradeModal.addEventListener('click', closeModal);
     els.cancelTrade.addEventListener('click', closeModal);
+
     els.tradeModal.addEventListener('click', (e) => {
       if (e.target === els.tradeModal) closeModal();
     });
+
     els.tradeForm.addEventListener('submit', addOrUpdateTrade);
     els.tradeImage.addEventListener('change', (e) => handleImageUpload(e.target.files[0]));
+
+    els.imagePreview.addEventListener('click', () => {
+      if (els.imagePreview.src) openImageViewer(els.imagePreview.src);
+    });
 
     els.csvInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
@@ -1269,6 +1564,52 @@
     els.nextMonthBtn.addEventListener('click', () => {
       calendarOffset++;
       renderDashboard();
+    });
+
+    els.zoomInBtn.addEventListener('click', zoomIn);
+    els.zoomOutBtn.addEventListener('click', zoomOut);
+    els.resetZoomBtn.addEventListener('click', resetZoom);
+    els.closeViewerBtn.addEventListener('click', closeImageViewer);
+
+    els.imageViewer.addEventListener('click', (e) => {
+      if (e.target === els.imageViewer) closeImageViewer();
+    });
+
+    els.imageViewerStage.addEventListener('mousedown', (e) => {
+      isDraggingViewer = true;
+      dragStartX = e.clientX - viewerX;
+      dragStartY = e.clientY - viewerY;
+      els.imageViewerStage.classList.add('dragging');
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDraggingViewer) return;
+      viewerX = e.clientX - dragStartX;
+      viewerY = e.clientY - dragStartY;
+      updateViewerTransform();
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDraggingViewer = false;
+      els.imageViewerStage.classList.remove('dragging');
+    });
+
+    els.imageViewerStage.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      if (e.deltaY < 0) {
+        zoomIn();
+      } else {
+        zoomOut();
+      }
+    }, { passive: false });
+
+    window.addEventListener('keydown', (e) => {
+      if (!els.imageViewer.classList.contains('open')) return;
+
+      if (e.key === 'Escape') closeImageViewer();
+      if (e.key === '+') zoomIn();
+      if (e.key === '-') zoomOut();
+      if (e.key.toLowerCase() === 'r') resetZoom();
     });
 
     setTheme(getTheme());
