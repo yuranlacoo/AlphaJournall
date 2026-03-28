@@ -1468,40 +1468,53 @@
     els.showLoginBtn.addEventListener('click', () => setAuthMode('login'));
     els.showRegisterBtn.addEventListener('click', () => setAuthMode('register'));
 
-    els.authForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const email = els.authEmail.value.trim();
-      const password = els.authPassword.value.trim();
-      const name = els.authName.value.trim();
+   els.authForm.addEventListener('submit', (e) => {
+  e.preventDefault();
 
-      if (!email || !password) {
-        alert('Preenche email e palavra-passe.');
-        return;
-      }
+  const email = els.authEmail.value.trim().toLowerCase();
+  const password = els.authPassword.value.trim();
+  const name = els.authName.value.trim();
 
-      if (authMode === 'register') {
-        if (!name) {
-          alert('Preenche o nome para criar conta.');
-          return;
-        }
-        const user = { name, email, password };
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
-        setAuthSession(true);
-        els.authOverlay.style.display = 'none';
-        alert('Conta criada com sucesso.');
-      } else {
-        const savedUser = getSavedUser();
-        if (!savedUser) {
-          alert('Ainda não existe conta. Faz primeiro o registo.');
-          return;
-        }
-        if (savedUser.email !== email || savedUser.password !== password) {
-          alert('Email ou palavra-passe incorretos.');
-          return;
-        }
-        setAuthSession(true);
-        els.authOverlay.style.display = 'none';
-        alert(`Bem-vindo, ${savedUser.name || 'Trader'}!`);
+  if (!email || !password) {
+    alert('Preenche email e palavra-passe.');
+    return;
+  }
+
+  const savedUser = getSavedUser();
+
+  if (authMode === 'register') {
+    if (!name) {
+      alert('Preenche o nome para criar conta.');
+      return;
+    }
+
+    // Impedir email duplicado
+    if (savedUser && savedUser.email.toLowerCase() === email) {
+      alert('Este email já está registado. Faz login.');
+      return;
+    }
+
+    const user = { name, email, password };
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+    setAuthSession(true);
+    els.authOverlay.style.display = 'none';
+    alert('Conta criada com sucesso.');
+  } else {
+    if (!savedUser) {
+      alert('Ainda não existe conta. Faz primeiro o registo.');
+      return;
+    }
+
+    if (savedUser.email.toLowerCase() !== email || savedUser.password !== password) {
+      alert('Email ou palavra-passe incorretos.');
+      return;
+    }
+
+    setAuthSession(true);
+    els.authOverlay.style.display = 'none';
+    alert(`Bem-vindo, ${savedUser.name || 'Trader'}!`);
+  }
+});
       }
     });
 
