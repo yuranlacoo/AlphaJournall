@@ -3,956 +3,838 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Alpha Journal X Pro</title>
+  <title>Alpha Journal X</title>
+
   <style>
-  :root {
-    --bg: #f5f6fb;
-    --bg-2: #eceef6;
-    --panel: rgba(255, 255, 255, 0.98);
-    --panel-2: rgba(248, 249, 253, 0.98);
-    --border: rgba(70, 78, 115, 0.08);
-    --text: #1d2340;
-    --muted: #7c83a1;
-    --purple: #8f63ff;
-    --purple-2: #a88dff;
-    --green: #33b77a;
-    --green-soft: rgba(51, 183, 122, 0.15);
-    --red: #e56d6d;
-    --red-soft: rgba(229, 109, 109, 0.16);
-    --blue: #7d8de7;
-    --blue-soft: rgba(125, 141, 231, 0.18);
-    --gray-soft: rgba(116, 123, 155, 0.08);
-    --shadow: 0 10px 30px rgba(30, 35, 90, 0.06);
-    --card-radius: 18px;
-    --calendar-gap: 8px;
-  }
-
-  body.light {
-    --bg: #f5f6fb;
-    --bg-2: #eceef6;
-    --panel: rgba(255, 255, 255, 0.98);
-    --panel-2: rgba(248, 249, 253, 0.98);
-    --border: rgba(70, 78, 115, 0.08);
-    --text: #1d2340;
-    --muted: #7c83a1;
-    --purple: #8f63ff;
-    --purple-2: #a88dff;
-    --green: #33b77a;
-    --green-soft: rgba(51, 183, 122, 0.15);
-    --red: #e56d6d;
-    --red-soft: rgba(229, 109, 109, 0.16);
-    --blue: #7d8de7;
-    --blue-soft: rgba(125, 141, 231, 0.18);
-    --gray-soft: rgba(116, 123, 155, 0.08);
-    --shadow: 0 10px 30px rgba(30, 35, 90, 0.06);
-  }
-
-  body:not(.light) {
-    --bg: #0d1020;
-    --bg-2: #12172b;
-    --panel: rgba(22, 27, 48, 0.98);
-    --panel-2: rgba(19, 23, 42, 0.98);
-    --border: rgba(140, 152, 208, 0.10);
-    --text: #edf1ff;
-    --muted: #8d95ba;
-    --purple: #9b78ff;
-    --purple-2: #b9a5ff;
-    --green: #3ec58a;
-    --green-soft: rgba(62, 197, 138, 0.18);
-    --red: #f07f7f;
-    --red-soft: rgba(240, 127, 127, 0.16);
-    --blue: #91a0ff;
-    --blue-soft: rgba(145, 160, 255, 0.18);
-    --gray-soft: rgba(130, 139, 176, 0.08);
-    --shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
-  }
-
-  * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-
-  body {
-    margin: 0;
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 18px;
-    transition: background 0.25s ease, color 0.25s ease;
-  }
-
-  .container {
-    max-width: 1600px;
-    margin: 0 auto;
-  }
-
-  /* ===== TOPBAR ===== */
-  .topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 18px;
-    margin-bottom: 18px;
-    flex-wrap: wrap;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 18px 20px;
-    box-shadow: var(--shadow);
-  }
-
-  .brand h1 {
-    margin: 0;
-    font-size: 26px;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    text-transform: none;
-  }
-
-  .brand small {
-    display: block;
-    margin-top: 6px;
-    color: var(--muted);
-    font-size: 12px;
-  }
-
-  .actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
-
-  .btn, .file-label {
-    border: 1px solid var(--border);
-    background: var(--panel);
-    color: var(--text);
-    padding: 11px 14px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    box-shadow: none;
-    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .btn:hover, .file-label:hover {
-    transform: translateY(-1px);
-    border-color: rgba(143, 99, 255, 0.35);
-  }
-
-  .btn.primary {
-    background: linear-gradient(180deg, rgba(143,99,255,0.15), rgba(143,99,255,0.07));
-    border-color: rgba(143,99,255,0.22);
-    color: var(--purple);
-  }
-
-  .btn.danger {
-    border-color: rgba(229,109,109,0.2);
-    color: var(--red);
-  }
-
-  .btn.small {
-    padding: 8px 12px;
-    font-size: 12px;
-  }
-
-  input[type="file"] { display: none; }
-
-  /* ===== DASHBOARD LAYOUT ===== */
-  .dashboard-shell {
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 16px;
-    align-items: start;
-  }
-
-  .dashboard-left,
-  .dashboard-right {
-    display: grid;
-    gap: 16px;
-  }
-
-  .dashboard-right {
-    min-width: 0;
-  }
-
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 14px;
-  }
-
-  .card {
-    background: linear-gradient(180deg, var(--panel), var(--panel-2));
-    border: 1px solid var(--border);
-    border-radius: var(--card-radius);
-    padding: 18px;
-    box-shadow: var(--shadow);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .card::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(143,99,255,0.025), transparent 42%, transparent 70%, rgba(143,99,255,0.02));
-    pointer-events: none;
-  }
-
-  .eyebrow {
-    color: var(--muted);
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    text-transform: none;
-    margin-bottom: 10px;
-    font-weight: 600;
-  }
-
-  .section-title {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 14px;
-  }
-
-  .section-title h2 {
-    margin: 0;
-    font-size: 15px;
-    letter-spacing: -0.02em;
-    font-weight: 700;
-  }
-
-  /* ===== MINI STATS ===== */
-  .mini-stat {
-    min-height: 118px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-
-  .mini-stat .stat-label {
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 10px;
-  }
-
-  .mini-stat .stat-main {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-
-  .mini-stat .stat-value {
-    font-size: clamp(22px, 2vw, 30px);
-    font-weight: 800;
-    line-height: 1;
-    color: var(--text);
-  }
-
-  .mini-stat .stat-value.green { color: var(--green); }
-  .mini-stat .stat-value.red { color: var(--red); }
-  .mini-stat .stat-value.purple { color: var(--purple); }
-
-  .mini-stat .stat-sub {
-    color: var(--muted);
-    font-size: 12px;
-    margin-top: 8px;
-  }
-
-  .ring {
-    width: 56px;
-    height: 56px;
-    position: relative;
-    flex: 0 0 auto;
-  }
-
-  .ring svg {
-    width: 100%;
-    height: 100%;
-    transform: rotate(-90deg);
-  }
-
-  .ring .ring-track {
-    fill: none;
-    stroke: rgba(130, 139, 176, 0.18);
-    stroke-width: 8;
-  }
-
-  .ring .ring-fill {
-    fill: none;
-    stroke: var(--green);
-    stroke-width: 8;
-    stroke-linecap: round;
-    stroke-dasharray: 157;
-    stroke-dashoffset: 157;
-    transition: stroke-dashoffset 0.35s ease;
-  }
-
-  .ring.red .ring-fill { stroke: var(--red); }
-  .ring.purple .ring-fill { stroke: var(--purple); }
-
-  .streak-boxes {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-    flex-wrap: wrap;
-  }
-
-  .streak-pill {
-    flex: 1;
-    min-width: 95px;
-    border: 1px solid var(--border);
-    background: rgba(255,255,255,0.04);
-    border-radius: 14px;
-    padding: 10px 12px;
-  }
-
-  .streak-pill small {
-    display: block;
-    color: var(--muted);
-    font-size: 10px;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-  }
-
-  .streak-pill strong {
-    font-size: 20px;
-  }
-
-  /* ===== CHART CARD ===== */
-  .chart-card {
-    min-height: 360px;
-  }
-
-  .equity-chart-wrap {
-    border-radius: 16px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--border);
-    padding: 12px;
-  }
-
-  .equity-chart {
-    width: 100%;
-    height: 250px;
-    display: block;
-  }
-
-  .chart-legend-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    margin-top: 10px;
-    color: var(--muted);
-    font-size: 12px;
-    flex-wrap: wrap;
-  }
-
-  /* ===== RADAR / SCORE ===== */
-  .score-card {
-    min-height: 360px;
-  }
-
-  .score-center {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 240px;
-  }
-
-  .score-footer {
-    margin-top: 12px;
-  }
-
-  .score-bar {
-    height: 8px;
-    border-radius: 999px;
-    background: linear-gradient(90deg, #ff7a7a, #f3c14b, #4bd38f);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .score-knob {
-    position: absolute;
-    top: 50%;
-    width: 14px;
-    height: 14px;
-    border-radius: 999px;
-    background: white;
-    border: 2px solid var(--purple);
-    transform: translate(-50%, -50%);
-    box-shadow: 0 4px 12px rgba(0,0,0,.12);
-  }
-
-  .score-scale {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 8px;
-    color: var(--muted);
-    font-size: 11px;
-  }
-
-  /* ===== CALENDAR ===== */
-  .calendar-card {
-    min-height: 760px;
-  }
-
-  .calendar-shell {
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    overflow: hidden;
-    background: rgba(255,255,255,0.02);
-  }
-
-  .calendar-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--border);
-    background: rgba(255,255,255,0.02);
-    flex-wrap: wrap;
-  }
-
-  .calendar-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .calendar-month-title {
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-  }
-
-  .calendar-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .calendar-stats-pill {
-    padding: 10px 14px;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    background: rgba(255,255,255,0.03);
-    font-size: 13px;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-
-  .calendar-stats-pill strong { color: var(--text); }
-
-  .calendar-main {
-    display: grid;
-    grid-template-columns: 1fr 150px;
-    gap: 12px;
-    padding: 14px;
-  }
-
-  .calendar-board {
-    min-width: 0;
-  }
-
-  .calendar-weekdays {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: var(--calendar-gap);
-    margin-bottom: var(--calendar-gap);
-  }
-
-  .weekday-cell {
-    border: 1px solid var(--border);
-    background: rgba(255,255,255,0.03);
-    border-radius: 12px;
-    min-height: 42px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--muted);
-  }
-
-  .calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: var(--calendar-gap);
-  }
-
-  .day-cell {
-    border-radius: 14px;
-    min-height: 128px;
-    border: 1px solid var(--border);
-    background: var(--gray-soft);
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-    text-decoration: none;
-    color: var(--text);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .day-cell:hover {
-    transform: translateY(-1px);
-    border-color: rgba(143,99,255,0.18);
-  }
-
-  .day-cell.win {
-    background: linear-gradient(180deg, rgba(51,183,122,0.18), rgba(51,183,122,0.10));
-    border-color: rgba(51,183,122,0.18);
-  }
-
-  .day-cell.loss {
-    background: linear-gradient(180deg, rgba(229,109,109,0.18), rgba(229,109,109,0.10));
-    border-color: rgba(229,109,109,0.18);
-  }
-
-  .day-cell.be {
-    background: linear-gradient(180deg, rgba(125,141,231,0.16), rgba(125,141,231,0.08));
-    border-color: rgba(125,141,231,0.16);
-  }
-
-  .day-cell.empty {
-    opacity: 0.68;
-    cursor: default;
-  }
-
-  .day-number {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--muted);
-  }
-
-  .day-content {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    flex: 1;
-  }
-
-  .day-result {
-    font-size: 22px;
-    font-weight: 800;
-    color: var(--text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-    letter-spacing: -0.03em;
-  }
-
-  .day-meta {
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.35;
-  }
-
-  .calendar-week-summary {
-    display: grid;
-    gap: 10px;
-  }
-
-  .week-box {
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    background: rgba(255,255,255,0.03);
-    padding: 14px;
-  }
-
-  .week-box small {
-    display: block;
-    color: var(--muted);
-    font-size: 11px;
-    margin-bottom: 6px;
-  }
-
-  .week-box strong {
-    display: block;
-    font-size: 24px;
-    letter-spacing: -0.03em;
-  }
-
-  .week-box span {
-    color: var(--muted);
-    font-size: 12px;
-  }
-
-  /* ===== LISTS ===== */
-  .list-panel {
-    display: grid;
-    gap: 12px;
-    align-content: start;
-  }
-
-  .list-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    align-items: center;
-    font-size: 14px;
-    padding: 12px 14px;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    background: rgba(255,255,255,0.03);
-  }
-
-  .list-row .label { color: var(--text); }
-  .list-row .value { color: var(--purple); font-weight: 700; }
-
-  .empty-state {
-    border: 1px dashed var(--border);
-    border-radius: 16px;
-    padding: 20px;
-    color: var(--muted);
-    text-align: center;
-    font-size: 14px;
-    margin-top: 12px;
-  }
-
-  /* ===== TRADES ===== */
-  .trades-section { margin-top: 18px; }
-
-  .trade-list {
-    display: grid;
-    gap: 12px;
-    margin-top: 16px;
-  }
-
-  .trade-item {
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 16px;
-    background: rgba(255,255,255,0.02);
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 12px;
-  }
-
-  .trade-field small {
-    display: block;
-    color: var(--muted);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 6px;
-  }
-
-  .trade-field strong {
-    font-size: 14px;
-    word-break: break-word;
-  }
-
-  .trade-thumb {
-    width: 100%;
-    max-height: 180px;
-    object-fit: cover;
-    border-radius: 14px;
-    border: 1px solid var(--border);
-    cursor: zoom-in;
-    transition: transform .18s ease, opacity .18s ease;
-  }
-
-  .trade-thumb:hover {
-    transform: scale(1.01);
-    opacity: .95;
-  }
-
-  .trade-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 10px;
-    grid-column: span 6;
-  }
-
-  .floating-add {
-    position: fixed;
-    right: 24px;
-    bottom: 24px;
-    z-index: 30;
-    border-radius: 999px;
-    padding: 16px 20px;
-    font-weight: 700;
-  }
-
-  /* ===== MODAL ===== */
-  .modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(3, 6, 16, 0.72);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 50;
-    padding: 20px;
-  }
-
-  .modal.open { display: flex; }
-
-  .modal-card {
-    width: min(860px, 100%);
-    max-height: 90vh;
-    overflow-y: auto;
-    background: linear-gradient(180deg, var(--panel), var(--panel-2));
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    box-shadow: var(--shadow);
-    padding: 24px;
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 20px;
-  }
-
-  .modal-header h3 {
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 18px;
-  }
-
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-  }
-
-  .form-group.full { grid-column: span 2; }
-
-  label {
-    display: block;
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-
-  input, select, textarea {
-    width: 100%;
-    border: 1px solid var(--border);
-    background: rgba(255,255,255,0.03);
-    color: var(--text);
-    border-radius: 14px;
-    padding: 14px 14px;
-    font: inherit;
-    outline: none;
-  }
-
-  textarea {
-    min-height: 120px;
-    resize: vertical;
-  }
-
-  .preview-image {
-    margin-top: 10px;
-    width: 100%;
-    max-height: 220px;
-    object-fit: cover;
-    border-radius: 16px;
-    border: 1px solid var(--border);
-    display: none;
-    cursor: zoom-in;
-  }
-
-  .legend {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    color: var(--muted);
-    font-size: 12px;
-    margin-top: 14px;
-  }
-
-  .legend span {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 999px;
-    display: inline-block;
-  }
-
-  .dot.win { background: var(--green); }
-  .dot.loss { background: var(--red); }
-  .dot.be { background: var(--blue); }
-
-  .auth-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    background: rgba(4,8,18,0.82);
-    backdrop-filter: blur(8px);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-
-  .auth-card {
-    width: min(520px,100%);
-    background: linear-gradient(180deg,var(--panel),var(--panel-2));
-    border:1px solid var(--border);
-    border-radius:24px;
-    padding:28px;
-    box-shadow:var(--shadow);
-  }
-
-  /* ===== IMAGE VIEWER ===== */
-  .image-viewer {
-    position: fixed;
-    inset: 0;
-    background: rgba(2, 6, 18, 0.92);
-    backdrop-filter: blur(6px);
-    z-index: 99999;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
-
-  .image-viewer.open { display: flex; }
-
-  .image-viewer-toolbar {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    gap: 10px;
-    z-index: 3;
-    flex-wrap: wrap;
-  }
-
-  .image-viewer-stage {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    cursor: grab;
-    padding: 40px;
-  }
-
-  .image-viewer-stage.dragging { cursor: grabbing; }
-
-  .image-viewer img {
-    max-width: none;
-    max-height: none;
-    user-select: none;
-    -webkit-user-drag: none;
-    transform-origin: center center;
-    transition: transform 0.08s linear;
-    border-radius: 18px;
-    box-shadow: 0 18px 50px rgba(0,0,0,.45);
-  }
-
-  /* ===== RESPONSIVO ===== */
-  @media (max-width: 1380px) {
-    .stats-grid {
-      grid-template-columns: repeat(3, 1fr);
+    :root {
+      --bg: #0d1020;
+      --bg-2: #11162b;
+      --card: #171c33;
+      --card-2: #1c213d;
+      --line: #2a3052;
+      --text: #edf1ff;
+      --muted: #98a0c8;
+      --green: #28c76f;
+      --green-soft: rgba(40, 199, 111, 0.14);
+      --red: #ea5455;
+      --red-soft: rgba(234, 84, 85, 0.14);
+      --blue: #5f8dff;
+      --blue-soft: rgba(95, 141, 255, 0.16);
+      --purple: #8b5cf6;
+      --purple-soft: rgba(139, 92, 246, 0.16);
+      --yellow: #f59e0b;
+      --shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+      --radius: 18px;
     }
-  }
 
-  @media (max-width: 1180px) {
-    .dashboard-shell {
+    body.light {
+      --bg: #eef2ff;
+      --bg-2: #e4ebff;
+      --card: #ffffff;
+      --card-2: #f7f9ff;
+      --line: #d9e1ff;
+      --text: #121936;
+      --muted: #6f7aa6;
+      --green-soft: rgba(40, 199, 111, 0.12);
+      --red-soft: rgba(234, 84, 85, 0.12);
+      --blue-soft: rgba(95, 141, 255, 0.12);
+      --purple-soft: rgba(139, 92, 246, 0.12);
+      --shadow: 0 14px 34px rgba(56, 79, 140, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(95,141,255,0.10), transparent 22%),
+        radial-gradient(circle at top right, rgba(139,92,246,0.08), transparent 20%),
+        linear-gradient(160deg, var(--bg) 0%, var(--bg-2) 100%);
+      min-height: 100vh;
+      transition: background .25s ease, color .25s ease;
+    }
+
+    .app {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 22px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -.02em;
+    }
+
+    .brand p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .btn, .file-label, .pill-btn, .tab-btn {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      box-shadow: var(--shadow);
+      transition: .18s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+    }
+
+    .btn:hover, .file-label:hover, .pill-btn:hover, .tab-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(95,141,255,.35);
+    }
+
+    .btn.primary {
+      background: linear-gradient(180deg, rgba(139,92,246,.28), rgba(95,141,255,.18));
+      border-color: rgba(139,92,246,.28);
+    }
+
+    .btn.danger {
+      border-color: rgba(234,84,85,.26);
+    }
+
+    .btn.small, .pill-btn, .tab-btn {
+      padding: 10px 13px;
+      font-size: 12px;
+    }
+
+    input[type="file"] { display: none; }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--card), var(--card-2));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.03), transparent 35%, transparent 70%, rgba(255,255,255,.015));
+      pointer-events: none;
+    }
+
+    .span-2 { grid-column: span 2; }
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+    .span-8 { grid-column: span 8; }
+    .span-9 { grid-column: span 9; }
+    .span-12 { grid-column: span 12; }
+
+    .eyebrow {
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -.01em;
+    }
+
+    .metric-card {
+      min-height: 116px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .metric-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .metric-title {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .metric-value {
+      font-size: clamp(26px, 3vw, 34px);
+      font-weight: 800;
+      line-height: 1;
+      margin-top: 6px;
+    }
+
+    .metric-value.green { color: var(--green); }
+    .metric-value.red { color: var(--red); }
+    .metric-value.blue { color: var(--blue); }
+    .metric-value.purple { color: var(--purple); }
+
+    .metric-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    .mini-ring {
+      width: 58px;
+      height: 58px;
+      border-radius: 999px;
+      position: relative;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      background: conic-gradient(var(--green) 0deg, var(--green) 0deg, rgba(255,255,255,.08) 0deg);
+    }
+
+    .mini-ring::after {
+      content: "";
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      position: absolute;
+    }
+
+    .mini-ring span {
+      position: relative;
+      z-index: 2;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .split-stat {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .split-pill {
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+    }
+
+    .split-pill.green { background: var(--green-soft); color: var(--green); }
+    .split-pill.red { background: var(--red-soft); color: var(--red); }
+    .split-pill.blue { background: var(--blue-soft); color: var(--blue); }
+
+    .chart-wrap {
+      display: flex;
+      flex-direction: column;
+      min-height: 300px;
+    }
+
+    .chart-toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .chart-summary {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .chart-canvas {
+      width: 100%;
+      height: 260px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      border: 1px solid rgba(255,255,255,.04);
+    }
+
+    .zella-score {
+      display: grid;
       grid-template-columns: 1fr;
+      gap: 14px;
     }
 
-    .dashboard-left {
-      order: 2;
+    .radar-wrap {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 240px;
     }
 
-    .dashboard-right {
-      order: 1;
+    .score-footer {
+      border-top: 1px solid rgba(255,255,255,.05);
+      padding-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
     }
 
-    .calendar-main {
-      grid-template-columns: 1fr;
+    .score-footer strong {
+      font-size: 30px;
+      line-height: 1;
     }
 
-    .calendar-week-summary {
+    .progress-bar {
+      width: 100%;
+      max-width: 300px;
+      height: 12px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.05);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ef4444, #f59e0b, #22c55e);
+      border-radius: inherit;
+      transition: width .25s ease;
+    }
+
+    .calendar-shell {
+      border: 1px solid rgba(255,255,255,.05);
+      border-radius: 20px;
+      overflow: hidden;
+      background: rgba(255,255,255,.02);
+    }
+
+    .calendar-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      background: rgba(255,255,255,.02);
+      flex-wrap: wrap;
+    }
+
+    .calendar-left, .calendar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .calendar-month-title {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      padding: 12px 12px 0;
+    }
+
+    .weekday-cell {
+      border: 1px solid rgba(255,255,255,.05);
+      background: rgba(255,255,255,.02);
+      border-radius: 12px;
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--muted);
+    }
+
+    .calendar-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 180px;
+      gap: 12px;
+      padding: 12px;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+    }
+
+    .day-cell {
+      border-radius: 16px;
+      min-height: 118px;
+      border: 1px solid rgba(255,255,255,.05);
+      background: rgba(255,255,255,.02);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-decoration: none;
+      color: var(--text);
+      position: relative;
+      overflow: hidden;
+      transition: .16s ease;
+    }
+
+    .day-cell:hover {
+      transform: translateY(-2px);
+      border-color: rgba(95,141,255,.25);
+    }
+
+    .day-cell.win { background: rgba(40, 199, 111, 0.18); }
+    .day-cell.loss { background: rgba(234, 84, 85, 0.18); }
+    .day-cell.be { background: rgba(95, 141, 255, 0.14); }
+    .day-cell.empty { opacity: .42; cursor: default; }
+
+    .day-number {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--muted);
+    }
+
+    .day-result {
+      font-size: 19px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .day-meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .week-sidebar {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .week-card {
+      border: 1px solid rgba(255,255,255,.05);
+      background: rgba(255,255,255,.03);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .week-card .wk {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .week-card .wk-value {
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .week-card .wk-days {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .insights-grid {
+      display: grid;
       grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
     }
-  }
 
-  @media (max-width: 1100px) {
+    .list-panel {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .list-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 14px;
+      border: 1px solid rgba(255,255,255,.05);
+      border-radius: 14px;
+      background: rgba(255,255,255,.02);
+    }
+
+    .list-row .label {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .list-row .value {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--blue);
+    }
+
+    .empty-state {
+      border: 1px dashed var(--line);
+      border-radius: 16px;
+      padding: 20px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    .trades-section { margin-top: 4px; }
+
+    .trade-toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .search-wrap {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .trade-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
     .trade-item {
-      grid-template-columns: repeat(2, 1fr);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      background: rgba(255,255,255,.02);
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+    }
+
+    .trade-field small {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    .trade-field strong {
+      font-size: 14px;
+      word-break: break-word;
+      line-height: 1.5;
+    }
+
+    .trade-thumb {
+      width: 100%;
+      max-height: 180px;
+      object-fit: cover;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      cursor: zoom-in;
+      transition: .18s ease;
+    }
+
+    .trade-thumb:hover {
+      transform: scale(1.01);
+      opacity: .96;
     }
 
     .trade-actions {
-      grid-column: span 2;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 10px;
+      grid-column: span 6;
+      flex-wrap: wrap;
     }
-  }
-
-  @media (max-width: 900px) {
-    .stats-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media (max-width: 700px) {
-    body { padding: 14px; }
-
-    .calendar-weekdays,
-    .calendar-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .form-grid,
-    .trade-item {
-      grid-template-columns: 1fr;
-    }
-
-    .form-group.full { grid-column: span 1; }
-    .trade-actions { grid-column: span 1; }
 
     .floating-add {
-      left: 16px;
-      right: 16px;
-      bottom: 16px;
-      justify-content: center;
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 30;
+      border-radius: 999px;
+      padding: 16px 20px;
+      font-weight: 800;
     }
 
-    .actions { width: 100%; }
-    .image-viewer-stage { padding: 20px; }
-    .calendar-week-summary { grid-template-columns: 1fr; }
-  }
-</style>
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 9, 22, 0.78);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 20px;
+    }
+
+    .modal.open { display: flex; }
+
+    .modal-card {
+      width: min(860px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
+      background: linear-gradient(180deg, var(--card), var(--card-2));
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .form-group.full { grid-column: span 2; }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-weight: 700;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 14px 14px;
+      font: inherit;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .preview-image {
+      margin-top: 10px;
+      width: 100%;
+      max-height: 220px;
+      object-fit: cover;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      display: none;
+      cursor: zoom-in;
+    }
+
+    .legend {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 14px;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .dot.win { background: var(--green); }
+    .dot.loss { background: var(--red); }
+    .dot.be { background: var(--blue); }
+
+    .auth-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(4,8,18,.82);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .auth-card {
+      width: min(520px,100%);
+      background: linear-gradient(180deg,var(--card),var(--card-2));
+      border:1px solid var(--line);
+      border-radius:24px;
+      padding:28px;
+      box-shadow:var(--shadow);
+    }
+
+    .image-viewer {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 18, 0.92);
+      backdrop-filter: blur(6px);
+      z-index: 99999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .image-viewer.open { display: flex; }
+
+    .image-viewer-toolbar {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+      z-index: 3;
+      flex-wrap: wrap;
+    }
+
+    .image-viewer-stage {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: grab;
+      padding: 40px;
+    }
+
+    .image-viewer-stage.dragging { cursor: grabbing; }
+
+    .image-viewer img {
+      max-width: none;
+      max-height: none;
+      user-select: none;
+      -webkit-user-drag: none;
+      transform-origin: center center;
+      transition: transform .08s linear;
+      border-radius: 18px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.45);
+    }
+
+    @media (max-width: 1200px) {
+      .span-2, .span-3, .span-4, .span-5, .span-6, .span-8, .span-9 { grid-column: span 12; }
+      .calendar-layout { grid-template-columns: 1fr; }
+      .insights-grid { grid-template-columns: 1fr; }
+      .trade-item { grid-template-columns: repeat(2, 1fr); }
+      .trade-actions { grid-column: span 2; }
+    }
+
+    @media (max-width: 700px) {
+      body { padding: 0; }
+      .app { padding: 16px; }
+      .calendar-grid { grid-template-columns: repeat(2, 1fr); }
+      .calendar-weekdays { grid-template-columns: repeat(2, 1fr); }
+      .form-grid, .trade-item { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: span 1; }
+      .trade-actions { grid-column: span 1; }
+      .floating-add {
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+        justify-content: center;
+      }
+      .actions { width: 100%; }
+      .image-viewer-stage { padding: 20px; }
+    }
+  </style>
 </head>
 <body>
+
+  <!-- LOGIN -->
   <div class="auth-overlay" id="authOverlay">
     <div class="auth-card">
       <div style="margin-bottom:18px;">
         <div class="eyebrow">Trading Journal</div>
-        <h2 style="margin:0; font-size:26px; letter-spacing:.08em; text-transform:uppercase;">Login / Registo</h2>
+        <h2 style="margin:0; font-size:26px; letter-spacing:.01em;">Login / Registo</h2>
         <p style="color:var(--muted); margin-top:8px;">Cria uma conta local no browser para entrar no teu dashboard.</p>
       </div>
 
@@ -966,1352 +848,177 @@
           <label for="authName">Nome</label>
           <input id="authName" type="text" placeholder="O teu nome" />
         </div>
+
         <div>
           <label for="authEmail">Email</label>
           <input id="authEmail" type="email" placeholder="teuemail@email.com" required />
         </div>
+
         <div>
           <label for="authPassword">Palavra-passe</label>
           <input id="authPassword" type="password" placeholder="••••••••" required />
         </div>
+
         <button class="btn primary" id="authSubmitBtn" type="submit">Entrar</button>
       </form>
     </div>
   </div>
 
   <div class="app">
-    <aside class="sidebar">
-      <div class="logo">
-        <div class="logo-badge">AX</div>
-        <div>
-          <h1>Alpha Journal X</h1>
-          <p>Pro Trading Journal</p>
+    <header class="topbar" id="topo">
+      <div class="brand">
+        <h1>Dashboard</h1>
+        <p>Trading journal visual inspirado no estilo TradeZella</p>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="themeToggle">Tema: Escuro</button>
+        <label class="file-label" for="csvInput">CSV</label>
+        <input type="file" id="csvInput" accept=".csv" />
+        <button class="btn" id="exportCsvBtn">Exportar CSV</button>
+        <a class="btn" href="#calendarSection">Calendário</a>
+        <a class="btn" href="#tradesSection">Trades</a>
+        <button class="btn danger" id="logoutBtn">Sair</button>
+      </div>
+    </header>
+
+    <main class="dashboard-grid">
+
+      <!-- METRICS -->
+      <section class="card metric-card span-3">
+        <div class="metric-top">
+          <div>
+            <div class="metric-title">Net P&amp;L</div>
+            <div class="metric-value green" id="netPnl">$0</div>
+          </div>
+          <div class="split-pill blue" id="monthlyPnlPill">Mês: $0</div>
         </div>
-      </div>
+        <div class="metric-sub" id="weekPnl">+$0 esta semana</div>
+      </section>
 
-      <nav class="nav">
-        <a href="#dashboardTop">Dashboard <span>→</span></a>
-        <a href="#calendarSection">Calendário <span>→</span></a>
-        <a href="#analyticsSection">Analytics <span>→</span></a>
-        <a href="#tradesSection">Trades <span>→</span></a>
-      </nav>
-
-      <div class="sidebar-box">
-        <div class="eyebrow">Resumo</div>
-        <div class="mini-stat" id="sideTotalTrades">0</div>
-        <div class="subtext">Trades registadas</div>
-      </div>
-
-      <div class="sidebar-box">
-        <div class="eyebrow">Consistency</div>
-        <div class="mini-stat" id="sideBestDay">$0</div>
-        <div class="subtext">Melhor dia do mês</div>
-      </div>
-
-      <div class="sidebar-box">
-        <div class="eyebrow">Execution</div>
-        <div class="mini-stat" id="sideAvgTrade">$0</div>
-        <div class="subtext">Média por trade</div>
-      </div>
-    </aside>
-
-    <main class="main">
-      <header class="topbar" id="dashboardTop">
-        <div class="topbar-left">
-          <h2>Trading Dashboard</h2>
-          <p>Journal premium estilo TradeZella para analisar, filtrar e evoluir a tua performance.</p>
+      <section class="card metric-card span-3">
+        <div class="metric-top">
+          <div>
+            <div class="metric-title">Trade Win %</div>
+            <div class="metric-value blue" id="winRate">0.0%</div>
+          </div>
+          <div class="mini-ring" id="winRing"><span id="winRingText">0%</span></div>
         </div>
+        <div class="metric-sub"><span id="tradeCount">0</span> trades</div>
+      </section>
 
-        <div class="actions">
-          <button class="btn" id="themeToggle">Tema: Preto</button>
-          <label class="file-label" for="csvInput">CSV</label>
-          <input type="file" id="csvInput" accept=".csv" />
-          <button class="btn" id="exportCsvBtn">Exportar CSV</button>
-          <a class="btn" href="#calendarSection">Calendário</a>
-          <button class="btn danger" id="logoutBtn">Sair</button>
+      <section class="card metric-card span-3">
+        <div class="metric-top">
+          <div>
+            <div class="metric-title">Avg Win / Loss Trade</div>
+            <div class="metric-value purple" id="avgWinLoss">0.00</div>
+          </div>
+          <div class="split-stat">
+            <span class="split-pill green" id="avgWinPill">+$0</span>
+            <span class="split-pill red" id="avgLossPill">-$0</span>
+          </div>
         </div>
-      </header>
+        <div class="metric-sub">Avg RR <span id="avgRr">0.0</span></div>
+      </section>
 
-      <section class="dashboard-grid">
-        <section class="card stat-card span-2">
-          <div class="eyebrow">Net P&L</div>
-          <div class="stat-value" id="netPnl">$0</div>
-          <div class="subtext" id="weekPnl">+$0 esta semana</div>
-        </section>
+      <section class="card metric-card span-3">
+        <div class="metric-top">
+          <div>
+            <div class="metric-title">Profit Factor</div>
+            <div class="metric-value" id="profitFactor">0.00</div>
+          </div>
+          <div class="mini-ring" id="pfRing"><span id="pfRingText">0</span></div>
+        </div>
+        <div class="metric-sub">Current streak: <span id="currentStreak">0</span></div>
+      </section>
 
-        <section class="card stat-card span-2">
-          <div class="eyebrow">Win Rate</div>
-          <div class="stat-value" id="winRate">0.0%</div>
-          <div class="subtext"><span id="tradeCount">0</span> trades</div>
-        </section>
-
-        <section class="card stat-card span-2">
-          <div class="eyebrow">Profit Factor</div>
-          <div class="stat-value" id="profitFactor">0.00</div>
-          <div class="subtext">Avg RR <span id="avgRr">0.0</span></div>
-        </section>
-
-        <section class="card stat-card span-2">
-          <div class="eyebrow">Max Drawdown</div>
-          <div class="stat-value red" id="maxDrawdown">$0</div>
-          <div class="subtext">Best streak: <span id="bestStreak">0</span> wins</div>
-        </section>
-
-        <section class="card stat-card span-2">
-          <div class="eyebrow">Expectancy</div>
-          <div class="stat-value" id="expectancy">$0</div>
-          <div class="subtext">Média matemática por trade</div>
-        </section>
-
-        <section class="card stat-card span-2">
-          <div class="eyebrow">Avg Trade</div>
-          <div class="stat-value" id="avgTrade">$0</div>
-          <div class="subtext">Resultado médio</div>
-        </section>
-
-        <section class="card span-8">
+      <!-- CHART -->
+      <section class="card span-5">
+        <div class="chart-wrap">
           <div class="section-title">
             <div>
-              <div class="eyebrow">Equity Curve</div>
+              <div class="eyebrow">Daily Net Cumulative P&amp;L</div>
               <h2>Linha de Evolução</h2>
             </div>
+            <div class="chart-summary" id="chartSummary">Sem trades ainda</div>
           </div>
-
-          <svg class="equity-chart" id="equityChart" viewBox="0 0 900 220" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="equityFill" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stop-color="rgba(34,211,238,0.32)"></stop>
-                <stop offset="100%" stop-color="rgba(34,211,238,0.02)"></stop>
-              </linearGradient>
-            </defs>
-            <path id="equityArea" fill="url(#equityFill)" opacity="0.95"></path>
-            <path id="equityPath" fill="none" stroke="var(--cyan)" stroke-width="4" stroke-linecap="round"></path>
-          </svg>
-        </section>
-
-        <section class="card span-4" id="analyticsSection">
-          <div class="section-title">
-            <div>
-              <div class="eyebrow">Performance</div>
-              <h2>Insights Rápidos</h2>
+          <div class="chart-toolbar">
+            <div class="split-stat">
+              <span class="split-pill green" id="bestDayPill">Best: $0</span>
+              <span class="split-pill red" id="worstDayPill">Worst: $0</span>
+            </div>
+            <div class="split-stat">
+              <button class="pill-btn" id="chartThisMonthBtn">This month</button>
+              <button class="pill-btn" id="chartAllBtn">All</button>
             </div>
           </div>
-
-          <div class="list-panel">
-            <div class="list-row"><span>Maior Win</span><span class="value" id="largestWin">$0</span></div>
-            <div class="list-row"><span>Maior Loss</span><span class="value" id="largestLoss">$0</span></div>
-            <div class="list-row"><span>Longs</span><span class="value" id="longCount">0</span></div>
-            <div class="list-row"><span>Shorts</span><span class="value" id="shortCount">0</span></div>
-            <div class="list-row"><span>Nota Média</span><span class="value" id="avgScore">0/10</span></div>
-          </div>
-        </section>
-
-        <section class="card span-12">
-          <div class="section-title">
-            <div>
-              <div class="eyebrow">Filtros</div>
-              <h2>Filtrar Trades</h2>
-            </div>
-            <button class="btn small" id="resetFiltersBtn">Resetar Filtros</button>
-          </div>
-
-          <div class="filters">
-            <input type="text" id="filterPair" placeholder="Par (EURUSD, XAUUSD...)" />
-            <select id="filterSession">
-              <option value="">Todas as Sessões</option>
-              <option value="Asia">Asia</option>
-              <option value="London">London</option>
-              <option value="New York">New York</option>
-            </select>
-            <input type="text" id="filterStrategy" placeholder="Estratégia" />
-            <select id="filterSide">
-              <option value="">Buy / Sell</option>
-              <option value="Buy">Buy</option>
-              <option value="Sell">Sell</option>
-            </select>
-            <select id="filterResult">
-              <option value="">Todos Resultados</option>
-              <option value="win">Win</option>
-              <option value="loss">Loss</option>
-              <option value="be">Breakeven</option>
-            </select>
-          </div>
-        </section>
-
-        <section class="card span-6" id="calendarSection">
-          <div class="section-title">
-            <div>
-              <div class="eyebrow">P&L Calendar</div>
-              <h2>Calendário de Performance</h2>
-            </div>
-          </div>
-
-          <div class="calendar-shell">
-            <div class="calendar-toolbar">
-              <div class="calendar-left">
-                <button class="btn small" id="prevMonthBtn">◀</button>
-                <div class="calendar-month-title" id="calendarTitle">Calendário - mês atual</div>
-                <button class="btn small" id="nextMonthBtn">▶</button>
-              </div>
-              <div class="calendar-right">
-                <div class="calendar-stats-pill" id="calendarSummary">Sem trades ainda</div>
-              </div>
-            </div>
-
-            <div class="calendar-weekdays" id="calendarWeekdays"></div>
-            <div class="calendar-grid" id="calendarGrid"></div>
-          </div>
-
-          <div class="legend">
-            <span><i class="dot win"></i> Win</span>
-            <span><i class="dot loss"></i> Loss</span>
-            <span><i class="dot be"></i> Breakeven</span>
-          </div>
-        </section>
-
-        <section class="card span-3">
-          <div class="section-title">
-            <div>
-              <div class="eyebrow">By Strategy</div>
-              <h2>Estratégias</h2>
-            </div>
-          </div>
-          <div class="list-panel" id="strategyList"></div>
-          <div class="empty-state" id="strategyEmpty">Ainda não existem trades para calcular estratégias.</div>
-        </section>
-
-        <section class="card span-3">
-          <div class="section-title">
-            <div>
-              <div class="eyebrow">Sessions</div>
-              <h2>Sessões</h2>
-            </div>
-          </div>
-          <div class="list-panel" id="sessionList"></div>
-          <div class="empty-state" id="sessionEmpty">Ainda não existem trades para calcular sessões.</div>
-        </section>
-
-        <section class="card span-12" id="tradesSection">
-          <div class="section-title">
-            <div>
-              <div class="eyebrow">Trade Log</div>
-              <h2>Histórico de Trades</h2>
-            </div>
-            <button class="btn small primary" id="scrollTopBtn">Ir ao topo</button>
-          </div>
-
-          <div class="empty-state" id="tradesEmpty">Primeira vez a usar: adiciona o teu primeiro trade no botão no canto inferior direito.</div>
-          <div class="trade-list" id="tradeList"></div>
-        </section>
+          <canvas id="equityCanvas" class="chart-canvas" width="900" height="300"></canvas>
+        </div>
       </section>
-    </main>
-  </div>
 
-  <button class="btn primary floating-add" id="openTradeModal">+ Adicionar Trade</button>
-
-  <div class="modal" id="tradeModal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 id="tradeModalTitle">Adicionar Trade</h3>
-        <button class="btn small" id="closeTradeModal">Fechar</button>
-      </div>
-
-      <form id="tradeForm">
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="tradeDate">Data</label>
-            <input type="date" id="tradeDate" required />
-          </div>
-
-          <div class="form-group">
-            <label for="tradePair">Par</label>
-            <input type="text" id="tradePair" placeholder="Ex: EURUSD" required />
-          </div>
-
-          <div class="form-group">
-            <label for="tradeResult">Resultado ($)</label>
-            <input type="number" step="0.01" id="tradeResult" placeholder="Ex: 120" required />
-          </div>
-
-          <div class="form-group">
-            <label for="tradeRR">RR</label>
-            <input type="number" step="0.1" id="tradeRR" placeholder="Ex: 2.5" required />
-          </div>
-
-          <div class="form-group">
-            <label for="tradeSide">Sell / Buy</label>
-            <select id="tradeSide" required>
-              <option value="Buy">Buy</option>
-              <option value="Sell">Sell</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="tradeSession">Sessão</label>
-            <select id="tradeSession" required>
-              <option value="Asia">Asia</option>
-              <option value="London">London</option>
-              <option value="New York">New York</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="tradeStrategy">Estratégia</label>
-            <input type="text" id="tradeStrategy" placeholder="Ex: Breakout, Reversal, Trend Follow" required />
-          </div>
-
-          <div class="form-group">
-            <label for="tradeConfluence">Confluência</label>
-            <input type="text" id="tradeConfluence" placeholder="Ex: OB + Liquidez + FVG" />
-          </div>
-
-          <div class="form-group">
-            <label for="tradeEmotion">Emoção</label>
-            <select id="tradeEmotion">
-              <option value="">Seleciona</option>
-              <option value="Confiante">Confiante</option>
-              <option value="Calmo">Calmo</option>
-              <option value="Ansioso">Ansioso</option>
-              <option value="FOMO">FOMO</option>
-              <option value="Impulsivo">Impulsivo</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="tradeExecution">Execução</label>
-            <select id="tradeExecution">
-              <option value="">Seleciona</option>
-              <option value="A+">A+</option>
-              <option value="A">A</option>
-              <option value="B">B</option>
-              <option value="C">C</option>
-              <option value="F">F</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="tradeMistake">Erro Cometido</label>
-            <input type="text" id="tradeMistake" placeholder="Ex: Entrada cedo demais" />
-          </div>
-
-          <div class="form-group">
-            <label for="tradeScore">Nota da Trade (0-10)</label>
-            <input type="number" min="0" max="10" step="1" id="tradeScore" placeholder="Ex: 8" />
-          </div>
-
-          <div class="form-group full">
-            <label for="tradeComment">Comentário / Tese</label>
-            <textarea id="tradeComment" placeholder="Escreve a tua tese, emoção, entrada, erro, melhoria..."></textarea>
-          </div>
-
-          <div class="form-group full">
-            <label for="tradeImage">Imagem da trade</label>
-            <input type="file" id="tradeImage" accept="image/*" />
-            <img class="preview-image" id="imagePreview" alt="Preview da trade" />
-          </div>
-        </div>
-
-        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
-          <button type="button" class="btn" id="cancelTrade">Cancelar</button>
-          <button type="submit" class="btn primary" id="saveTradeBtn">Salvar Trade</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <div class="image-viewer" id="imageViewer">
-    <div class="image-viewer-toolbar">
-      <button class="btn small" id="zoomOutBtn">−</button>
-      <button class="btn small" id="zoomInBtn">+</button>
-      <button class="btn small" id="resetZoomBtn">Reset</button>
-      <button class="btn small danger" id="closeViewerBtn">Fechar</button>
-    </div>
-    <div class="image-viewer-stage" id="imageViewerStage">
-      <img id="viewerImage" alt="Trade ampliada" />
-    </div>
-  </div>
-
-  <script>
-    const STORAGE_KEY = 'trading_journal_dashboard_v2';
-    const THEME_KEY = 'trading_journal_theme_v2';
-    const USERS_STORAGE_KEY = 'trading_journal_users_v2';
-    const AUTH_SESSION_KEY = 'trading_journal_auth_v2';
-
-    const defaultState = { trades: [] };
-
-    const els = {
-      netPnl: document.getElementById('netPnl'),
-      weekPnl: document.getElementById('weekPnl'),
-      winRate: document.getElementById('winRate'),
-      tradeCount: document.getElementById('tradeCount'),
-      profitFactor: document.getElementById('profitFactor'),
-      avgRr: document.getElementById('avgRr'),
-      maxDrawdown: document.getElementById('maxDrawdown'),
-      bestStreak: document.getElementById('bestStreak'),
-      expectancy: document.getElementById('expectancy'),
-      avgTrade: document.getElementById('avgTrade'),
-      largestWin: document.getElementById('largestWin'),
-      largestLoss: document.getElementById('largestLoss'),
-      longCount: document.getElementById('longCount'),
-      shortCount: document.getElementById('shortCount'),
-      avgScore: document.getElementById('avgScore'),
-      sideTotalTrades: document.getElementById('sideTotalTrades'),
-      sideBestDay: document.getElementById('sideBestDay'),
-      sideAvgTrade: document.getElementById('sideAvgTrade'),
-
-      equityPath: document.getElementById('equityPath'),
-      equityArea: document.getElementById('equityArea'),
-
-      calendarGrid: document.getElementById('calendarGrid'),
-      calendarTitle: document.getElementById('calendarTitle'),
-      calendarSummary: document.getElementById('calendarSummary'),
-
-      strategyList: document.getElementById('strategyList'),
-      strategyEmpty: document.getElementById('strategyEmpty'),
-      sessionList: document.getElementById('sessionList'),
-      sessionEmpty: document.getElementById('sessionEmpty'),
-
-      tradeList: document.getElementById('tradeList'),
-      tradesEmpty: document.getElementById('tradesEmpty'),
-
-      themeToggle: document.getElementById('themeToggle'),
-      csvInput: document.getElementById('csvInput'),
-      exportCsvBtn: document.getElementById('exportCsvBtn'),
-      logoutBtn: document.getElementById('logoutBtn'),
-      scrollTopBtn: document.getElementById('scrollTopBtn'),
-      resetFiltersBtn: document.getElementById('resetFiltersBtn'),
-
-      openTradeModal: document.getElementById('openTradeModal'),
-      closeTradeModal: document.getElementById('closeTradeModal'),
-      cancelTrade: document.getElementById('cancelTrade'),
-      tradeModal: document.getElementById('tradeModal'),
-      tradeModalTitle: document.getElementById('tradeModalTitle'),
-      tradeForm: document.getElementById('tradeForm'),
-
-      tradeDate: document.getElementById('tradeDate'),
-      tradePair: document.getElementById('tradePair'),
-      tradeResult: document.getElementById('tradeResult'),
-      tradeRR: document.getElementById('tradeRR'),
-      tradeSide: document.getElementById('tradeSide'),
-      tradeSession: document.getElementById('tradeSession'),
-      tradeStrategy: document.getElementById('tradeStrategy'),
-      tradeConfluence: document.getElementById('tradeConfluence'),
-      tradeEmotion: document.getElementById('tradeEmotion'),
-      tradeExecution: document.getElementById('tradeExecution'),
-      tradeMistake: document.getElementById('tradeMistake'),
-      tradeScore: document.getElementById('tradeScore'),
-      tradeComment: document.getElementById('tradeComment'),
-      tradeImage: document.getElementById('tradeImage'),
-      imagePreview: document.getElementById('imagePreview'),
-
-      authOverlay: document.getElementById('authOverlay'),
-      authForm: document.getElementById('authForm'),
-      authNameWrap: document.getElementById('authNameWrap'),
-      authName: document.getElementById('authName'),
-      authEmail: document.getElementById('authEmail'),
-      authPassword: document.getElementById('authPassword'),
-      authSubmitBtn: document.getElementById('authSubmitBtn'),
-      showLoginBtn: document.getElementById('showLoginBtn'),
-      showRegisterBtn: document.getElementById('showRegisterBtn'),
-
-      prevMonthBtn: document.getElementById('prevMonthBtn'),
-      nextMonthBtn: document.getElementById('nextMonthBtn'),
-
-      imageViewer: document.getElementById('imageViewer'),
-      imageViewerStage: document.getElementById('imageViewerStage'),
-      viewerImage: document.getElementById('viewerImage'),
-      zoomInBtn: document.getElementById('zoomInBtn'),
-      zoomOutBtn: document.getElementById('zoomOutBtn'),
-      resetZoomBtn: document.getElementById('resetZoomBtn'),
-      closeViewerBtn: document.getElementById('closeViewerBtn'),
-
-      filterPair: document.getElementById('filterPair'),
-      filterSession: document.getElementById('filterSession'),
-      filterStrategy: document.getElementById('filterStrategy'),
-      filterSide: document.getElementById('filterSide'),
-      filterResult: document.getElementById('filterResult')
-    };
-
-    let state = loadState();
-    let currentImageBase64 = '';
-    let editingTradeId = null;
-    let calendarOffset = 0;
-    let authMode = 'login';
-
-    let viewerScale = 1;
-    let viewerX = 0;
-    let viewerY = 0;
-    let isDraggingViewer = false;
-    let dragStartX = 0;
-    let dragStartY = 0;
-
-    function loadState() {
-      try {
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        if (saved && Array.isArray(saved.trades)) return saved;
-      } catch (e) {}
-      return structuredClone(defaultState);
-    }
-
-    function saveState() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }
-
-    function currency(v) {
-      const sign = v < 0 ? '-' : '';
-      return `${sign}$${Math.abs(v).toLocaleString('en-US', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2
-      })}`;
-    }
-
-    function setTheme(theme) {
-      document.body.classList.toggle('light', theme === 'light');
-      els.themeToggle.textContent = `Tema: ${theme === 'light' ? 'Claro' : 'Preto'}`;
-      localStorage.setItem(THEME_KEY, theme);
-    }
-
-    function getTheme() {
-      return localStorage.getItem(THEME_KEY) || 'dark';
-    }
-
-    function getTradeStatus(result) {
-      if (result > 0) return 'win';
-      if (result < 0) return 'loss';
-      return 'be';
-    }
-
-    function calculateCurrentWeekPnl(trades) {
-      const now = new Date();
-      const start = new Date(now);
-      const day = start.getDay();
-      const diff = (day === 0 ? -6 : 1) - day;
-      start.setDate(start.getDate() + diff);
-      start.setHours(0,0,0,0);
-
-      return trades
-        .filter(t => new Date(t.date) >= start)
-        .reduce((sum, t) => sum + Number(t.result), 0);
-    }
-
-    function calculateBestWinStreak(trades) {
-      let streak = 0, best = 0;
-      for (const t of trades) {
-        if (Number(t.result) > 0) {
-          streak++;
-          best = Math.max(best, streak);
-        } else {
-          streak = 0;
-        }
-      }
-      return best;
-    }
-
-    function calculateMaxDrawdown(trades) {
-      let equity = 0;
-      let peak = 0;
-      let maxDD = 0;
-      for (const t of trades) {
-        equity += Number(t.result);
-        if (equity > peak) peak = equity;
-        const dd = peak - equity;
-        if (dd > maxDD) maxDD = dd;
-      }
-      return -maxDD;
-    }
-
-    function calculateBestDay(trades) {
-      const daily = {};
-      trades.forEach(t => {
-        daily[t.date] = (daily[t.date] || 0) + Number(t.result);
-      });
-      const vals = Object.values(daily);
-      return vals.length ? Math.max(...vals) : 0;
-    }
-
-    function getFilteredTrades(trades) {
-      return trades.filter(trade => {
-        const pair = els.filterPair.value.trim().toLowerCase();
-        const session = els.filterSession.value;
-        const strategy = els.filterStrategy.value.trim().toLowerCase();
-        const side = els.filterSide.value;
-        const result = els.filterResult.value;
-
-        const pairOk = !pair || (trade.pair || '').toLowerCase().includes(pair);
-        const sessionOk = !session || trade.session === session;
-        const strategyOk = !strategy || (trade.strategy || '').toLowerCase().includes(strategy);
-        const sideOk = !side || trade.side === side;
-
-        let resultOk = true;
-        if (result === 'win') resultOk = Number(trade.result) > 0;
-        if (result === 'loss') resultOk = Number(trade.result) < 0;
-        if (result === 'be') resultOk = Number(trade.result) === 0;
-
-        return pairOk && sessionOk && strategyOk && sideOk && resultOk;
-      });
-    }
-
-    function renderDashboard() {
-      const sortedTrades = [...state.trades].sort((a, b) => new Date(a.date) - new Date(b.date));
-      const trades = getFilteredTrades(sortedTrades);
-
-      const totalTrades = trades.length;
-      const wins = trades.filter(t => Number(t.result) > 0);
-      const losses = trades.filter(t => Number(t.result) < 0);
-
-      const net = trades.reduce((sum, t) => sum + Number(t.result), 0);
-      const winRate = totalTrades ? (wins.length / totalTrades) * 100 : 0;
-      const grossProfit = wins.reduce((sum, t) => sum + Number(t.result), 0);
-      const grossLoss = Math.abs(losses.reduce((sum, t) => sum + Number(t.result), 0));
-      const profitFactor = grossLoss === 0 ? (grossProfit > 0 ? grossProfit : 0) : grossProfit / grossLoss;
-      const avgRr = totalTrades ? trades.reduce((sum, t) => sum + Number(t.rr || 0), 0) / totalTrades : 0;
-      const maxDrawdown = calculateMaxDrawdown(trades);
-      const bestStreak = calculateBestWinStreak(trades);
-      const weekPnl = calculateCurrentWeekPnl(trades);
-      const expectancy = totalTrades ? net / totalTrades : 0;
-      const avgTrade = totalTrades ? net / totalTrades : 0;
-      const largestWin = wins.length ? Math.max(...wins.map(t => Number(t.result))) : 0;
-      const largestLoss = losses.length ? Math.min(...losses.map(t => Number(t.result))) : 0;
-      const longCount = trades.filter(t => t.side === 'Buy').length;
-      const shortCount = trades.filter(t => t.side === 'Sell').length;
-      const avgScore = totalTrades
-        ? (trades.reduce((sum, t) => sum + Number(t.score || 0), 0) / totalTrades)
-        : 0;
-
-      els.netPnl.textContent = currency(net);
-      els.netPnl.classList.toggle('red', net < 0);
-      els.netPnl.classList.toggle('green', net >= 0);
-
-      els.weekPnl.textContent = `${weekPnl >= 0 ? '+' : '-'}${currency(Math.abs(weekPnl)).replace('-', '')} esta semana`;
-      els.winRate.textContent = `${winRate.toFixed(1)}%`;
-      els.tradeCount.textContent = totalTrades;
-      els.profitFactor.textContent = totalTrades ? profitFactor.toFixed(2) : '0.00';
-      els.avgRr.textContent = totalTrades ? avgRr.toFixed(1) : '0.0';
-      els.maxDrawdown.textContent = currency(maxDrawdown);
-      els.bestStreak.textContent = bestStreak;
-      els.expectancy.textContent = currency(expectancy);
-      els.avgTrade.textContent = currency(avgTrade);
-      els.largestWin.textContent = currency(largestWin);
-      els.largestLoss.textContent = currency(largestLoss);
-      els.longCount.textContent = longCount;
-      els.shortCount.textContent = shortCount;
-      els.avgScore.textContent = `${avgScore.toFixed(1)}/10`;
-
-      els.sideTotalTrades.textContent = totalTrades;
-      els.sideBestDay.textContent = currency(calculateBestDay(trades));
-      els.sideAvgTrade.textContent = currency(avgTrade);
-
-      renderEquityCurve(trades);
-      renderCalendar(trades);
-      renderStrategyBreakdown(trades);
-      renderSessionBreakdown(trades);
-      renderTradeList([...trades].sort((a, b) => new Date(b.date) - new Date(a.date)));
-
-      els.tradesEmpty.style.display = totalTrades ? 'none' : 'block';
-    }
-
-    function renderEquityCurve(trades) {
-      const values = [0];
-      let running = 0;
-
-      trades.forEach(t => {
-        running += Number(t.result);
-        values.push(running);
-      });
-
-      const width = 900;
-      const height = 220;
-      const padding = 18;
-      const min = Math.min(...values, 0);
-      const max = Math.max(...values, 1);
-      const range = max - min || 1;
-      const stepX = values.length > 1 ? (width - padding * 2) / (values.length - 1) : width - padding * 2;
-
-      const points = values.map((v, i) => {
-        const x = padding + i * stepX;
-        const y = height - padding - ((v - min) / range) * (height - padding * 2);
-        return [x, y];
-      });
-
-      const path = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0]} ${p[1]}`).join(' ');
-      const area = `${path} L ${points[points.length - 1][0]} ${height - padding} L ${points[0][0]} ${height - padding} Z`;
-
-      els.equityPath.setAttribute('d', path);
-      els.equityArea.setAttribute('d', area);
-    }
-
-    function renderCalendar(trades) {
-      els.calendarGrid.innerHTML = '';
-      document.getElementById('calendarWeekdays').innerHTML = '';
-
-      const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      weekdayNames.forEach(day => {
-        const el = document.createElement('div');
-        el.className = 'weekday-cell';
-        el.textContent = day;
-        document.getElementById('calendarWeekdays').appendChild(el);
-      });
-
-      const now = new Date();
-      const current = new Date(now.getFullYear(), now.getMonth() + calendarOffset, 1);
-      const year = current.getFullYear();
-      const month = current.getMonth();
-      const monthName = current.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-      els.calendarTitle.textContent = monthName;
-
-      const firstDay = new Date(year, month, 1).getDay();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-      const grouped = {};
-      trades.forEach(trade => {
-        const d = new Date(trade.date);
-        if (d.getFullYear() === year && d.getMonth() === month) {
-          const key = d.getDate();
-          if (!grouped[key]) grouped[key] = [];
-          grouped[key].push(trade);
-        }
-      });
-
-      for (let i = 0; i < firstDay; i++) {
-        const empty = document.createElement('div');
-        empty.className = 'day-cell empty';
-        empty.innerHTML = `<div class="day-number"></div><div></div>`;
-        els.calendarGrid.appendChild(empty);
-      }
-
-      for (let day = 1; day <= daysInMonth; day++) {
-        const dayTrades = grouped[day] || [];
-        const total = dayTrades.reduce((sum, t) => sum + Number(t.result), 0);
-        const status = dayTrades.length ? getTradeStatus(total) : 'empty';
-
-        const div = document.createElement('a');
-        div.href = dayTrades.length ? '#tradesSection' : 'javascript:void(0)';
-        div.className = `day-cell ${status}`;
-
-        const weekNumber = Math.ceil(day / 7);
-
-        div.innerHTML = `
-          <div class="week-label">W${weekNumber}</div>
-          <div class="day-number">${day}</div>
+      <!-- ZELLA SCORE STYLE -->
+      <section class="card span-3">
+        <div class="section-title">
           <div>
-            <div class="day-result">${dayTrades.length ? currency(total) : ''}</div>
-            <div class="day-meta">${dayTrades.length ? `${dayTrades.length} trade(s)` : ''}</div>
+            <div class="eyebrow">Zella Score</div>
+            <h2>Performance Radar</h2>
           </div>
-        `;
+        </div>
 
-        if (dayTrades.length) {
-          div.addEventListener('click', () => {
-            const firstId = dayTrades[0].id;
-            const el = document.getElementById(`trade-${firstId}`);
-            if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
-          });
-        }
-
-        els.calendarGrid.appendChild(div);
-      }
-
-      const monthTrades = trades.filter(t => {
-        const d = new Date(t.date);
-        return d.getFullYear() === year && d.getMonth() === month;
-      });
-
-      const monthTotal = monthTrades.reduce((sum, t) => sum + Number(t.result), 0);
-
-      els.calendarSummary.innerHTML = `<strong>${currency(monthTotal)}</strong> • ${monthTrades.length} trades • ${Object.keys(grouped).length} dias`;
-    }
-
-    function renderStrategyBreakdown(trades) {
-      const map = {};
-      trades.forEach(t => {
-        const key = t.strategy || 'Sem estratégia';
-        map[key] = (map[key] || 0) + Number(t.result);
-      });
-
-      const entries = Object.entries(map).sort((a, b) => b[1] - a[1]);
-
-      els.strategyList.innerHTML = '';
-      els.strategyEmpty.style.display = entries.length ? 'none' : 'block';
-
-      entries.forEach(([name, value]) => {
-        const row = document.createElement('div');
-        row.className = 'list-row';
-        row.innerHTML = `<span>${escapeHtml(name)}</span><span class="value">${currency(value)}</span>`;
-        els.strategyList.appendChild(row);
-      });
-    }
-
-    function renderSessionBreakdown(trades) {
-      const map = {};
-      trades.forEach(t => {
-        const key = t.session || 'Sem sessão';
-        map[key] = (map[key] || 0) + Number(t.result);
-      });
-
-      const entries = Object.entries(map).sort((a, b) => b[1] - a[1]);
-
-      els.sessionList.innerHTML = '';
-      els.sessionEmpty.style.display = entries.length ? 'none' : 'block';
-
-      entries.forEach(([name, value]) => {
-        const row = document.createElement('div');
-        row.className = 'list-row';
-        row.innerHTML = `<span>${escapeHtml(name)}</span><span class="value">${currency(value)}</span>`;
-        els.sessionList.appendChild(row);
-      });
-    }
-
-    function renderTradeList(trades) {
-      els.tradeList.innerHTML = '';
-
-      trades.forEach(trade => {
-        const item = document.createElement('div');
-        item.className = 'trade-item';
-        item.id = `trade-${trade.id}`;
-
-        const score = Number(trade.score || 0);
-        const scoreColor = score >= 8 ? 'green' : score >= 5 ? 'yellow' : 'red';
-
-        item.innerHTML = `
-          <div class="trade-field" style="grid-column: span 2;"><small>Data</small><strong>${formatDate(trade.date)}</strong></div>
-          <div class="trade-field" style="grid-column: span 2;"><small>Par</small><strong>${escapeHtml(trade.pair)}</strong></div>
-          <div class="trade-field" style="grid-column: span 2;"><small>Resultado</small><strong>${currency(Number(trade.result))}</strong></div>
-          <div class="trade-field" style="grid-column: span 1;"><small>RR</small><strong>${Number(trade.rr || 0).toFixed(1)}</strong></div>
-          <div class="trade-field" style="grid-column: span 1;"><small>Lado</small><strong>${escapeHtml(trade.side)}</strong></div>
-          <div class="trade-field" style="grid-column: span 2;"><small>Sessão</small><strong>${escapeHtml(trade.session)}</strong></div>
-          <div class="trade-field" style="grid-column: span 2;"><small>Estratégia</small><strong>${escapeHtml(trade.strategy || '—')}</strong></div>
-
-          <div class="trade-field" style="grid-column: span 3;">
-            <small>Confluência</small>
-            <strong>${escapeHtml(trade.confluence || '—')}</strong>
+        <div class="zella-score">
+          <div class="radar-wrap">
+            <canvas id="radarCanvas" width="320" height="260"></canvas>
           </div>
 
-          <div class="trade-field" style="grid-column: span 2;">
-            <small>Emoção</small>
-            <strong>${escapeHtml(trade.emotion || '—')}</strong>
-          </div>
-
-          <div class="trade-field" style="grid-column: span 2;">
-            <small>Execução</small>
-            <strong>${escapeHtml(trade.execution || '—')}</strong>
-          </div>
-
-          <div class="trade-field" style="grid-column: span 3;">
-            <small>Erro Cometido</small>
-            <strong>${escapeHtml(trade.mistake || '—')}</strong>
-          </div>
-
-          <div class="trade-field" style="grid-column: span 2;">
-            <small>Nota</small>
-            <strong>${score}/10</strong>
-            <div class="tag-row">
-              <span class="tag ${scoreColor}">Score</span>
+          <div class="score-footer">
+            <div>
+              <div class="small">Your Score</div>
+              <strong id="zellaScore">0.00</strong>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="scoreFill"></div>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div class="trade-field" style="grid-column: span 6;">
-            <small>Comentário / Tese</small>
-            <strong>${escapeHtml(trade.comment || '—')}</strong>
+      <!-- EXTRA METRICS -->
+      <section class="card span-4">
+        <div class="section-title">
+          <div>
+            <div class="eyebrow">Risk & Stats</div>
+            <h2>Visão Geral</h2>
           </div>
+        </div>
 
-          <div class="trade-field" style="grid-column: span 6;">
-            <small>Imagem</small>
-            ${trade.image
-              ? `<img src="${trade.image}" alt="Trade image" class="trade-thumb" data-full-image="${trade.image}">`
-              : '<strong>Sem imagem</strong>'}
+        <div class="insights-grid">
+          <div class="list-row"><span class="label">Max Drawdown</span><span class="value" id="maxDrawdown">$0</span></div>
+          <div class="list-row"><span class="label">Best Streak</span><span class="value" id="bestStreak">0</span></div>
+          <div class="list-row"><span class="label">Expectancy</span><span class="value" id="expectancy">$0</span></div>
+          <div class="list-row"><span class="label">Gross Profit</span><span class="value" id="grossProfit">$0</span></div>
+          <div class="list-row"><span class="label">Gross Loss</span><span class="value" id="grossLoss">$0</span></div>
+          <div class="list-row"><span class="label">Breakeven %</span><span class="value" id="beRate">0%</span></div>
+        </div>
+      </section>
+
+      <!-- CALENDAR -->
+      <section class="card span-12" id="calendarSection">
+        <div class="section-title">
+          <div>
+            <div class="eyebrow">Monthly Stats</div>
+            <h2>Calendário de Performance</h2>
           </div>
-        `;
-
-        const tags = document.createElement('div');
-        tags.className = 'tag-row';
-        tags.innerHTML = `
-          ${trade.result > 0 ? '<span class="tag green">Win</span>' : trade.result < 0 ? '<span class="tag red">Loss</span>' : '<span class="tag yellow">BE</span>'}
-          ${trade.side === 'Buy' ? '<span class="tag purple">Buy</span>' : '<span class="tag purple">Sell</span>'}
-          ${trade.execution ? `<span class="tag">${escapeHtml(trade.execution)}</span>` : ''}
-          ${trade.emotion ? `<span class="tag">${escapeHtml(trade.emotion)}</span>` : ''}
-        `;
-        item.appendChild(tags);
-
-        const actions = document.createElement('div');
-        actions.className = 'trade-actions';
-        actions.innerHTML = `
-          <button class="btn small" data-edit="${trade.id}">Editar</button>
-          <button class="btn small danger" data-delete="${trade.id}">Eliminar</button>
-        `;
-
-        actions.querySelector(`[data-edit="${trade.id}"]`).addEventListener('click', () => editTrade(trade.id));
-        actions.querySelector(`[data-delete="${trade.id}"]`).addEventListener('click', () => deleteTrade(trade.id));
-
-        const thumb = item.querySelector('.trade-thumb');
-        if (thumb) {
-          thumb.addEventListener('click', () => openImageViewer(trade.image));
-        }
-
-        item.appendChild(actions);
-        els.tradeList.appendChild(item);
-      });
-    }
-
-    function formatDate(dateStr) {
-      return new Date(dateStr).toLocaleDateString('pt-PT', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      });
-    }
-
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
-
-    function openModal(editMode = false) {
-      els.tradeModal.classList.add('open');
-      els.tradeModalTitle.textContent = editMode ? 'Editar Trade' : 'Adicionar Trade';
-    }
-
-    function closeModal() {
-      els.tradeModal.classList.remove('open');
-      els.tradeForm.reset();
-      currentImageBase64 = '';
-      editingTradeId = null;
-      els.imagePreview.style.display = 'none';
-      els.imagePreview.removeAttribute('src');
-      els.tradeDate.value = new Date().toISOString().slice(0, 10);
-      els.tradeModalTitle.textContent = 'Adicionar Trade';
-    }
-
-    function handleImageUpload(file) {
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        currentImageBase64 = e.target.result;
-        els.imagePreview.src = currentImageBase64;
-        els.imagePreview.style.display = 'block';
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function addOrUpdateTrade(e) {
-      e.preventDefault();
-
-      const trade = {
-        id: editingTradeId || crypto.randomUUID(),
-        date: els.tradeDate.value,
-        pair: els.tradePair.value.trim(),
-        result: Number(els.tradeResult.value),
-        rr: Number(els.tradeRR.value),
-        side: els.tradeSide.value,
-        session: els.tradeSession.value,
-        strategy: els.tradeStrategy.value.trim(),
-        confluence: els.tradeConfluence.value.trim(),
-        emotion: els.tradeEmotion.value,
-        execution: els.tradeExecution.value,
-        mistake: els.tradeMistake.value.trim(),
-        score: Number(els.tradeScore.value || 0),
-        comment: els.tradeComment.value.trim(),
-        image: currentImageBase64
-      };
-
-      if (editingTradeId) {
-        state.trades = state.trades.map(t => t.id === editingTradeId ? trade : t);
-      } else {
-        state.trades.push(trade);
-      }
-
-      saveState();
-      renderDashboard();
-      closeModal();
-      location.hash = '#tradesSection';
-    }
-
-    function editTrade(id) {
-      const trade = state.trades.find(t => t.id === id);
-      if (!trade) return;
-
-      editingTradeId = trade.id;
-      els.tradeDate.value = trade.date;
-      els.tradePair.value = trade.pair;
-      els.tradeResult.value = trade.result;
-      els.tradeRR.value = trade.rr;
-      els.tradeSide.value = trade.side;
-      els.tradeSession.value = trade.session;
-      els.tradeStrategy.value = trade.strategy || '';
-      els.tradeConfluence.value = trade.confluence || '';
-      els.tradeEmotion.value = trade.emotion || '';
-      els.tradeExecution.value = trade.execution || '';
-      els.tradeMistake.value = trade.mistake || '';
-      els.tradeScore.value = trade.score || '';
-      els.tradeComment.value = trade.comment || '';
-      currentImageBase64 = trade.image || '';
-
-      if (trade.image) {
-        els.imagePreview.src = trade.image;
-        els.imagePreview.style.display = 'block';
-      } else {
-        els.imagePreview.style.display = 'none';
-      }
-
-      openModal(true);
-    }
-
-    function deleteTrade(id) {
-      if (!confirm('Eliminar este trade?')) return;
-      state.trades = state.trades.filter(t => t.id !== id);
-      saveState();
-      renderDashboard();
-    }
-
-    function parseCSV(text) {
-      const lines = text.trim().split(/\r?\n/);
-      if (lines.length < 2) return [];
-
-      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-
-      return lines.slice(1).map(line => {
-        const values = line.split(',');
-        const row = Object.fromEntries(headers.map((h, i) => [h, (values[i] || '').trim()]));
-
-        return {
-          id: crypto.randomUUID(),
-          date: row.date || new Date().toISOString().slice(0, 10),
-          pair: row.pair || 'N/A',
-          result: Number(row.result || 0),
-          rr: Number(row.rr || 0),
-          side: row.side || 'Buy',
-          session: row.session || 'London',
-          strategy: row.strategy || 'Imported',
-          confluence: row.confluence || '',
-          emotion: row.emotion || '',
-          execution: row.execution || '',
-          mistake: row.mistake || '',
-          score: Number(row.score || 0),
-          comment: row.comment || '',
-          image: row.image || ''
-        };
-      }).filter(t => t.date && !Number.isNaN(t.result));
-    }
-
-    function safeCsv(value) {
-      return `"${String(value).replace(/"/g, '""')}"`;
-    }
-
-    function exportCSV() {
-      if (!state.trades.length) {
-        alert('Não existem trades para exportar.');
-        return;
-      }
-
-      const headers = [
-        'date','pair','result','rr','side','session','strategy',
-        'confluence','emotion','execution','mistake','score','comment','image'
-      ];
-
-      const rows = state.trades.map(t => [
-        t.date,
-        safeCsv(t.pair),
-        t.result,
-        t.rr,
-        safeCsv(t.side),
-        safeCsv(t.session),
-        safeCsv(t.strategy),
-        safeCsv(t.confluence || ''),
-        safeCsv(t.emotion || ''),
-        safeCsv(t.execution || ''),
-        safeCsv(t.mistake || ''),
-        t.score || 0,
-        safeCsv(t.comment || ''),
-        safeCsv(t.image || '')
-      ]);
-
-      const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'trading-journal-export.csv';
-      link.click();
-    }
-
-    function setAuthMode(mode) {
-      authMode = mode;
-      els.authNameWrap.style.display = mode === 'register' ? 'block' : 'none';
-      els.authSubmitBtn.textContent = mode === 'register' ? 'Criar Conta' : 'Entrar';
-      els.showLoginBtn.classList.toggle('primary', mode === 'login');
-      els.showRegisterBtn.classList.toggle('primary', mode === 'register');
-    }
-
-    function getSavedUsers() {
-      try {
-        const users = JSON.parse(localStorage.getItem(USERS_STORAGE_KEY));
-        return Array.isArray(users) ? users : [];
-      } catch {
-        return [];
-      }
-    }
-
-    function saveUsers(users) {
-      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
-    }
-
-    function getCurrentUser() {
-      try {
-        return JSON.parse(localStorage.getItem(AUTH_SESSION_KEY));
-      } catch {
-        return null;
-      }
-    }
-
-    function setAuthSession(user) {
-      if (user) {
-        localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(user));
-      } else {
-        localStorage.removeItem(AUTH_SESSION_KEY);
-      }
-    }
-
-    function requireAuth() {
-      const users = getSavedUsers();
-      const loggedUser = getCurrentUser();
-      if (!users.length || !loggedUser) {
-        els.authOverlay.style.display = 'flex';
-      } else {
-        els.authOverlay.style.display = 'none';
-      }
-    }
-
-    function updateViewerTransform() {
-      els.viewerImage.style.transform = `translate(${viewerX}px, ${viewerY}px) scale(${viewerScale})`;
-    }
-
-    function openImageViewer(src) {
-      if (!src) return;
-      els.viewerImage.src = src;
-      viewerScale = 1;
-      viewerX = 0;
-      viewerY = 0;
-      updateViewerTransform();
-      els.imageViewer.classList.add('open');
-    }
-
-    function closeImageViewer() {
-      els.imageViewer.classList.remove('open');
-      els.viewerImage.removeAttribute('src');
-    }
-
-    function zoomIn() {
-      viewerScale = Math.min(viewerScale + 0.2, 5);
-      updateViewerTransform();
-    }
-
-    function zoomOut() {
-      viewerScale = Math.max(viewerScale - 0.2, 0.5);
-      updateViewerTransform();
-    }
-
-    function resetZoom() {
-      viewerScale = 1;
-      viewerX = 0;
-      viewerY = 0;
-      updateViewerTransform();
-    }
-
-    function resetFilters() {
-      els.filterPair.value = '';
-      els.filterSession.value = '';
-      els.filterStrategy.value = '';
-      els.filterSide.value = '';
-      els.filterResult.value = '';
-      renderDashboard();
-    }
-
-    els.showLoginBtn.addEventListener('click', () => setAuthMode('login'));
-    els.showRegisterBtn.addEventListener('click', () => setAuthMode('register'));
-
-    els.authForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-
-      const email = els.authEmail.value.trim().toLowerCase();
-      const password = els.authPassword.value.trim();
-      const name = els.authName.value.trim();
-
-      if (!email || !password) {
-        alert('Preenche email e palavra-passe.');
-        return;
-      }
-
-      const users = getSavedUsers();
-
-      if (authMode === 'register') {
-        if (!name) {
-          alert('Preenche o nome para criar conta.');
-          return;
-        }
-
-        const emailExists = users.some(user => user.email.toLowerCase() === email);
-        if (emailExists) {
-          alert('Este email já está registado.');
-          return;
-        }
-
-        const newUser = { name, email, password };
-        users.push(newUser);
-        saveUsers(users);
-        setAuthSession(newUser);
-        els.authOverlay.style.display = 'none';
-        alert('Conta criada com sucesso.');
-      } else {
-        if (!users.length) {
-          alert('Ainda não existe conta. Faz primeiro o registo.');
-          return;
-        }
-
-        const foundUser = users.find(
-          user => user.email.toLowerCase() === email && user.password === password
-        );
-
-        if (!foundUser) {
-          alert('Email ou palavra-passe incorretos.');
-          return;
-        }
-
-        setAuthSession(foundUser);
-        els.authOverlay.style.display = 'none';
-        alert(`Bem-vindo, ${foundUser.name || 'Trader'}!`);
-      }
-    });
-
-    els.themeToggle.addEventListener('click', () => {
-      const current = getTheme();
-      setTheme(current === 'dark' ? 'light' : 'dark');
-    });
-
-    els.openTradeModal.addEventListener('click', () => openModal(false));
-    els.closeTradeModal.addEventListener('click', closeModal);
-    els.cancelTrade.addEventListener('click', closeModal);
-
-    els.tradeModal.addEventListener('click', (e) => {
-      if (e.target === els.tradeModal) closeModal();
-    });
-
-    els.tradeForm.addEventListener('submit', addOrUpdateTrade);
-
-    els.tradeImage.addEventListener('change', (e) => handleImageUpload(e.target.files[0]));
-    els.imagePreview.addEventListener('click', () => {
-      if (els.imagePreview.src) openImageViewer(els.imagePreview.src);
-    });
-
-    els.csvInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const imported = parseCSV(event.target.result);
-
-        if (!imported.length) {
-          alert('CSV inválido. Usa colunas: date,pair,result,rr,side,session,strategy,confluence,emotion,execution,mistake,score,comment,image');
-          return;
-        }
-
-        state.trades.push(...imported);
-        saveState();
-        renderDashboard();
-        alert(`${imported.length} trade(s) importado(s) com sucesso.`);
-      };
-
-      reader.readAsText(file);
-      e.target.value = '';
-    });
-
-    els.exportCsvBtn.addEventListener('click', exportCSV);
-
-    els.logoutBtn.addEventListener('click', () => {
-      setAuthSession(null);
-      els.authOverlay.style.display = 'flex';
-      alert('Saíste da tua conta. Faz login novamente para entrar.');
-    });
-
-    els.scrollTopBtn.addEventListener('click', () => {
-      document.getElementById('dashboardTop').scrollIntoView({ behavior: 'smooth' });
-    });
-
-    els.prevMonthBtn.addEventListener('click', () => {
-      calendarOffset--;
-      renderDashboard();
-    });
-
-    els.nextMonthBtn.addEventListener('click', () => {
-      calendarOffset++;
-      renderDashboard();
-    });
-
-    els.zoomInBtn.addEventListener('click', zoomIn);
-    els.zoomOutBtn.addEventListener('click', zoomOut);
-    els.resetZoomBtn.addEventListener('click', resetZoom);
-    els.closeViewerBtn.addEventListener('click', closeImageViewer);
-
-    els.imageViewer.addEventListener('click', (e) => {
-      if (e.target === els.imageViewer) closeImageViewer();
-    });
-
-    els.imageViewerStage.addEventListener('mousedown', (e) => {
-      isDraggingViewer = true;
-      dragStartX = e.clientX - viewerX;
-      dragStartY = e.clientY - viewerY;
-      els.imageViewerStage.classList.add('dragging');
-    });
-
-    window.addEventListener('mousemove', (e) => {
-      if (!isDraggingViewer) return;
-      viewerX = e.clientX - dragStartX;
-      viewerY = e.clientY - dragStartY;
-      updateViewerTransform();
-    });
-
-    window.addEventListener('mouseup', () => {
-      isDraggingViewer = false;
-      els.imageViewerStage.classList.remove('dragging');
-    });
-
-    els.imageViewerStage.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      if (e.deltaY < 0) zoomIn();
-      else zoomOut();
-    }, { passive: false });
-
-    window.addEventListener('keydown', (e) => {
-      if (!els.imageViewer.classList.contains('open')) return;
-      if (e.key === 'Escape') closeImageViewer();
-      if (e.key === '+') zoomIn();
-      if (e.key === '-') zoomOut();
-      if (e.key.toLowerCase() === 'r') resetZoom();
-    });
-
-    [
-      els.filterPair,
-      els.filterSession,
-      els.filterStrategy,
-      els.filterSide,
-      els.filterResult
-    ].forEach(el => el.addEventListener('input', renderDashboard));
-
-    [
-      els.filterSession,
-      els.filterSide,
-      els.filterResult
-    ].forEach(el => el.addEventListener('change', renderDashboard));
-
-    els.resetFiltersBtn.addEventListener('click', resetFilters);
-
-    setTheme(getTheme());
-    setAuthMode('login');
-    els.tradeDate.value = new Date().toISOString().slice(0, 10);
-    renderDashboard();
-    requireAuth();
-  </script>
-</body>
-</html>
+          <div class="split-stat">
+            <span class="split-pill blue" id="calendarSummary">Sem trades ainda</span>
+          </div>
+        </div>
+
+        <div class="calendar-shell">
+          <div class="calendar-toolbar">
+            <div class="calendar-left">
+              <button class="btn small" id="prevMonthBtn">◀</button>
+              <div class="calendar-month-title" id="calendarTitle">Calendário - mês atual</div>
+              <button class="btn small" id="nextMonthBtn">▶</button>
+            </div>
+            <div class="calendar-right">
+              <button class="tab-btn" id
