@@ -1164,32 +1164,16 @@
 </div>
 
 <script>
-/* =========================================================
-   ALPHA JOURNAL X - COMPLETE APP LOGIC
-   ADDITIONS:
-   - Date filters
-   - Advanced analytics
-   - Expectancy
-   - AI Coach
-   - Setup screenshots timeline
-   - Journal score
-   - Heatmap
-   - Tags
-   - Replay mode
-   - Unique email register/login
-========================================================= */
+const STORAGE_KEY = 'trading_journal_dashboard_v2';
+const THEME_KEY = 'trading_journal_theme_v2';
+const USERS_STORAGE_KEY = 'trading_journal_users_v1';
+const AUTH_SESSION_KEY = 'trading_journal_auth_v1';
 
-const STORAGE_KEY = 'trading_journal_dashboard_v3';
-const THEME_KEY = 'trading_journal_theme_v1';
-const USERS_STORAGE_KEY = 'trading_journal_users_v2';
-const AUTH_SESSION_KEY = 'trading_journal_auth_v2';
-
-const defaultState = {
-  trades: []
-};
+const defaultState = { trades: [] };
 
 const els = {
   netPnl: document.getElementById('netPnl'),
+  netPnlBadge: document.getElementById('netPnlBadge'),
   weekPnl: document.getElementById('weekPnl'),
   winRate: document.getElementById('winRate'),
   tradeCount: document.getElementById('tradeCount'),
@@ -1197,8 +1181,12 @@ const els = {
   avgRr: document.getElementById('avgRr'),
   maxDrawdown: document.getElementById('maxDrawdown'),
   bestStreak: document.getElementById('bestStreak'),
-  equityPath: document.getElementById('equityPath'),
-  equityArea: document.getElementById('equityArea'),
+  avgWinValue: document.getElementById('avgWinValue'),
+  avgLossValue: document.getElementById('avgLossValue'),
+  avgWinLossText: document.getElementById('avgWinLossText'),
+  rrBar: document.getElementById('rrBar'),
+  streakPill: document.getElementById('streakPill'),
+  equityChart: document.getElementById('equityChart'),
   calendarGrid: document.getElementById('calendarGrid'),
   calendarTitle: document.getElementById('calendarTitle'),
   calendarSummary: document.getElementById('calendarSummary'),
@@ -1206,14 +1194,20 @@ const els = {
   strategyEmpty: document.getElementById('strategyEmpty'),
   sessionList: document.getElementById('sessionList'),
   sessionEmpty: document.getElementById('sessionEmpty'),
+  pairList: document.getElementById('pairList'),
+  pairEmpty: document.getElementById('pairEmpty'),
   tradeList: document.getElementById('tradeList'),
   tradesEmpty: document.getElementById('tradesEmpty'),
   themeToggle: document.getElementById('themeToggle'),
+  themeToggleSide: document.getElementById('themeToggleSide'),
   csvInput: document.getElementById('csvInput'),
   exportCsvBtn: document.getElementById('exportCsvBtn'),
   logoutBtn: document.getElementById('logoutBtn'),
+  logoutBtnSide: document.getElementById('logoutBtnSide'),
   scrollTopBtn: document.getElementById('scrollTopBtn'),
   openTradeModal: document.getElementById('openTradeModal'),
+  openTradeModalFloating: document.getElementById('openTradeModalFloating'),
+  sidebarOpenTrade: document.getElementById('sidebarOpenTrade'),
   closeTradeModal: document.getElementById('closeTradeModal'),
   cancelTrade: document.getElementById('cancelTrade'),
   tradeModal: document.getElementById('tradeModal'),
@@ -1246,7 +1240,9 @@ const els = {
   zoomInBtn: document.getElementById('zoomInBtn'),
   zoomOutBtn: document.getElementById('zoomOutBtn'),
   resetZoomBtn: document.getElementById('resetZoomBtn'),
-  closeViewerBtn: document.getElementById('closeViewerBtn')
+  closeViewerBtn: document.getElementById('closeViewerBtn'),
+  weeklyStats: document.getElementById('weeklyStats'),
+  lastUpdated: document.getElementById('lastUpdated')
 };
 
 let state = loadState();
@@ -1262,74 +1258,37 @@ let isDraggingViewer = false;
 let dragStartX = 0;
 let dragStartY = 0;
 
-let activeFilters = {
-  from: '',
-  to: '',
-  session: 'all',
-  strategy: 'all',
-  tag: 'all'
-};
-
-let replayIndex = 0;
-
-/* =========================================================
-   UTILITIES
-========================================================= */
 function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (saved && Array.isArray(saved.trades)) {
-      return saved;
-    }
+    if (saved && Array.isArray(saved.trades)) return saved;
   } catch (e) {}
   return structuredClone(defaultState);
 }
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  els.lastUpdated.textContent = new Date().toLocaleString('pt-PT');
 }
 
 function currency(v) {
-  const num = Number(v || 0);
-  const sign = num < 0 ? '-' : '';
-  return `${sign}$${Math.abs(num).toLocaleString('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2
-  })}`;
-}
-
-function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleDateString('pt-PT', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  });
-}
-
-function escapeHtml(str) {
-  return String(str || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-function getTheme() {
-  return localStorage.getItem(THEME_KEY) || 'dark';
+  const sign = v < 0 ? '-' : '';
+  return `${sign}$${Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }
 
 function setTheme(theme) {
-  document.body.classList.toggle('light', theme === 'light');
-  if (els.themeToggle) {
-    els.themeToggle.textContent = `Tema: ${theme === 'light' ? 'Claro' : 'Preto'}`;
-  }
+  document.body.classList.toggle('dark', theme === 'dark');
+  els.themeToggle.textContent = `Tema: ${theme === 'dark' ? 'Escuro' : 'Claro'}`;
   localStorage.setItem(THEME_KEY, theme);
 }
 
+function getTheme() {
+  return localStorage.getItem(THEME_KEY) || 'light';
+}
+
 function getTradeStatus(result) {
-  if (Number(result) > 0) return 'win';
-  if (Number(result) < 0) return 'loss';
+  if (result > 0) return 'win';
+  if (result < 0) return 'loss';
   return 'be';
 }
 
@@ -1347,8 +1306,7 @@ function calculateCurrentWeekPnl(trades) {
 }
 
 function calculateBestWinStreak(trades) {
-  let streak = 0;
-  let best = 0;
+  let streak = 0, best = 0;
   for (const t of trades) {
     if (Number(t.result) > 0) {
       streak++;
@@ -1358,6 +1316,15 @@ function calculateBestWinStreak(trades) {
     }
   }
   return best;
+}
+
+function calculateCurrentStreak(trades) {
+  let streak = 0;
+  for (let i = trades.length - 1; i >= 0; i--) {
+    if (Number(trades[i].result) > 0) streak++;
+    else break;
+  }
+  return streak;
 }
 
 function calculateMaxDrawdown(trades) {
@@ -1375,351 +1342,8 @@ function calculateMaxDrawdown(trades) {
   return -maxDD;
 }
 
-function getAllSessions() {
-  return [...new Set(state.trades.map(t => t.session).filter(Boolean))];
-}
-
-function getAllStrategies() {
-  return [...new Set(state.trades.map(t => t.strategy).filter(Boolean))];
-}
-
-function getAllTags() {
-  const tags = [];
-  state.trades.forEach(t => {
-    (t.tags || []).forEach(tag => tags.push(tag));
-  });
-  return [...new Set(tags)];
-}
-
-function ensureExtraLayout() {
-  if (document.getElementById('advancedToolsPanel')) return;
-
-  const dashboardGrid = document.querySelector('.dashboard-grid');
-  if (!dashboardGrid) return;
-
-  const block = document.createElement('section');
-  block.className = 'card span-12';
-  block.id = 'advancedToolsPanel';
-  block.innerHTML = `
-    <div class="section-title">
-      <div>
-        <div class="eyebrow">Advanced Toolkit</div>
-        <h2>Filtros, Analytics, Replay, AI Coach</h2>
-      </div>
-    </div>
-
-    <div style="display:grid; grid-template-columns: repeat(12,1fr); gap:16px;">
-      <div class="card span-12" style="padding:16px; background:rgba(255,255,255,0.02);">
-        <div class="eyebrow">Filters</div>
-        <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:12px;" id="filtersWrap">
-          <div>
-            <label>Data Inicial</label>
-            <input type="date" id="filterFromDate">
-          </div>
-          <div>
-            <label>Data Final</label>
-            <input type="date" id="filterToDate">
-          </div>
-          <div>
-            <label>Sessão</label>
-            <select id="filterSession"></select>
-          </div>
-          <div>
-            <label>Estratégia</label>
-            <select id="filterStrategy"></select>
-          </div>
-          <div>
-            <label>Tag</label>
-            <select id="filterTag"></select>
-          </div>
-        </div>
-        <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
-          <button class="btn small primary" id="applyFiltersBtn">Aplicar Filtros</button>
-          <button class="btn small" id="clearFiltersBtn">Limpar Filtros</button>
-        </div>
-      </div>
-
-      <div class="card span-3">
-        <div class="eyebrow">Expectancy</div>
-        <div class="stat-value" id="expectancyValue">0.00</div>
-        <div class="subtext" id="expectancyText">Expectancy por trade</div>
-      </div>
-
-      <div class="card span-3">
-        <div class="eyebrow">Journal Score</div>
-        <div class="stat-value" id="journalScoreValue">0</div>
-        <div class="subtext" id="journalScoreText">Disciplina geral</div>
-      </div>
-
-      <div class="card span-3">
-        <div class="eyebrow">Avg Win</div>
-        <div class="stat-value green" id="avgWinValue">$0</div>
-        <div class="subtext">Média dos ganhos</div>
-      </div>
-
-      <div class="card span-3">
-        <div class="eyebrow">Avg Loss</div>
-        <div class="stat-value red" id="avgLossValue">$0</div>
-        <div class="subtext">Média das perdas</div>
-      </div>
-
-      <div class="card span-6">
-        <div class="section-title">
-          <div>
-            <div class="eyebrow">AI Coach</div>
-            <h2>Coach automático</h2>
-          </div>
-        </div>
-        <div id="aiCoachBox" style="display:grid; gap:12px;"></div>
-      </div>
-
-      <div class="card span-6">
-        <div class="section-title">
-          <div>
-            <div class="eyebrow">Replay Mode</div>
-            <h2>Replay do teu histórico</h2>
-          </div>
-        </div>
-        <div id="replayBox" style="display:grid; gap:12px;">
-          <div class="empty-state" id="replaySummary">Sem dados para replay.</div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button class="btn small" id="replayPrevBtn">◀ Anterior</button>
-            <button class="btn small primary" id="replayNextBtn">Próximo ▶</button>
-            <button class="btn small" id="replayResetBtn">Reset Replay</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="card span-6">
-        <div class="section-title">
-          <div>
-            <div class="eyebrow">Heatmap</div>
-            <h2>Performance por Hora</h2>
-          </div>
-        </div>
-        <div id="heatmapBox" style="display:grid; grid-template-columns:repeat(6,1fr); gap:10px;"></div>
-      </div>
-
-      <div class="card span-6">
-        <div class="section-title">
-          <div>
-            <div class="eyebrow">Screenshots Timeline</div>
-            <h2>Timeline visual</h2>
-          </div>
-        </div>
-        <div id="timelineBox" style="display:grid; gap:12px;"></div>
-      </div>
-    </div>
-  `;
-
-  dashboardGrid.appendChild(block);
-
-  const style = document.createElement('style');
-  style.innerHTML = `
-    .tag-chip{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid var(--border);
-      background:rgba(255,255,255,0.04);
-      font-size:12px;
-      color:var(--text);
-      margin:4px 6px 0 0;
-    }
-    .coach-card{
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding:14px;
-      background:rgba(255,255,255,0.03);
-    }
-    .coach-card h4{
-      margin:0 0 8px;
-      font-size:14px;
-      letter-spacing:.06em;
-      text-transform:uppercase;
-    }
-    .timeline-item{
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding:14px;
-      background:rgba(255,255,255,0.03);
-      display:grid;
-      grid-template-columns: 120px 1fr;
-      gap:14px;
-      align-items:start;
-    }
-    .timeline-item img{
-      width:100%;
-      height:100px;
-      object-fit:cover;
-      border-radius:12px;
-      border:1px solid var(--border);
-      cursor:pointer;
-    }
-    .heat-cell{
-      min-height:70px;
-      border-radius:16px;
-      border:1px solid var(--border);
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      background:rgba(255,255,255,0.03);
-      padding:10px;
-      text-align:center;
-      font-size:12px;
-    }
-    .heat-cell.win{
-      background:rgba(30,201,141,.18);
-    }
-    .heat-cell.loss{
-      background:rgba(255,90,118,.16);
-    }
-    .heat-cell.be{
-      background:rgba(122,130,152,.18);
-    }
-    @media (max-width:900px){
-      #filtersWrap{
-        grid-template-columns:1fr !important;
-      }
-      .timeline-item{
-        grid-template-columns:1fr;
-      }
-      #heatmapBox{
-        grid-template-columns:repeat(2,1fr) !important;
-      }
-    }
-  `;
-  document.head.appendChild(style);
-
-  ensureTagFieldInTradeForm();
-  bindAdvancedPanel();
-}
-
-function ensureTagFieldInTradeForm() {
-  if (document.getElementById('tradeTags')) return;
-
-  const formGrid = document.querySelector('#tradeForm .form-grid');
-  if (!formGrid) return;
-
-  const tagGroup = document.createElement('div');
-  tagGroup.className = 'form-group full';
-  tagGroup.innerHTML = `
-    <label for="tradeTags">Tags</label>
-    <input type="text" id="tradeTags" placeholder="Ex: FOMO, Breakout, London, A+, News">
-    <small style="display:block; margin-top:8px; color:var(--muted);">Separa as tags por vírgula.</small>
-  `;
-
-  const commentGroup = document.querySelector('#tradeComment')?.closest('.form-group.full');
-  if (commentGroup) {
-    formGrid.insertBefore(tagGroup, commentGroup);
-  } else {
-    formGrid.appendChild(tagGroup);
-  }
-}
-
-function bindAdvancedPanel() {
-  const applyBtn = document.getElementById('applyFiltersBtn');
-  const clearBtn = document.getElementById('clearFiltersBtn');
-  const replayPrevBtn = document.getElementById('replayPrevBtn');
-  const replayNextBtn = document.getElementById('replayNextBtn');
-  const replayResetBtn = document.getElementById('replayResetBtn');
-
-  if (applyBtn) {
-    applyBtn.onclick = () => {
-      activeFilters.from = document.getElementById('filterFromDate').value;
-      activeFilters.to = document.getElementById('filterToDate').value;
-      activeFilters.session = document.getElementById('filterSession').value;
-      activeFilters.strategy = document.getElementById('filterStrategy').value;
-      activeFilters.tag = document.getElementById('filterTag').value;
-      renderDashboard();
-    };
-  }
-
-  if (clearBtn) {
-    clearBtn.onclick = () => {
-      activeFilters = {
-        from: '',
-        to: '',
-        session: 'all',
-        strategy: 'all',
-        tag: 'all'
-      };
-      renderDashboard();
-    };
-  }
-
-  if (replayPrevBtn) {
-    replayPrevBtn.onclick = () => {
-      const trades = getFilteredTradesSortedAsc();
-      if (!trades.length) return;
-      replayIndex = Math.max(0, replayIndex - 1);
-      renderReplay(trades);
-    };
-  }
-
-  if (replayNextBtn) {
-    replayNextBtn.onclick = () => {
-      const trades = getFilteredTradesSortedAsc();
-      if (!trades.length) return;
-      replayIndex = Math.min(trades.length - 1, replayIndex + 1);
-      renderReplay(trades);
-    };
-  }
-
-  if (replayResetBtn) {
-    replayResetBtn.onclick = () => {
-      replayIndex = 0;
-      renderReplay(getFilteredTradesSortedAsc());
-    };
-  }
-}
-
-function applyTradeFilters(trades) {
-  return trades.filter(t => {
-    const tradeDate = new Date(t.date);
-
-    if (activeFilters.from) {
-      const from = new Date(activeFilters.from);
-      if (tradeDate < from) return false;
-    }
-
-    if (activeFilters.to) {
-      const to = new Date(activeFilters.to);
-      to.setHours(23,59,59,999);
-      if (tradeDate > to) return false;
-    }
-
-    if (activeFilters.session !== 'all' && t.session !== activeFilters.session) {
-      return false;
-    }
-
-    if (activeFilters.strategy !== 'all' && t.strategy !== activeFilters.strategy) {
-      return false;
-    }
-
-    if (activeFilters.tag !== 'all') {
-      const tags = t.tags || [];
-      if (!tags.includes(activeFilters.tag)) return false;
-    }
-
-    return true;
-  });
-}
-
-function getFilteredTradesSortedAsc() {
-  return applyTradeFilters([...state.trades]).sort((a, b) => new Date(a.date) - new Date(b.date));
-}
-
-/* =========================================================
-   DASHBOARD RENDER
-========================================================= */
 function renderDashboard() {
-  ensureExtraLayout();
-
-  const trades = getFilteredTradesSortedAsc();
+  const trades = [...state.trades].sort((a, b) => new Date(a.date) - new Date(b.date));
   const totalTrades = trades.length;
   const wins = trades.filter(t => Number(t.result) > 0);
   const losses = trades.filter(t => Number(t.result) < 0);
@@ -1732,44 +1356,53 @@ function renderDashboard() {
   const avgRr = totalTrades ? trades.reduce((sum, t) => sum + Number(t.rr || 0), 0) / totalTrades : 0;
   const maxDrawdown = calculateMaxDrawdown(trades);
   const bestStreak = calculateBestWinStreak(trades);
+  const currentStreak = calculateCurrentStreak(trades);
   const weekPnl = calculateCurrentWeekPnl(trades);
 
-  if (els.netPnl) {
-    els.netPnl.textContent = currency(net);
-    els.netPnl.classList.toggle('red', net < 0);
-    els.netPnl.classList.toggle('green', net >= 0);
-  }
+  const avgWin = wins.length ? wins.reduce((s, t) => s + Number(t.result), 0) / wins.length : 0;
+  const avgLoss = losses.length ? Math.abs(losses.reduce((s, t) => s + Number(t.result), 0) / losses.length) : 0;
+  const performancePercent = totalTrades ? ((wins.length - losses.length) / totalTrades) * 100 : 0;
 
-  if (els.weekPnl) {
-    els.weekPnl.textContent = `${weekPnl >= 0 ? '+' : '-'}${currency(Math.abs(weekPnl)).replace('-', '')} esta semana`;
-  }
+  els.netPnl.textContent = currency(net);
+  els.netPnl.className = `metric-value ${net < 0 ? 'red' : 'green'}`;
+  els.netPnlBadge.textContent = `${performancePercent >= 0 ? '+' : ''}${performancePercent.toFixed(0)}%`;
+  els.netPnlBadge.className = `pill ${performancePercent >= 0 ? 'green' : 'red'}`;
+  els.weekPnl.textContent = `${weekPnl >= 0 ? '+' : '-'}${currency(Math.abs(weekPnl)).replace('-', '')} esta semana`;
 
-  if (els.winRate) els.winRate.textContent = `${winRate.toFixed(1)}%`;
-  if (els.tradeCount) els.tradeCount.textContent = totalTrades;
-  if (els.profitFactor) els.profitFactor.textContent = totalTrades ? profitFactor.toFixed(2) : '0.00';
-  if (els.avgRr) els.avgRr.textContent = totalTrades ? avgRr.toFixed(1) : '0.0';
-  if (els.maxDrawdown) els.maxDrawdown.textContent = currency(maxDrawdown);
-  if (els.bestStreak) els.bestStreak.textContent = bestStreak;
+  els.winRate.textContent = `${winRate.toFixed(2)}%`;
+  els.tradeCount.textContent = totalTrades;
+  els.profitFactor.textContent = totalTrades ? profitFactor.toFixed(2) : '0.00';
+  els.avgRr.textContent = totalTrades ? avgRr.toFixed(2) : '0.0';
+  els.maxDrawdown.textContent = currency(maxDrawdown);
+  els.bestStreak.textContent = bestStreak;
+  els.streakPill.textContent = `${currentStreak} streak`;
+  els.avgWinValue.textContent = currency(avgWin);
+  els.avgLossValue.textContent = currency(avgLoss);
+  els.avgWinLossText.textContent = `${currency(avgWin)} / ${currency(avgLoss)}`;
+  els.rrBar.style.width = `${Math.min(Math.max(avgRr * 25, 0), 100)}%`;
 
   renderEquityCurve(trades);
   renderCalendar(trades);
+  renderWeeklyStats(trades);
   renderStrategyBreakdown(trades);
   renderSessionBreakdown(trades);
+  renderPairBreakdown(trades);
   renderTradeList([...trades].sort((a, b) => new Date(b.date) - new Date(a.date)));
-  renderFiltersUI();
-  renderAdvancedAnalytics(trades);
-  renderAICoach(trades);
-  renderReplay(trades);
-  renderHeatmap(trades);
-  renderTimeline(trades);
 
-  if (els.tradesEmpty) {
-    els.tradesEmpty.style.display = totalTrades ? 'none' : 'block';
-  }
+  els.tradesEmpty.style.display = totalTrades ? 'none' : 'block';
 }
 
 function renderEquityCurve(trades) {
-  if (!els.equityPath || !els.equityArea) return;
+  const canvas = els.equityChart;
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, rect.width, rect.height);
 
   const values = [0];
   let running = 0;
@@ -1778,9 +1411,10 @@ function renderEquityCurve(trades) {
     values.push(running);
   });
 
-  const width = 420;
-  const height = 140;
-  const padding = 12;
+  const width = rect.width;
+  const height = rect.height;
+  const padding = 28;
+
   const min = Math.min(...values, 0);
   const max = Math.max(...values, 1);
   const range = max - min || 1;
@@ -1789,38 +1423,76 @@ function renderEquityCurve(trades) {
   const points = values.map((v, i) => {
     const x = padding + i * stepX;
     const y = height - padding - ((v - min) / range) * (height - padding * 2);
-    return [x, y];
+    return { x, y };
   });
 
-  const path = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0]} ${p[1]}`).join(' ');
-  const area = `${path} L ${points[points.length - 1][0]} ${height - padding} L ${points[0][0]} ${height - padding} Z`;
+  // grid
+  ctx.strokeStyle = 'rgba(148,163,184,0.12)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 5; i++) {
+    const y = padding + ((height - padding * 2) / 4) * i;
+    ctx.beginPath();
+    ctx.moveTo(padding, y);
+    ctx.lineTo(width - padding, y);
+    ctx.stroke();
+  }
 
-  els.equityPath.setAttribute('d', path);
-  els.equityArea.setAttribute('d', area);
+  // area
+  const gradient = ctx.createLinearGradient(0, 0, 0, height);
+  gradient.addColorStop(0, 'rgba(34,197,94,0.35)');
+  gradient.addColorStop(1, 'rgba(34,197,94,0.02)');
+
+  ctx.beginPath();
+  points.forEach((p, i) => {
+    if (i === 0) ctx.moveTo(p.x, p.y);
+    else ctx.lineTo(p.x, p.y);
+  });
+  ctx.lineTo(points[points.length - 1].x, height - padding);
+  ctx.lineTo(points[0].x, height - padding);
+  ctx.closePath();
+  ctx.fillStyle = gradient;
+  ctx.fill();
+
+  // line
+  ctx.beginPath();
+  points.forEach((p, i) => {
+    if (i === 0) ctx.moveTo(p.x, p.y);
+    else ctx.lineTo(p.x, p.y);
+  });
+  ctx.strokeStyle = '#22c55e';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // points
+  points.forEach((p, i) => {
+    if (i === 0) return;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#22c55e';
+    ctx.fill();
+  });
 }
 
 function renderCalendar(trades) {
-  if (!els.calendarGrid) return;
-
   els.calendarGrid.innerHTML = '';
-  const weekdaysWrap = document.getElementById('calendarWeekdays');
-  if (weekdaysWrap) weekdaysWrap.innerHTML = '';
+  document.getElementById('calendarWeekdays').innerHTML = '';
 
   const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   weekdayNames.forEach(day => {
     const el = document.createElement('div');
     el.className = 'weekday-cell';
     el.textContent = day;
-    if (weekdaysWrap) weekdaysWrap.appendChild(el);
+    document.getElementById('calendarWeekdays').appendChild(el);
   });
 
   const now = new Date();
   const current = new Date(now.getFullYear(), now.getMonth() + calendarOffset, 1);
   const year = current.getFullYear();
   const month = current.getMonth();
-  const monthName = current.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
-  if (els.calendarTitle) els.calendarTitle.textContent = monthName;
+  const monthName = current.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  els.calendarTitle.textContent = monthName;
 
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -1838,7 +1510,7 @@ function renderCalendar(trades) {
   for (let i = 0; i < firstDay; i++) {
     const empty = document.createElement('div');
     empty.className = 'day-cell empty';
-    empty.innerHTML = `<div class="day-number"></div><div class="day-content"></div>`;
+    empty.innerHTML = `<div class="day-number"></div><div></div>`;
     els.calendarGrid.appendChild(empty);
   }
 
@@ -1847,15 +1519,12 @@ function renderCalendar(trades) {
     const total = dayTrades.reduce((sum, t) => sum + Number(t.result), 0);
     const status = dayTrades.length ? getTradeStatus(total) : 'empty';
 
-    const div = document.createElement('a');
-    div.href = dayTrades.length ? '#tradesSection' : 'javascript:void(0)';
+    const div = document.createElement('div');
     div.className = `day-cell ${status}`;
 
-    const weekNumber = Math.ceil(day / 7);
     div.innerHTML = `
-      <div class="week-label">W${weekNumber}</div>
       <div class="day-number">${day}</div>
-      <div class="day-content">
+      <div>
         <div class="day-result">${dayTrades.length ? currency(total) : ''}</div>
         <div class="day-meta">${dayTrades.length ? `${dayTrades.length} trade(s)` : ''}</div>
       </div>
@@ -1864,11 +1533,10 @@ function renderCalendar(trades) {
     if (dayTrades.length) {
       div.addEventListener('click', () => {
         const firstId = dayTrades[0].id;
-        const target = document.getElementById(`trade-${firstId}`);
-        if (target) {
-          setTimeout(() => {
-            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }, 80);
+        const el = document.getElementById(`trade-${firstId}`);
+        if (el) {
+          location.hash = '#tradesSection';
+          setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 120);
         }
       });
     }
@@ -1882,14 +1550,47 @@ function renderCalendar(trades) {
   });
 
   const monthTotal = monthTrades.reduce((sum, t) => sum + Number(t.result), 0);
-  if (els.calendarSummary) {
-    els.calendarSummary.innerHTML = `<strong>${currency(monthTotal)}</strong> • ${monthTrades.length} trades • ${Object.keys(grouped).length} dias`;
+  els.calendarSummary.textContent = `${currency(monthTotal)} • ${monthTrades.length} trades • ${Object.keys(grouped).length} dias`;
+}
+
+function renderWeeklyStats(trades) {
+  els.weeklyStats.innerHTML = '';
+
+  const now = new Date();
+  const current = new Date(now.getFullYear(), now.getMonth() + calendarOffset, 1);
+  const year = current.getFullYear();
+  const month = current.getMonth();
+
+  const monthTrades = trades.filter(t => {
+    const d = new Date(t.date);
+    return d.getFullYear() === year && d.getMonth() === month;
+  });
+
+  const weeks = {};
+  monthTrades.forEach(t => {
+    const d = new Date(t.date);
+    const week = Math.ceil(d.getDate() / 7);
+    if (!weeks[week]) weeks[week] = [];
+    weeks[week].push(t);
+  });
+
+  const totalWeeks = 6;
+  for (let i = 1; i <= totalWeeks; i++) {
+    const arr = weeks[i] || [];
+    const total = arr.reduce((s, t) => s + Number(t.result), 0);
+
+    const box = document.createElement('div');
+    box.className = 'week-box';
+    box.innerHTML = `
+      <small>Week ${i}</small>
+      <strong style="color:${total >= 0 ? 'var(--green)' : 'var(--red)'}">${currency(total)}</strong>
+      <span>${arr.length} trade(s)</span>
+    `;
+    els.weeklyStats.appendChild(box);
   }
 }
 
 function renderStrategyBreakdown(trades) {
-  if (!els.strategyList) return;
-
   const map = {};
   trades.forEach(t => {
     const key = t.strategy || 'Sem estratégia';
@@ -1898,19 +1599,20 @@ function renderStrategyBreakdown(trades) {
 
   const entries = Object.entries(map).sort((a, b) => b[1] - a[1]);
   els.strategyList.innerHTML = '';
-  if (els.strategyEmpty) els.strategyEmpty.style.display = entries.length ? 'none' : 'block';
+  els.strategyEmpty.style.display = entries.length ? 'none' : 'block';
 
   entries.forEach(([name, value]) => {
     const row = document.createElement('div');
     row.className = 'list-row';
-    row.innerHTML = `<span class="label">${escapeHtml(name)}</span><span class="value">${currency(value)}</span>`;
+    row.innerHTML = `
+      <span class="label">${escapeHtml(name)}</span>
+      <span class="value ${value >= 0 ? 'green' : 'red'}">${currency(value)}</span>
+    `;
     els.strategyList.appendChild(row);
   });
 }
 
 function renderSessionBreakdown(trades) {
-  if (!els.sessionList) return;
-
   const map = {};
   trades.forEach(t => {
     const key = t.session || 'Sem sessão';
@@ -1919,19 +1621,42 @@ function renderSessionBreakdown(trades) {
 
   const entries = Object.entries(map).sort((a, b) => b[1] - a[1]);
   els.sessionList.innerHTML = '';
-  if (els.sessionEmpty) els.sessionEmpty.style.display = entries.length ? 'none' : 'block';
+  els.sessionEmpty.style.display = entries.length ? 'none' : 'block';
 
   entries.forEach(([name, value]) => {
     const row = document.createElement('div');
     row.className = 'list-row';
-    row.innerHTML = `<span class="label">${escapeHtml(name)}</span><span class="value">${currency(value)}</span>`;
+    row.innerHTML = `
+      <span class="label">${escapeHtml(name)}</span>
+      <span class="value ${value >= 0 ? 'green' : 'red'}">${currency(value)}</span>
+    `;
     els.sessionList.appendChild(row);
   });
 }
 
-function renderTradeList(trades) {
-  if (!els.tradeList) return;
+function renderPairBreakdown(trades) {
+  const map = {};
+  trades.forEach(t => {
+    const key = t.pair || 'N/A';
+    map[key] = (map[key] || 0) + Number(t.result);
+  });
 
+  const entries = Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  els.pairList.innerHTML = '';
+  els.pairEmpty.style.display = entries.length ? 'none' : 'block';
+
+  entries.forEach(([name, value]) => {
+    const row = document.createElement('div');
+    row.className = 'list-row';
+    row.innerHTML = `
+      <span class="label">${escapeHtml(name)}</span>
+      <span class="value ${value >= 0 ? 'green' : 'red'}">${currency(value)}</span>
+    `;
+    els.pairList.appendChild(row);
+  });
+}
+
+function renderTradeList(trades) {
   els.tradeList.innerHTML = '';
 
   trades.forEach(trade => {
@@ -1939,14 +1664,10 @@ function renderTradeList(trades) {
     item.className = 'trade-item';
     item.id = `trade-${trade.id}`;
 
-    const tagsHtml = (trade.tags || []).length
-      ? `<div style="grid-column: span 6;"><small style="display:block; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:6px;">Tags</small>${trade.tags.map(tag => `<span class="tag-chip">${escapeHtml(tag)}</span>`).join('')}</div>`
-      : '';
-
     item.innerHTML = `
       <div class="trade-field"><small>Data</small><strong>${formatDate(trade.date)}</strong></div>
       <div class="trade-field"><small>Par</small><strong>${escapeHtml(trade.pair)}</strong></div>
-      <div class="trade-field"><small>Resultado</small><strong>${currency(Number(trade.result))}</strong></div>
+      <div class="trade-field"><small>Resultado</small><strong style="color:${Number(trade.result) >= 0 ? 'var(--green)' : 'var(--red)'}">${currency(Number(trade.result))}</strong></div>
       <div class="trade-field"><small>RR</small><strong>${Number(trade.rr).toFixed(1)}</strong></div>
       <div class="trade-field"><small>Lado</small><strong>${escapeHtml(trade.side)}</strong></div>
       <div class="trade-field"><small>Sessão</small><strong>${escapeHtml(trade.session)}</strong></div>
@@ -1956,7 +1677,6 @@ function renderTradeList(trades) {
         <small>Imagem</small>
         ${trade.image ? `<img src="${trade.image}" alt="Trade image" class="trade-thumb" data-full-image="${trade.image}">` : '<strong>Sem imagem</strong>'}
       </div>
-      ${tagsHtml}
     `;
 
     const actions = document.createElement('div');
@@ -1966,8 +1686,8 @@ function renderTradeList(trades) {
       <button class="btn small danger" data-delete="${trade.id}">Eliminar</button>
     `;
 
-    actions.querySelector(`[data-edit="${trade.id}"]`)?.addEventListener('click', () => editTrade(trade.id));
-    actions.querySelector(`[data-delete="${trade.id}"]`)?.addEventListener('click', () => deleteTrade(trade.id));
+    actions.querySelector(`[data-edit="${trade.id}"]`).addEventListener('click', () => editTrade(trade.id));
+    actions.querySelector(`[data-delete="${trade.id}"]`).addEventListener('click', () => deleteTrade(trade.id));
 
     const thumb = item.querySelector('.trade-thumb');
     if (thumb) {
@@ -1979,301 +1699,52 @@ function renderTradeList(trades) {
   });
 }
 
-/* =========================================================
-   ADVANCED FEATURES
-========================================================= */
-function renderFiltersUI() {
-  const fromInput = document.getElementById('filterFromDate');
-  const toInput = document.getElementById('filterToDate');
-  const sessionSelect = document.getElementById('filterSession');
-  const strategySelect = document.getElementById('filterStrategy');
-  const tagSelect = document.getElementById('filterTag');
-
-  if (!fromInput || !toInput || !sessionSelect || !strategySelect || !tagSelect) return;
-
-  fromInput.value = activeFilters.from;
-  toInput.value = activeFilters.to;
-
-  sessionSelect.innerHTML = `<option value="all">Todas</option>` +
-    getAllSessions().map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
-  sessionSelect.value = activeFilters.session;
-
-  strategySelect.innerHTML = `<option value="all">Todas</option>` +
-    getAllStrategies().map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
-  strategySelect.value = activeFilters.strategy;
-
-  tagSelect.innerHTML = `<option value="all">Todas</option>` +
-    getAllTags().map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
-  tagSelect.value = activeFilters.tag;
-}
-
-function renderAdvancedAnalytics(trades) {
-  const expectancyValue = document.getElementById('expectancyValue');
-  const expectancyText = document.getElementById('expectancyText');
-  const journalScoreValue = document.getElementById('journalScoreValue');
-  const journalScoreText = document.getElementById('journalScoreText');
-  const avgWinValue = document.getElementById('avgWinValue');
-  const avgLossValue = document.getElementById('avgLossValue');
-
-  const wins = trades.filter(t => Number(t.result) > 0);
-  const losses = trades.filter(t => Number(t.result) < 0);
-
-  const avgWin = wins.length ? wins.reduce((s, t) => s + Number(t.result), 0) / wins.length : 0;
-  const avgLoss = losses.length ? Math.abs(losses.reduce((s, t) => s + Number(t.result), 0) / losses.length) : 0;
-  const winRate = trades.length ? wins.length / trades.length : 0;
-  const lossRate = trades.length ? losses.length / trades.length : 0;
-  const expectancy = (winRate * avgWin) - (lossRate * avgLoss);
-
-  if (expectancyValue) expectancyValue.textContent = expectancy.toFixed(2);
-  if (expectancyText) expectancyText.textContent = expectancy >= 0 ? 'Sistema com edge positivo' : 'Sistema com edge negativo';
-  if (avgWinValue) avgWinValue.textContent = currency(avgWin);
-  if (avgLossValue) avgLossValue.textContent = currency(-avgLoss);
-
-  const journalScore = calculateJournalScore(trades);
-  if (journalScoreValue) journalScoreValue.textContent = `${journalScore}/100`;
-  if (journalScoreText) {
-    if (journalScore >= 80) journalScoreText.textContent = 'Disciplina muito forte';
-    else if (journalScore >= 60) journalScoreText.textContent = 'Boa consistência';
-    else if (journalScore >= 40) journalScoreText.textContent = 'Precisa melhorar execução';
-    else journalScoreText.textContent = 'Disciplina fraca';
-  }
-}
-
-function calculateJournalScore(trades) {
-  if (!trades.length) return 0;
-
-  let score = 0;
-
-  const withComment = trades.filter(t => (t.comment || '').trim().length >= 10).length / trades.length;
-  const withImage = trades.filter(t => !!t.image).length / trades.length;
-  const withTags = trades.filter(t => (t.tags || []).length > 0).length / trades.length;
-  const withRR = trades.filter(t => Number(t.rr) > 0).length / trades.length;
-  const strategyConsistency = trades.filter(t => (t.strategy || '').trim().length > 1).length / trades.length;
-
-  score += withComment * 25;
-  score += withImage * 20;
-  score += withTags * 15;
-  score += withRR * 20;
-  score += strategyConsistency * 20;
-
-  return Math.round(score);
-}
-
-function renderAICoach(trades) {
-  const box = document.getElementById('aiCoachBox');
-  if (!box) return;
-
-  if (!trades.length) {
-    box.innerHTML = `<div class="empty-state">Adiciona trades para o AI Coach analisar o teu comportamento.</div>`;
-    return;
-  }
-
-  const wins = trades.filter(t => Number(t.result) > 0);
-  const losses = trades.filter(t => Number(t.result) < 0);
-
-  const sessionMap = {};
-  trades.forEach(t => {
-    if (!sessionMap[t.session]) sessionMap[t.session] = 0;
-    sessionMap[t.session] += Number(t.result);
-  });
-
-  const bestSession = Object.entries(sessionMap).sort((a, b) => b[1] - a[1])[0];
-  const worstSession = Object.entries(sessionMap).sort((a, b) => a[1] - b[1])[0];
-
-  const tagLosses = {};
-  losses.forEach(t => {
-    (t.tags || []).forEach(tag => {
-      tagLosses[tag] = (tagLosses[tag] || 0) + 1;
-    });
-  });
-
-  const riskyTag = Object.entries(tagLosses).sort((a, b) => b[1] - a[1])[0];
-
-  const avgWin = wins.length ? wins.reduce((s, t) => s + Number(t.result), 0) / wins.length : 0;
-  const avgLoss = losses.length ? Math.abs(losses.reduce((s, t) => s + Number(t.result), 0) / losses.length) : 0;
-
-  const coachTips = [
-    {
-      title: 'Força principal',
-      text: bestSession
-        ? `A tua melhor sessão é <strong>${escapeHtml(bestSession[0])}</strong> com ${currency(bestSession[1])}. Considera focar mais capital e atenção nessa janela.`
-        : 'Ainda sem padrão claro.'
-    },
-    {
-      title: 'Zona de risco',
-      text: worstSession
-        ? `A tua pior sessão é <strong>${escapeHtml(worstSession[0])}</strong> com ${currency(worstSession[1])}. Talvez devias reduzir frequência ou ser mais seletivo nela.`
-        : 'Ainda sem padrão claro.'
-    },
-    {
-      title: 'Comportamento emocional',
-      text: riskyTag
-        ? `A tag mais associada a perdas é <strong>${escapeHtml(riskyTag[0])}</strong>. Isso é praticamente o mercado a deixar-te bilhete escrito.`
-        : 'Ainda não há tags suficientes para identificar gatilhos.'
-    },
-    {
-      title: 'Qualidade do sistema',
-      text: avgWin > avgLoss
-        ? `A tua média de ganho (${currency(avgWin)}) é maior que a tua média de perda (${currency(-avgLoss)}). Estrutura promissora.`
-        : `A tua média de perda (${currency(-avgLoss)}) está a esmagar a tua média de ganho (${currency(avgWin)}). Aí mora o problema.`
-    }
-  ];
-
-  box.innerHTML = coachTips.map(t => `
-    <div class="coach-card">
-      <h4>${t.title}</h4>
-      <div style="color:var(--text); font-size:14px; line-height:1.6;">${t.text}</div>
-    </div>
-  `).join('');
-}
-
-function renderReplay(trades) {
-  const summary = document.getElementById('replaySummary');
-  if (!summary) return;
-
-  if (!trades.length) {
-    summary.innerHTML = 'Sem dados para replay.';
-    return;
-  }
-
-  replayIndex = Math.min(replayIndex, trades.length - 1);
-  replayIndex = Math.max(0, replayIndex);
-
-  const trade = trades[replayIndex];
-  const cumulative = trades.slice(0, replayIndex + 1).reduce((sum, t) => sum + Number(t.result), 0);
-
-  summary.innerHTML = `
-    <div style="display:grid; gap:10px;">
-      <div><strong>Replay ${replayIndex + 1}/${trades.length}</strong></div>
-      <div><strong>${formatDate(trade.date)}</strong> • ${escapeHtml(trade.pair)} • ${currency(trade.result)}</div>
-      <div>RR: <strong>${Number(trade.rr).toFixed(1)}</strong> • Sessão: <strong>${escapeHtml(trade.session)}</strong> • Estratégia: <strong>${escapeHtml(trade.strategy)}</strong></div>
-      <div>Equity acumulada até aqui: <strong>${currency(cumulative)}</strong></div>
-      <div style="color:var(--muted);">${escapeHtml(trade.comment || 'Sem comentário')}</div>
-    </div>
-  `;
-}
-
-function renderHeatmap(trades) {
-  const box = document.getElementById('heatmapBox');
-  if (!box) return;
-
-  const slots = [
-    'Asia',
-    'London',
-    'New York',
-    'Breakout',
-    'Reversal',
-    'Trend'
-  ];
-
-  const values = {
-    Asia: 0,
-    London: 0,
-    'New York': 0,
-    Breakout: 0,
-    Reversal: 0,
-    Trend: 0
-  };
-
-  trades.forEach(t => {
-    if (values[t.session] !== undefined) values[t.session] += Number(t.result);
-
-    const strategy = (t.strategy || '').toLowerCase();
-    if (strategy.includes('breakout')) values.Breakout += Number(t.result);
-    if (strategy.includes('reversal')) values.Reversal += Number(t.result);
-    if (strategy.includes('trend')) values.Trend += Number(t.result);
-  });
-
-  box.innerHTML = slots.map(slot => {
-    const val = values[slot];
-    const cls = getTradeStatus(val);
-    return `
-      <div class="heat-cell ${cls}">
-        <strong>${slot}</strong>
-        <div>${currency(val)}</div>
-      </div>
-    `;
-  }).join('');
-}
-
-function renderTimeline(trades) {
-  const box = document.getElementById('timelineBox');
-  if (!box) return;
-
-  const withImages = [...trades]
-    .filter(t => !!t.image)
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 10);
-
-  if (!withImages.length) {
-    box.innerHTML = `<div class="empty-state">Ainda não tens screenshots de setups para a timeline.</div>`;
-    return;
-  }
-
-  box.innerHTML = withImages.map(t => `
-    <div class="timeline-item">
-      <img src="${t.image}" data-timeline-image="${t.image}" alt="Setup">
-      <div>
-        <div style="font-weight:700; margin-bottom:8px;">${formatDate(t.date)} • ${escapeHtml(t.pair)}</div>
-        <div style="margin-bottom:8px;">Resultado: <strong>${currency(t.result)}</strong> • RR: <strong>${Number(t.rr).toFixed(1)}</strong></div>
-        <div style="margin-bottom:8px;">Estratégia: <strong>${escapeHtml(t.strategy)}</strong></div>
-        <div style="color:var(--muted);">${escapeHtml(t.comment || 'Sem comentário')}</div>
-      </div>
-    </div>
-  `).join('');
-
-  box.querySelectorAll('[data-timeline-image]').forEach(img => {
-    img.addEventListener('click', () => openImageViewer(img.getAttribute('data-timeline-image')));
+function formatDate(dateStr) {
+  return new Date(dateStr).toLocaleDateString('pt-PT', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
   });
 }
 
-/* =========================================================
-   MODAL / TRADE CRUD
-========================================================= */
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 function openModal(editMode = false) {
-  if (els.tradeModal) els.tradeModal.classList.add('open');
-  if (els.tradeModalTitle) els.tradeModalTitle.textContent = editMode ? 'Editar Trade' : 'Adicionar Trade';
+  els.tradeModal.classList.add('open');
+  els.tradeModalTitle.textContent = editMode ? 'Editar Trade' : 'Adicionar Trade';
 }
 
 function closeModal() {
-  if (els.tradeModal) els.tradeModal.classList.remove('open');
-  if (els.tradeForm) els.tradeForm.reset();
+  els.tradeModal.classList.remove('open');
+  els.tradeForm.reset();
   currentImageBase64 = '';
   editingTradeId = null;
-
-  if (els.imagePreview) {
-    els.imagePreview.style.display = 'none';
-    els.imagePreview.removeAttribute('src');
-  }
-
-  if (els.tradeDate) els.tradeDate.value = new Date().toISOString().slice(0, 10);
-  if (els.tradeModalTitle) els.tradeModalTitle.textContent = 'Adicionar Trade';
-
-  const tagsInput = document.getElementById('tradeTags');
-  if (tagsInput) tagsInput.value = '';
+  els.imagePreview.style.display = 'none';
+  els.imagePreview.removeAttribute('src');
+  els.tradeDate.value = new Date().toISOString().slice(0, 10);
+  els.tradeModalTitle.textContent = 'Adicionar Trade';
 }
 
 function handleImageUpload(file) {
   if (!file) return;
-
   const reader = new FileReader();
   reader.onload = (e) => {
     currentImageBase64 = e.target.result;
-    if (els.imagePreview) {
-      els.imagePreview.src = currentImageBase64;
-      els.imagePreview.style.display = 'block';
-    }
+    els.imagePreview.src = currentImageBase64;
+    els.imagePreview.style.display = 'block';
   };
   reader.readAsDataURL(file);
 }
 
 function addOrUpdateTrade(e) {
   e.preventDefault();
-
-  const tagsInput = document.getElementById('tradeTags');
-  const parsedTags = tagsInput
-    ? tagsInput.value.split(',').map(t => t.trim()).filter(Boolean)
-    : [];
 
   const trade = {
     id: editingTradeId || crypto.randomUUID(),
@@ -2285,8 +1756,7 @@ function addOrUpdateTrade(e) {
     session: els.tradeSession.value,
     strategy: els.tradeStrategy.value.trim(),
     comment: els.tradeComment.value.trim(),
-    image: currentImageBase64,
-    tags: parsedTags
+    image: currentImageBase64
   };
 
   if (editingTradeId) {
@@ -2316,11 +1786,6 @@ function editTrade(id) {
   els.tradeComment.value = trade.comment || '';
   currentImageBase64 = trade.image || '';
 
-  const tagsInput = document.getElementById('tradeTags');
-  if (tagsInput) {
-    tagsInput.value = (trade.tags || []).join(', ');
-  }
-
   if (trade.image) {
     els.imagePreview.src = trade.image;
     els.imagePreview.style.display = 'block';
@@ -2338,9 +1803,6 @@ function deleteTrade(id) {
   renderDashboard();
 }
 
-/* =========================================================
-   CSV
-========================================================= */
 function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
   if (lines.length < 2) return [];
@@ -2361,14 +1823,13 @@ function parseCSV(text) {
       session: row.session || 'London',
       strategy: row.strategy || 'Imported',
       comment: row.comment || '',
-      image: row.image || '',
-      tags: row.tags ? row.tags.split('|').map(t => t.trim()).filter(Boolean) : []
+      image: row.image || ''
     };
   }).filter(t => t.date && !Number.isNaN(t.result));
 }
 
 function safeCsv(value) {
-  return `"${String(value || '').replace(/"/g, '""')}"`;
+  return `"${String(value).replace(/"/g, '""')}"`;
 }
 
 function exportCSV() {
@@ -2377,8 +1838,7 @@ function exportCSV() {
     return;
   }
 
-  const headers = ['date','pair','result','rr','side','session','strategy','comment','image','tags'];
-
+  const headers = ['date','pair','result','rr','side','session','strategy','comment','image'];
   const rows = state.trades.map(t => [
     t.date,
     safeCsv(t.pair),
@@ -2388,28 +1848,23 @@ function exportCSV() {
     safeCsv(t.session),
     safeCsv(t.strategy),
     safeCsv(t.comment || ''),
-    safeCsv(t.image || ''),
-    safeCsv((t.tags || []).join('|'))
+    safeCsv(t.image || '')
   ]);
 
   const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
   link.download = 'trading-journal-export.csv';
   link.click();
 }
 
-/* =========================================================
-   AUTH (EMAIL ÚNICO)
-========================================================= */
 function setAuthMode(mode) {
   authMode = mode;
-  if (els.authNameWrap) els.authNameWrap.style.display = mode === 'register' ? 'block' : 'none';
-  if (els.authSubmitBtn) els.authSubmitBtn.textContent = mode === 'register' ? 'Criar Conta' : 'Entrar';
-  if (els.showLoginBtn) els.showLoginBtn.classList.toggle('primary', mode === 'login');
-  if (els.showRegisterBtn) els.showRegisterBtn.classList.toggle('primary', mode === 'register');
+  els.authNameWrap.style.display = mode === 'register' ? 'block' : 'none';
+  els.authSubmitBtn.textContent = mode === 'register' ? 'Criar Conta' : 'Entrar';
+  els.showLoginBtn.classList.toggle('primary', mode === 'login');
+  els.showRegisterBtn.classList.toggle('primary', mode === 'register');
 }
 
 function getSavedUsers() {
@@ -2446,23 +1901,19 @@ function requireAuth() {
   const loggedUser = getCurrentUser();
 
   if (!users.length || !loggedUser) {
-    if (els.authOverlay) els.authOverlay.style.display = 'flex';
+    els.authOverlay.style.display = 'flex';
   } else {
-    if (els.authOverlay) els.authOverlay.style.display = 'none';
+    els.authOverlay.style.display = 'none';
   }
 }
 
-/* =========================================================
-   IMAGE VIEWER
-========================================================= */
+/* ===== IMAGE VIEWER ===== */
 function updateViewerTransform() {
-  if (!els.viewerImage) return;
   els.viewerImage.style.transform = `translate(${viewerX}px, ${viewerY}px) scale(${viewerScale})`;
 }
 
 function openImageViewer(src) {
-  if (!src || !els.viewerImage || !els.imageViewer) return;
-
+  if (!src) return;
   els.viewerImage.src = src;
   viewerScale = 1;
   viewerX = 0;
@@ -2472,7 +1923,6 @@ function openImageViewer(src) {
 }
 
 function closeImageViewer() {
-  if (!els.imageViewer || !els.viewerImage) return;
   els.imageViewer.classList.remove('open');
   els.viewerImage.removeAttribute('src');
 }
@@ -2494,13 +1944,11 @@ function resetZoom() {
   updateViewerTransform();
 }
 
-/* =========================================================
-   EVENTS
-========================================================= */
-els.showLoginBtn?.addEventListener('click', () => setAuthMode('login'));
-els.showRegisterBtn?.addEventListener('click', () => setAuthMode('register'));
+/* ===== EVENTS ===== */
+els.showLoginBtn.addEventListener('click', () => setAuthMode('login'));
+els.showRegisterBtn.addEventListener('click', () => setAuthMode('register'));
 
-els.authForm?.addEventListener('submit', (e) => {
+els.authForm.addEventListener('submit', (e) => {
   e.preventDefault();
 
   const email = els.authEmail.value.trim().toLowerCase();
@@ -2521,9 +1969,8 @@ els.authForm?.addEventListener('submit', (e) => {
     }
 
     const emailExists = users.some(user => user.email.toLowerCase() === email);
-
     if (emailExists) {
-      alert('Este email já está registado. Não podes criar várias contas com o mesmo email.');
+      alert('Este email já está registado. Usa outro email ou faz login.');
       return;
     }
 
@@ -2531,8 +1978,7 @@ els.authForm?.addEventListener('submit', (e) => {
     users.push(newUser);
     saveUsers(users);
     setAuthSession(newUser);
-
-    if (els.authOverlay) els.authOverlay.style.display = 'none';
+    els.authOverlay.style.display = 'none';
     alert('Conta criada com sucesso.');
   } else {
     if (!users.length) {
@@ -2550,32 +1996,39 @@ els.authForm?.addEventListener('submit', (e) => {
     }
 
     setAuthSession(foundUser);
-    if (els.authOverlay) els.authOverlay.style.display = 'none';
+    els.authOverlay.style.display = 'none';
     alert(`Bem-vindo, ${foundUser.name || 'Trader'}!`);
   }
 });
 
-els.themeToggle?.addEventListener('click', () => {
+els.themeToggle.addEventListener('click', () => {
   const current = getTheme();
   setTheme(current === 'dark' ? 'light' : 'dark');
 });
 
-els.openTradeModal?.addEventListener('click', () => openModal(false));
-els.closeTradeModal?.addEventListener('click', closeModal);
-els.cancelTrade?.addEventListener('click', closeModal);
+els.themeToggleSide.addEventListener('click', () => {
+  const current = getTheme();
+  setTheme(current === 'dark' ? 'light' : 'dark');
+});
 
-els.tradeModal?.addEventListener('click', (e) => {
+els.openTradeModal.addEventListener('click', () => openModal(false));
+els.openTradeModalFloating.addEventListener('click', () => openModal(false));
+els.sidebarOpenTrade.addEventListener('click', () => openModal(false));
+els.closeTradeModal.addEventListener('click', closeModal);
+els.cancelTrade.addEventListener('click', closeModal);
+
+els.tradeModal.addEventListener('click', (e) => {
   if (e.target === els.tradeModal) closeModal();
 });
 
-els.tradeForm?.addEventListener('submit', addOrUpdateTrade);
-els.tradeImage?.addEventListener('change', (e) => handleImageUpload(e.target.files[0]));
+els.tradeForm.addEventListener('submit', addOrUpdateTrade);
+els.tradeImage.addEventListener('change', (e) => handleImageUpload(e.target.files[0]));
 
-els.imagePreview?.addEventListener('click', () => {
+els.imagePreview.addEventListener('click', () => {
   if (els.imagePreview.src) openImageViewer(els.imagePreview.src);
 });
 
-els.csvInput?.addEventListener('change', (e) => {
+els.csvInput.addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (!file) return;
 
@@ -2584,7 +2037,7 @@ els.csvInput?.addEventListener('change', (e) => {
     const imported = parseCSV(event.target.result);
 
     if (!imported.length) {
-      alert('CSV inválido. Usa colunas: date,pair,result,rr,side,session,strategy,comment,image,tags');
+      alert('CSV inválido. Usa colunas: date,pair,result,rr,side,session,strategy,comment,image');
       return;
     }
 
@@ -2598,38 +2051,41 @@ els.csvInput?.addEventListener('change', (e) => {
   e.target.value = '';
 });
 
-els.exportCsvBtn?.addEventListener('click', exportCSV);
+els.exportCsvBtn.addEventListener('click', exportCSV);
 
-els.logoutBtn?.addEventListener('click', () => {
+function doLogout() {
   setAuthSession(null);
-  if (els.authOverlay) els.authOverlay.style.display = 'flex';
+  els.authOverlay.style.display = 'flex';
   alert('Saíste da tua conta. Faz login novamente para entrar.');
+}
+
+els.logoutBtn.addEventListener('click', doLogout);
+els.logoutBtnSide.addEventListener('click', doLogout);
+
+els.scrollTopBtn.addEventListener('click', () => {
+  document.getElementById('topo').scrollIntoView({ behavior: 'smooth' });
 });
 
-els.scrollTopBtn?.addEventListener('click', () => {
-  document.getElementById('topo')?.scrollIntoView({ behavior: 'smooth' });
-});
-
-els.prevMonthBtn?.addEventListener('click', () => {
+els.prevMonthBtn.addEventListener('click', () => {
   calendarOffset--;
   renderDashboard();
 });
 
-els.nextMonthBtn?.addEventListener('click', () => {
+els.nextMonthBtn.addEventListener('click', () => {
   calendarOffset++;
   renderDashboard();
 });
 
-els.zoomInBtn?.addEventListener('click', zoomIn);
-els.zoomOutBtn?.addEventListener('click', zoomOut);
-els.resetZoomBtn?.addEventListener('click', resetZoom);
-els.closeViewerBtn?.addEventListener('click', closeImageViewer);
+els.zoomInBtn.addEventListener('click', zoomIn);
+els.zoomOutBtn.addEventListener('click', zoomOut);
+els.resetZoomBtn.addEventListener('click', resetZoom);
+els.closeViewerBtn.addEventListener('click', closeImageViewer);
 
-els.imageViewer?.addEventListener('click', (e) => {
+els.imageViewer.addEventListener('click', (e) => {
   if (e.target === els.imageViewer) closeImageViewer();
 });
 
-els.imageViewerStage?.addEventListener('mousedown', (e) => {
+els.imageViewerStage.addEventListener('mousedown', (e) => {
   isDraggingViewer = true;
   dragStartX = e.clientX - viewerX;
   dragStartY = e.clientY - viewerY;
@@ -2645,34 +2101,30 @@ window.addEventListener('mousemove', (e) => {
 
 window.addEventListener('mouseup', () => {
   isDraggingViewer = false;
-  els.imageViewerStage?.classList.remove('dragging');
+  els.imageViewerStage.classList.remove('dragging');
 });
 
-els.imageViewerStage?.addEventListener('wheel', (e) => {
+els.imageViewerStage.addEventListener('wheel', (e) => {
   e.preventDefault();
   if (e.deltaY < 0) zoomIn();
   else zoomOut();
 }, { passive: false });
 
 window.addEventListener('keydown', (e) => {
-  if (!els.imageViewer?.classList.contains('open')) return;
-
+  if (!els.imageViewer.classList.contains('open')) return;
   if (e.key === 'Escape') closeImageViewer();
   if (e.key === '+') zoomIn();
   if (e.key === '-') zoomOut();
   if (e.key.toLowerCase() === 'r') resetZoom();
 });
 
-/* =========================================================
-   INIT
-========================================================= */
+window.addEventListener('resize', () => renderDashboard());
+
+/* INIT */
 setTheme(getTheme());
 setAuthMode('login');
-
-if (els.tradeDate) {
-  els.tradeDate.value = new Date().toISOString().slice(0, 10);
-}
-
+els.tradeDate.value = new Date().toISOString().slice(0, 10);
+els.lastUpdated.textContent = new Date().toLocaleString('pt-PT');
 renderDashboard();
 requireAuth();
 </script>
